@@ -11,6 +11,7 @@ interface EventItem {
   imageAlt: string;
   date?: string;
   location?: string;
+  dataAiHint?: string;
 }
 
 interface EventsCarouselProps {
@@ -60,7 +61,7 @@ export default function EventsCarousel({
         className='flex transition-transform duration-500 ease-in-out h-[400px] md:h-[500px]'
         style={{ transform: `translateX(-${currentIndex * 100}%)` }}
       >
-        {events.map((event) => (
+        {events.map((event, index) => (
           <div
             key={event.id}
             className='min-w-full h-full relative flex items-center justify-center'
@@ -70,7 +71,8 @@ export default function EventsCarousel({
               alt={event.imageAlt}
               fill
               className='object-cover'
-              priority={currentIndex === 0}
+              priority={index === 0}
+              data-ai-hint={event.dataAiHint}
             />
             <div className='absolute inset-0 bg-black/40' />
             <div className='absolute bottom-0 left-0 right-0 p-6 text-white bg-gradient-to-t from-black/80 to-transparent'>
@@ -93,7 +95,8 @@ export default function EventsCarousel({
 
       {/* Navigation Arrows */}
       <button
-        className='absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/30 hover:bg-white/50 transition-colors'
+        aria-label='Previous slide'
+        className='absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/30 hover:bg-white/50 transition-colors z-10'
         onClick={prevSlide}
       >
         <svg
@@ -111,7 +114,8 @@ export default function EventsCarousel({
         </svg>
       </button>
       <button
-        className='absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/30 hover:bg-white/50 transition-colors'
+        aria-label='Next slide'
+        className='absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/30 hover:bg-white/50 transition-colors z-10'
         onClick={nextSlide}
       >
         <svg
@@ -130,10 +134,11 @@ export default function EventsCarousel({
       </button>
 
       {/* Dots indicator */}
-      <div className='absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2'>
+      <div className='absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10'>
         {events.map((_, index) => (
           <button
             key={index}
+            aria-label={`Go to slide ${index + 1}`}
             className={`w-2 h-2 rounded-full transition-colors ${
               index === currentIndex ? 'bg-white' : 'bg-white/50'
             }`}
