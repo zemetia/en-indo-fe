@@ -84,9 +84,9 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="bg-background text-foreground overflow-x-hidden">
+    <div className="bg-white text-gray-800 overflow-x-hidden">
       {/* Hero Section */}
-      <section className="py-20 md:py-32">
+      <section className="py-20 md:py-32 bg-white">
         <motion.div
             className="container mx-auto px-4 grid md:grid-cols-2 gap-16 items-center"
             variants={containerVariants}
@@ -95,20 +95,20 @@ export default function HomePage() {
         >
           <motion.div className="text-center md:text-left" variants={itemVariants}>
             <h1 
-                className="text-4xl md:text-6xl font-bold mb-6 leading-tight"
+                className="text-4xl md:text-6xl font-bold mb-6 leading-tight text-gray-900"
             >
                 Membangun Generasi Pengikut Kristus
             </h1>
             <p 
-                className="text-lg text-muted-foreground mb-8 max-w-lg mx-auto md:mx-0"
+                className="text-lg text-gray-600 mb-8 max-w-lg mx-auto md:mx-0"
             >
                 Every Nation Indonesia adalah gereja yang berkomitmen untuk menghormati Tuhan dengan menjadikan murid, melatih pemimpin, dan mengirim utusan Injil.
             </p>
             <div className="flex gap-4 justify-center md:justify-start">
-              <Button asChild size="lg">
+              <Button asChild size="lg" className="bg-blue-600 text-white hover:bg-blue-700 transition-transform duration-300 hover:scale-105">
                   <Link href="/contact">Temukan Lokasi</Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
+              <Button asChild size="lg" variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-colors duration-300">
                   <Link href="/about">Tentang Kami</Link>
               </Button>
             </div>
@@ -138,7 +138,7 @@ export default function HomePage() {
       
       {/* Visi Section */}
       <section 
-        className="py-20 bg-secondary"
+        className="py-20 bg-blue-50"
       >
         <motion.div 
           className="container mx-auto px-4 text-center"
@@ -147,14 +147,14 @@ export default function HomePage() {
           viewport={{ once: true, amount: 0.5 }}
           variants={containerVariants}
         >
-            <motion.div className="inline-block bg-primary/10 p-4 rounded-full mb-4" variants={itemVariants}>
-              <Eye className="w-10 h-10 text-primary" />
+            <motion.div className="inline-block bg-blue-200/50 p-4 rounded-full mb-4" variants={itemVariants}>
+              <Eye className="w-10 h-10 text-blue-600" />
             </motion.div>
-            <motion.h2 className="text-3xl font-bold mb-4" variants={itemVariants}>
+            <motion.h2 className="text-3xl font-bold mb-4 text-gray-900" variants={itemVariants}>
                 Visi Kami
             </motion.h2>
             <motion.p 
-                className="text-muted-foreground text-lg md:text-xl mb-12 max-w-3xl mx-auto"
+                className="text-gray-600 text-lg md:text-xl mb-12 max-w-3xl mx-auto"
                 variants={itemVariants}
             >
                 "Kami ada untuk menghormati Allah dengan mendirikan gereja-gereja dan pelayanan kampus yang berpusat pada Kristus, diberdayakan oleh Roh, dan bertanggung jawab secara sosial di setiap bangsa."
@@ -163,7 +163,7 @@ export default function HomePage() {
       </section>
 
       {/* Ministries Section */}
-      <section className="py-20 bg-background">
+      <section className="py-20 bg-white">
         <motion.div 
           className="container mx-auto px-4"
           initial="hidden"
@@ -171,10 +171,10 @@ export default function HomePage() {
           viewport={{ once: true, amount: 0.2 }}
           variants={containerVariants}
         >
-          <motion.h2 className="text-3xl font-bold text-center mb-2" variants={itemVariants}>
+          <motion.h2 className="text-3xl font-bold text-center mb-2 text-gray-900" variants={itemVariants}>
             Pelayanan Kami
           </motion.h2>
-          <motion.p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto" variants={itemVariants}>
+          <motion.p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto" variants={itemVariants}>
             Terlibat dalam komunitas dan bertumbuh bersama melalui berbagai pelayanan yang kami sediakan.
           </motion.p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -200,7 +200,7 @@ export default function HomePage() {
 
       {/* Perkenalan Pendeta Section */}
       <section 
-        className="py-20 bg-secondary"
+        className="py-20 bg-blue-50"
       >
         <motion.div 
           className="container mx-auto px-4"
@@ -209,16 +209,16 @@ export default function HomePage() {
           viewport={{ once: true, amount: 0.2 }}
           variants={containerVariants}
         >
-          <motion.h2 className="text-3xl font-bold text-center mb-2" variants={itemVariants}>
+          <motion.h2 className="text-3xl font-bold text-center mb-2 text-gray-900" variants={itemVariants}>
             Gembala Sidang Kami
           </motion.h2>
-          <motion.p className="text-center text-muted-foreground mb-12" variants={itemVariants}>
+          <motion.p className="text-center text-gray-600 mb-12" variants={itemVariants}>
             Para pemimpin yang berdedikasi dari berbagai cabang gereja kami.
           </motion.p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {pastors.map((pastor, index) => (
               <motion.div key={index} variants={itemVariants}>
-                <Card className="text-center overflow-hidden group shadow-lg hover:shadow-2xl transition-all duration-300 rounded-2xl border-0 h-full flex flex-col">
+                <Card className="text-center overflow-hidden group shadow-lg hover:shadow-2xl transition-all duration-300 rounded-2xl border-0 h-full flex flex-col bg-white">
                   <div className="relative h-96">
                     <Image 
                       src={pastor.image} 
@@ -229,8 +229,8 @@ export default function HomePage() {
                     />
                   </div>
                   <CardContent className="p-6 flex-grow flex flex-col justify-center">
-                    <h3 className="text-xl font-semibold">{pastor.name}</h3>
-                    <p className="text-primary">{pastor.branch}</p>
+                    <h3 className="text-xl font-semibold text-gray-900">{pastor.name}</h3>
+                    <p className="text-blue-600">{pastor.branch}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -245,7 +245,7 @@ export default function HomePage() {
         style={{ backgroundImage: "url('https://placehold.co/1920x1080.png')" }}
         data-ai-hint="church congregation"
       >
-        <div className="bg-black/70 py-20">
+        <div className="bg-blue-900/80 py-20">
             <motion.div 
                 className="container mx-auto px-4 text-center text-white"
                 initial={{ opacity: 0, y: 20 }}
@@ -253,12 +253,12 @@ export default function HomePage() {
                 viewport={{ once: true, amount: 0.5 }}
                 transition={{ duration: 0.5 }}
             >
-                <Heart className="w-12 h-12 mx-auto mb-4 text-primary"/>
+                <Heart className="w-12 h-12 mx-auto mb-4 text-blue-400"/>
                 <h2 className="text-4xl font-bold mb-4">Bergabunglah Dengan Keluarga Kami</h2>
-                <p className="mb-8 max-w-2xl mx-auto text-lg text-slate-300">
+                <p className="mb-8 max-w-2xl mx-auto text-lg text-blue-100">
                     Kami ingin sekali terhubung dengan Anda. Temukan komunitas, tujuan, dan tempat di mana Anda dapat bertumbuh.
                 </p>
-                <Button size="lg" asChild>
+                <Button size="lg" asChild className="bg-blue-500 hover:bg-blue-400 text-white transition-transform duration-300 hover:scale-105">
                   <Link href="/contact">
                     Saya Baru <ArrowRight className="w-4 h-4 ml-2"/>
                   </Link>

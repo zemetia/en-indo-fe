@@ -30,7 +30,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${hasScrolled ? 'bg-background/80 backdrop-blur-lg border-b border-border' : 'bg-transparent'}`}>
+    <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${hasScrolled ? 'bg-white/80 backdrop-blur-lg border-b border-gray-200' : 'bg-transparent'}`}>
       <div className='container mx-auto px-4'>
         <div className='flex items-center justify-between h-20'>
           {/* Logo */}
@@ -46,21 +46,21 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Menu */}
-          <nav className='hidden md:flex items-center space-x-2 bg-background/50 border border-border p-1 rounded-full shadow-sm'>
+          <nav className='hidden md:flex items-center space-x-2 bg-gray-100/50 border border-gray-200/80 p-1 rounded-full shadow-sm'>
             {menuItems.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
                 className={`relative px-4 py-2 text-sm font-medium transition-colors ${
                   pathname === item.href
-                    ? 'text-primary'
-                    : `text-foreground/80 hover:text-primary`
+                    ? 'text-blue-600'
+                    : `text-gray-700 hover:text-blue-600`
                 }`}
               >
                 {item.name}
                 {pathname === item.href && (
                    <motion.div
-                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"
                       layoutId="underline"
                       />
                 )}
@@ -69,14 +69,14 @@ export default function Navbar() {
           </nav>
 
           <div className="hidden md:flex items-center">
-             <Button asChild>
+             <Button asChild className="bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-300">
                 <Link href='/login'>Masuk</Link>
              </Button>
           </div>
 
           {/* Mobile Menu Button */}
           <button
-            className='md:hidden p-2 rounded-md text-muted-foreground hover:text-primary z-50'
+            className='md:hidden p-2 rounded-md text-gray-500 hover:text-blue-600 z-50'
             onClick={() => setIsOpen(!isOpen)}
           >
             <span className='sr-only'>Buka menu</span>
@@ -91,7 +91,7 @@ export default function Navbar() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className='md:hidden absolute top-0 left-0 w-full h-screen bg-background border-t border-border pt-20'
+            className='md:hidden absolute top-0 left-0 w-full h-screen bg-white border-t border-gray-200 pt-20'
           >
             <div className='px-4 pt-2 pb-3 space-y-2'>
               {menuItems.map((item) => (
@@ -100,8 +100,8 @@ export default function Navbar() {
                   href={item.href}
                   className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
                     pathname === item.href
-                      ? 'text-primary bg-primary/10'
-                      : 'text-foreground hover:text-primary hover:bg-primary/5'
+                      ? 'text-blue-600 bg-blue-50'
+                      : 'text-gray-800 hover:text-blue-600 hover:bg-blue-50'
                   }`}
                   onClick={() => setIsOpen(false)}
                 >
@@ -110,7 +110,7 @@ export default function Navbar() {
               ))}
             </div>
             <div className="px-4 pt-4">
-              <Button asChild className="w-full" size="lg">
+              <Button asChild className="w-full bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-300" size="lg">
                 <Link href='/login' onClick={() => setIsOpen(false)}>
                     Masuk
                 </Link>
