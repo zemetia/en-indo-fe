@@ -13,6 +13,8 @@ const menuItems = [
   { name: 'Beranda', href: '/' },
   { name: 'Tentang Kami', href: '/about' },
   { name: 'Pelayanan', href: '/services' },
+  { name: 'Acara', href: '/events' },
+  { name: 'Materi', href: '/books' },
   { name: 'Kontak', href: '/contact' },
 ];
 

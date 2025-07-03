@@ -100,7 +100,7 @@ export default function HomePage() {
   ];
 
   const geoUrl =
-'https://raw.githubusercontent.com/tvalentius/Indonesia-topojson/refs/heads/master/indonesia-topojson-city-regency.json';
+'https://raw.githubusercontent.com/tvalentius/Indonesia-topojson/master/indonesiaprovince.json';
   return (
     <div className="bg-white text-gray-800 overflow-x-hidden">
       {/* Hero Section */}
@@ -113,8 +113,7 @@ export default function HomePage() {
         >
           <motion.div className="text-center md:text-left" variants={itemVariants}>
             <h1 
-                className="text-4xl md:text-6xl font-bold mb-6 leading-tight"
-                style={{color: '#003366'}}
+                className="text-4xl md:text-6xl font-bold mb-6 leading-tight text-blue-900"
             >
                 Membangun Generasi Pengikut Kristus
             </h1>
@@ -157,8 +156,7 @@ export default function HomePage() {
       
       {/* Visi Section */}
       <section 
-        className="py-20"
-        style={{backgroundColor: '#E6F0F6'}}
+        className="py-20 bg-sky-50"
       >
         <motion.div 
           className="container mx-auto px-4 text-center"
@@ -167,10 +165,10 @@ export default function HomePage() {
           viewport={{ once: true, amount: 0.5 }}
           variants={containerVariants}
         >
-            <motion.div className="inline-block p-4 rounded-full mb-4 bg-white" variants={itemVariants}>
+            <motion.div className="inline-block p-4 rounded-full mb-4 bg-white shadow-md" variants={itemVariants}>
               <Eye className="w-10 h-10 text-blue-700" />
             </motion.div>
-            <motion.h2 className="text-3xl font-bold mb-4" style={{color: '#003366'}} variants={itemVariants}>
+            <motion.h2 className="text-3xl font-bold mb-4 text-blue-900" variants={itemVariants}>
                 Visi Kami
             </motion.h2>
             <motion.p 
@@ -223,7 +221,7 @@ export default function HomePage() {
                   strokeWidth={0.5}
                   style={{
                     default: { outline: "none" },
-                    hover: { fill: "#AED6F1", outline: "none" },
+                    hover: { fill: "#D6EAF8", outline: "none" },
                     pressed: { outline: "none" },
                   }}
                 />
@@ -233,13 +231,12 @@ export default function HomePage() {
           {locations.map(({ id, name, coordinates }) => (
             <Marker key={id} coordinates={coordinates}>
               <g className="group cursor-pointer">
-                <motion.circle
+                <circle
                   r={8}
-                  fill="#1E40AF"
+                  fill="#1D4ED8"
                   stroke="#fff"
                   strokeWidth={2}
-                  whileHover={{ r: 12 }}
-                  transition={{ type: 'spring', stiffness: 300 }}
+                  className="transition-all duration-300 group-hover:r-12"
                 />
                 <text
                   textAnchor="middle"
@@ -256,7 +253,7 @@ export default function HomePage() {
       </section>
 
       {/* Ministries Section */}
-      <section className="py-20" style={{backgroundColor: '#E6F0F6'}}>
+      <section className="py-20 bg-sky-50">
         <motion.div 
           className="container mx-auto px-4"
           initial="hidden"
@@ -264,7 +261,7 @@ export default function HomePage() {
           viewport={{ once: true, amount: 0.2 }}
           variants={containerVariants}
         >
-          <motion.h2 className="text-3xl font-bold text-center mb-2" style={{color: '#003366'}} variants={itemVariants}>
+          <motion.h2 className="text-3xl font-bold text-center mb-2 text-blue-900" variants={itemVariants}>
             Pelayanan Kami
           </motion.h2>
           <motion.p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto" variants={itemVariants}>
@@ -302,7 +299,7 @@ export default function HomePage() {
           viewport={{ once: true, amount: 0.2 }}
           variants={containerVariants}
         >
-          <motion.h2 className="text-3xl font-bold text-center mb-2" style={{color: '#003366'}} variants={itemVariants}>
+          <motion.h2 className="text-3xl font-bold text-center mb-2 text-blue-900" variants={itemVariants}>
             Gembala Sidang Kami
           </motion.h2>
           <motion.p className="text-center text-gray-600 mb-12" variants={itemVariants}>
@@ -321,9 +318,9 @@ export default function HomePage() {
                       data-ai-hint={pastor.dataAiHint}
                     />
                   </div>
-                  <CardContent className="p-6 flex-grow flex flex-col justify-center" style={{backgroundColor: '#E6F0F6'}}>
-                    <h3 className="text-xl font-semibold" style={{color: '#003366'}}>{pastor.name}</h3>
-                    <p style={{color: '#005f9e'}}>{pastor.branch}</p>
+                  <CardContent className="p-6 flex-grow flex flex-col justify-center bg-sky-50">
+                    <h3 className="text-xl font-semibold text-blue-900">{pastor.name}</h3>
+                    <p className="text-blue-700">{pastor.branch}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -338,7 +335,7 @@ export default function HomePage() {
         style={{ backgroundImage: "url('https://placehold.co/1920x1080.png')" }}
         data-ai-hint="church congregation"
       >
-        <div className="backdrop-brightness-75 py-20" style={{backgroundColor: 'rgba(0, 51, 102, 0.8)'}}>
+        <div className="backdrop-brightness-75 py-20 bg-blue-900/80">
             <motion.div 
                 className="container mx-auto px-4 text-center text-white"
                 initial={{ opacity: 0, y: 20 }}
@@ -346,12 +343,12 @@ export default function HomePage() {
                 viewport={{ once: true, amount: 0.5 }}
                 transition={{ duration: 0.5 }}
             >
-                <Heart className="w-12 h-12 mx-auto mb-4" style={{color: '#ADD8E6'}}/>
+                <Heart className="w-12 h-12 mx-auto mb-4 text-blue-200"/>
                 <h2 className="text-4xl font-bold mb-4">Bergabunglah Dengan Keluarga Kami</h2>
-                <p className="mb-8 max-w-2xl mx-auto text-lg" style={{color: '#E6F0F6'}}>
+                <p className="mb-8 max-w-2xl mx-auto text-lg text-blue-100">
                     Kami ingin sekali terhubung dengan Anda. Temukan komunitas, tujuan, dan tempat di mana Anda dapat bertumbuh.
                 </p>
-                <Button size="lg" asChild className="text-white transition-transform duration-300 hover:scale-105" style={{backgroundColor: '#007BFF', ':hover': {backgroundColor: '#005f9e'}}}>
+                <Button size="lg" asChild className="bg-blue-600 hover:bg-blue-500 text-white transition-transform duration-300 hover:scale-105">
                   <Link href="/contact">
                     Saya Baru <ArrowRight className="w-4 h-4 ml-2"/>
                   </Link>
