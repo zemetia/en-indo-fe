@@ -196,7 +196,7 @@ export default function HomePage() {
           <motion.p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto" variants={itemVariants}>
             Temukan gereja Every Nation terdekat di kota Anda. Kami siap menyambut Anda dan keluarga.
           </motion.p>
-          <motion.div className="relative w-full max-w-5xl mx-auto aspect-[2/1] rounded-2xl p-4" variants={itemVariants}>
+          <div className="relative w-full max-w-5xl mx-auto aspect-[2/1] rounded-2xl p-4">
             <ComposableMap
               projection="geoMercator"
               projectionConfig={{
@@ -238,7 +238,7 @@ export default function HomePage() {
                 </Marker>
               ))}
             </ComposableMap>
-          </motion.div>
+          </div>
         </motion.div>
       </section>
 
