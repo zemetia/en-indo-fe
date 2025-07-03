@@ -18,7 +18,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
 export default function HomePage() {
@@ -80,7 +80,7 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="py-20 md:py-28">
         <motion.div
-            className="container mx-auto px-4 grid md:grid-cols-2 gap-8 items-center"
+            className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
@@ -102,13 +102,13 @@ export default function HomePage() {
           </motion.div>
           <motion.div className="grid grid-cols-2 grid-rows-2 gap-4 h-[450px]" variants={itemVariants}>
               <div className="col-span-1 row-span-2 relative">
-                <Image src="https://placehold.co/600x800.png" alt="Church community" data-ai-hint="church community" fill className="object-cover rounded-lg shadow-lg"/>
+                <Image src="https://placehold.co/600x800.png" alt="Church community" data-ai-hint="church community" fill className="object-cover rounded-xl shadow-lg"/>
               </div>
               <div className="col-span-1 row-span-1 relative">
-                <Image src="https://placehold.co/600x400.png" alt="Worship service" data-ai-hint="worship concert" fill className="object-cover rounded-lg shadow-lg"/>
+                <Image src="https://placehold.co/600x400.png" alt="Worship service" data-ai-hint="worship concert" fill className="object-cover rounded-xl shadow-lg"/>
               </div>
               <div className="col-span-1 row-span-1 relative">
-                <Image src="https://placehold.co/600x400.png" alt="Youth group" data-ai-hint="youth group" fill className="object-cover rounded-lg shadow-lg"/>
+                <Image src="https://placehold.co/600x400.png" alt="Youth group" data-ai-hint="youth group" fill className="object-cover rounded-xl shadow-lg"/>
               </div>
           </motion.div>
         </motion.div>
@@ -160,7 +160,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {pastors.map((pastor, index) => (
               <motion.div key={index} variants={itemVariants}>
-                <Card className="text-center overflow-hidden group border-border shadow-sm hover:shadow-lg transition-shadow duration-300">
+                <Card className="text-center overflow-hidden group border-border shadow-sm hover:shadow-lg transition-shadow duration-300 rounded-xl">
                   <div className="relative h-80 bg-slate-200">
                     <Image 
                       src={pastor.image} 
@@ -198,8 +198,8 @@ export default function HomePage() {
           <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
               <motion.div key={index} variants={itemVariants}>
-                <Card className="h-full shadow-sm hover:shadow-lg transition-shadow border-border bg-card">
-                  <CardContent className="p-8 flex flex-col justify-between h-full rounded-lg">
+                <Card className="h-full shadow-sm hover:shadow-lg transition-shadow border-border bg-card rounded-xl">
+                  <CardContent className="p-8 flex flex-col justify-between h-full">
                     <Quote className="w-8 h-8 text-primary/30 mb-4"/>
                     <p className="text-muted-foreground mb-6 flex-grow">"{testimonial.quote}"</p>
                     <div className="flex items-center">
@@ -229,7 +229,7 @@ export default function HomePage() {
         className="py-20 bg-cover bg-center"
         style={{ backgroundImage: "url('https://placehold.co/1920x1080.png')" }}
       >
-        <div className="bg-black/50 py-20">
+        <div className="bg-black/60 py-20">
             <motion.div 
                 className="container mx-auto px-4 text-center text-white"
                 initial={{ opacity: 0 }}
