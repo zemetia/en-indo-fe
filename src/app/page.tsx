@@ -91,12 +91,12 @@ export default function HomePage() {
   ];
 
   const locations = [
-    { id: 1, name: 'EN Jakarta', coordinates: [106.8456, -6.2088] },
-    { id: 2, name: 'EN Bandung', coordinates: [107.6191, -6.9175] },
-    { id: 3, name: 'EN Surabaya', coordinates: [112.7521, -7.2575] },
-    { id: 4, name: 'EN Medan', coordinates: [98.6722, 3.5952] },
-    { id: 5, name: 'EN Makassar', coordinates: [119.4327, -5.1477] },
-    { id: 6, name: 'EN Jayapura', coordinates: [140.7181, -2.5333] },
+    { id: 1, name: 'EN Jakarta', coordinates: [106.8456, -6.2088] as [number, number] },
+    { id: 2, name: 'EN Bandung', coordinates: [107.6191, -6.9175] as [number, number] },
+    { id: 3, name: 'EN Surabaya', coordinates: [112.7521, -7.2575] as [number, number] },
+    { id: 4, name: 'EN Medan', coordinates: [98.6722, 3.5952] as [number, number] },
+    { id: 5, name: 'EN Makassar', coordinates: [119.4327, -5.1477] as [number, number] },
+    { id: 6, name: 'EN Jayapura', coordinates: [140.7181, -2.5333] as [number, number] },
   ];
 
   const geoUrl =
@@ -203,7 +203,7 @@ export default function HomePage() {
                 scale: 1000,
                 center: [118, -2],
               }}
-              className="w-full h-full"
+              style={{ width: "100%", height: "auto" }}
             >
               <Geographies geography={geoUrl}>
                 {({ geographies }) =>
@@ -212,13 +212,18 @@ export default function HomePage() {
                       key={geo.rsmKey}
                       geography={geo}
                       fill="#D6EAF8"
-                      stroke="#A9CCE3"
+                      stroke="#FFFFFF"
+                      style={{
+                        default: { outline: "none" },
+                        hover: { fill: "#AED6F1", outline: "none" },
+                        pressed: { outline: "none" },
+                      }}
                     />
                   ))
                 }
               </Geographies>
               {locations.map(({ id, name, coordinates }) => (
-                <Marker key={id} coordinates={coordinates as [number, number]}>
+                <Marker key={id} coordinates={coordinates}>
                   <g className="group cursor-pointer">
                     <circle
                       r={6}
@@ -230,7 +235,8 @@ export default function HomePage() {
                     <text
                       textAnchor="middle"
                       y={-15}
-                      className="text-xs font-semibold fill-slate-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                      style={{ fontFamily: "system-ui", fill: "#1E3A8A", fontSize: 12, fontWeight: 'bold', pointerEvents: 'none' }}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     >
                       {name}
                     </text>
