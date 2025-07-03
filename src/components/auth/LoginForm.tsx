@@ -82,14 +82,14 @@ export default function LoginForm() {
   };
 
   return (
-    <div className='w-full min-h-screen bg-white md:grid md:grid-cols-2'>
+    <div className='w-full min-h-screen bg-white grid lg:grid-cols-5'>
       {/* Left Side - Carousel */}
-      <div className='hidden md:block relative'>
+      <div className='hidden lg:block lg:col-span-3 relative'>
         <AuthCarousel />
       </div>
 
       {/* Right Side - Login Form */}
-      <div className='flex flex-col items-center justify-center p-6 md:p-10'>
+      <div className='col-span-full lg:col-span-2 flex flex-col items-center justify-center p-6 md:p-10'>
         <motion.div 
             className='w-full max-w-sm'
             initial="hidden"
