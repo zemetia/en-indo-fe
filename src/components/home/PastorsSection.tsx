@@ -52,8 +52,8 @@ export default function PastorsSection() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {pastors.map((pastor, index) => (
               <motion.div key={index} variants={itemVariants}>
-                <Card className="text-center overflow-hidden group shadow-lg hover:shadow-2xl transition-all duration-300 rounded-2xl border-0 h-full flex flex-col">
-                  <div className="relative h-96">
+                <Card className="text-center overflow-hidden group shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl border-0 h-full flex flex-col bg-white hover:-translate-y-1">
+                  <div className="relative pt-[125%]">
                     <Image
                       src={pastor.image}
                       alt={pastor.name}
@@ -62,7 +62,7 @@ export default function PastorsSection() {
                       data-ai-hint={pastor.dataAiHint}
                     />
                   </div>
-                  <CardContent className="p-6 flex-grow flex flex-col justify-center bg-sky-50">
+                  <CardContent className="p-6 flex-grow flex flex-col justify-center">
                     <h3 className="text-xl font-semibold text-blue-900">{pastor.name}</h3>
                     <p className="text-blue-700">{pastor.branch}</p>
                   </CardContent>
