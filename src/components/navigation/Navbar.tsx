@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import * as React from 'react';
 
+import { Button } from '@/components/ui/button';
+import { Menu, X } from 'lucide-react';
+
 const menuItems = [
   { name: 'Beranda', href: '/' },
   { name: 'Tentang Kami', href: '/about' },
@@ -17,11 +20,11 @@ export default function Navbar() {
   const pathname = usePathname();
 
   return (
-    <header className='fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-sm z-50 border-b border-gray-200'>
+    <header className='sticky top-0 bg-white/80 backdrop-blur-md z-50 border-b border-slate-200/80'>
       <div className='container mx-auto px-4'>
         <div className='flex items-center justify-between h-20'>
           {/* Logo */}
-          <Link href='/' className='flex items-center py-2'>
+          <Link href='/' className='flex items-center'>
             <Image
               src='/images/logo.png'
               alt='Every Nation Indonesia'
@@ -38,10 +41,10 @@ export default function Navbar() {
               <Link
                 key={item.name}
                 href={item.href}
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                   pathname === item.href
-                    ? 'text-blue-600 bg-blue-100'
-                    : 'text-gray-600 hover:text-blue-600 hover:bg-gray-100'
+                    ? 'text-primary bg-primary/10'
+                    : 'text-slate-600 hover:text-primary hover:bg-primary/5'
                 }`}
               >
                 {item.name}
@@ -50,42 +53,25 @@ export default function Navbar() {
           </nav>
 
           <div className="hidden md:flex items-center">
-             <Link
-              href='/login'
-              className='inline-flex items-center justify-center px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-full hover:bg-blue-700 transition-colors'
-            >
-              Masuk
-            </Link>
+             <Button asChild>
+                <Link href='/login'>Masuk</Link>
+             </Button>
           </div>
 
           {/* Mobile Menu Button */}
           <button
-            className='md:hidden p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100 focus:outline-none'
+            className='md:hidden p-2 rounded-md text-slate-600 hover:text-primary'
             onClick={() => setIsOpen(!isOpen)}
           >
             <span className='sr-only'>Buka menu</span>
-            <svg
-              className='h-6 w-6'
-              fill='none'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth='2'
-              viewBox='0 0 24 24'
-              stroke='currentColor'
-            >
-              {isOpen ? (
-                <path d='M6 18L18 6M6 6l12 12' />
-              ) : (
-                <path d='M4 6h16M4 12h16M4 18h16' />
-              )}
-            </svg>
+            {isOpen ? <X className="h-6 w-6"/> : <Menu className='h-6 w-6'/>}
           </button>
         </div>
       </div>
 
         {/* Mobile Menu */}
         {isOpen && (
-          <div className='md:hidden border-t border-gray-100 bg-white'>
+          <div className='md:hidden border-t border-slate-200 bg-white'>
             <div className='px-2 pt-2 pb-3 space-y-1 sm:px-3'>
               {menuItems.map((item) => (
                 <Link
@@ -93,8 +79,8 @@ export default function Navbar() {
                   href={item.href}
                   className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
                     pathname === item.href
-                      ? 'text-blue-600 bg-blue-100'
-                      : 'text-gray-600 hover:text-blue-600 hover:bg-gray-100'
+                      ? 'text-primary bg-primary/10'
+                      : 'text-slate-700 hover:text-primary hover:bg-primary/5'
                   }`}
                   onClick={() => setIsOpen(false)}
                 >
@@ -103,13 +89,11 @@ export default function Navbar() {
               ))}
             </div>
             <div className="px-2 pb-3">
-              <Link
-                href='/login'
-                className='block w-full px-3 py-3 text-center text-base font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors'
-                onClick={() => setIsOpen(false)}
-              >
-                Masuk
-              </Link>
+              <Button asChild className="w-full">
+                <Link href='/login' onClick={() => setIsOpen(false)}>
+                    Masuk
+                </Link>
+              </Button>
             </div>
           </div>
         )}
