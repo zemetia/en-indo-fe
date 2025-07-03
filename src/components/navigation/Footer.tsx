@@ -60,7 +60,7 @@ const Footer = () => {
           </div>
         </div>
       </div>
-      <div className="bg-background border-t border-border py-4">
+      <div className="bg-background border-t border-border py-6">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
           <p>&copy; {new Date().getFullYear()} Every Nation Indonesia. All Rights Reserved.</p>
         </div>

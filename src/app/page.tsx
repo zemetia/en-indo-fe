@@ -13,6 +13,8 @@ import {
   Quote,
   Eye,
   ArrowRight,
+  User,
+  Heart,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
@@ -28,7 +30,6 @@ export default function HomePage() {
       opacity: 1,
       transition: {
         staggerChildren: 0.1,
-        delayChildren: 0.2,
       },
     },
   };
@@ -46,9 +47,9 @@ export default function HomePage() {
   };
   
   const pastors = [
-    { name: 'Pdt. John Doe', branch: 'Every Nation Jakarta Pusat', image: 'https://placehold.co/400x400.png', dataAiHint: 'man portrait' },
-    { name: 'Pdt. Jane Smith', branch: 'Every Nation Surabaya', image: 'https://placehold.co/400x400.png', dataAiHint: 'woman portrait' },
-    { name: 'Pdt. Michael B.', branch: 'Every Nation Bandung', image: 'https://placehold.co/400x400.png', dataAiHint: 'man portrait smiling' },
+    { name: 'Pdt. John Doe', branch: 'Every Nation Jakarta Pusat', image: 'https://placehold.co/400x500.png', dataAiHint: 'man portrait' },
+    { name: 'Pdt. Jane Smith', branch: 'Every Nation Surabaya', image: 'https://placehold.co/400x500.png', dataAiHint: 'woman portrait' },
+    { name: 'Pdt. Michael B.', branch: 'Every Nation Bandung', image: 'https://placehold.co/400x500.png', dataAiHint: 'man portrait smiling' },
   ];
   
   const testimonials = [
@@ -75,12 +76,19 @@ export default function HomePage() {
     },
   ];
 
+  const ministries = [
+    { title: "Pelayanan Kampus", icon: BookOpen, image: "https://placehold.co/600x800.png", dataAiHint: "university students" },
+    { title: "Grup Sel (Life Group)", icon: Users, image: "https://placehold.co/600x800.png", dataAiHint: "small group" },
+    { title: "Misi Global", icon: Globe, image: "https://placehold.co/600x800.png", dataAiHint: "world map" },
+    { title: "Pelayanan Anak", icon: Sparkles, image: "https://placehold.co/600x800.png", dataAiHint: "children playing" },
+  ];
+
   return (
     <div className="bg-background text-foreground overflow-x-hidden">
       {/* Hero Section */}
-      <section className="py-20 md:py-28">
+      <section className="py-20 md:py-32">
         <motion.div
-            className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center"
+            className="container mx-auto px-4 grid md:grid-cols-2 gap-16 items-center"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
@@ -92,24 +100,38 @@ export default function HomePage() {
                 Membangun Generasi Pengikut Kristus
             </h1>
             <p 
-                className="text-lg text-muted-foreground mb-8"
+                className="text-lg text-muted-foreground mb-8 max-w-lg mx-auto md:mx-0"
             >
                 Every Nation Indonesia adalah gereja yang berkomitmen untuk menghormati Tuhan dengan menjadikan murid, melatih pemimpin, dan mengirim utusan Injil.
             </p>
-            <Button asChild size="lg">
-                <Link href="/contact">Temukan Lokasi Terdekat</Link>
-            </Button>
+            <div className="flex gap-4 justify-center md:justify-start">
+              <Button asChild size="lg">
+                  <Link href="/contact">Temukan Lokasi</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                  <Link href="/about">Tentang Kami</Link>
+              </Button>
+            </div>
           </motion.div>
-          <motion.div className="grid grid-cols-2 grid-rows-2 gap-4 h-[450px]" variants={itemVariants}>
-              <div className="col-span-1 row-span-2 relative">
-                <Image src="https://placehold.co/600x800.png" alt="Church community" data-ai-hint="church community" fill className="object-cover rounded-xl shadow-lg"/>
-              </div>
-              <div className="col-span-1 row-span-1 relative">
-                <Image src="https://placehold.co/600x400.png" alt="Worship service" data-ai-hint="worship concert" fill className="object-cover rounded-xl shadow-lg"/>
-              </div>
-              <div className="col-span-1 row-span-1 relative">
-                <Image src="https://placehold.co/600x400.png" alt="Youth group" data-ai-hint="youth group" fill className="object-cover rounded-xl shadow-lg"/>
-              </div>
+          <motion.div className="relative h-[500px] w-full" variants={itemVariants}>
+              <motion.div 
+                className="absolute top-0 left-10 w-[60%] h-[70%] shadow-2xl rounded-2xl overflow-hidden"
+                whileHover={{ scale: 1.05, zIndex: 10 }}
+              >
+                <Image src="https://placehold.co/600x800.png" alt="Church community" data-ai-hint="church community" fill className="object-cover"/>
+              </motion.div>
+              <motion.div 
+                className="absolute bottom-0 right-0 w-[55%] h-[60%] shadow-2xl rounded-2xl overflow-hidden"
+                whileHover={{ scale: 1.05, zIndex: 10 }}
+              >
+                <Image src="https://placehold.co/600x600.png" alt="Worship service" data-ai-hint="worship concert" fill className="object-cover"/>
+              </motion.div>
+               <motion.div 
+                className="absolute top-20 right-10 w-[30%] h-[25%] shadow-2xl rounded-2xl overflow-hidden"
+                whileHover={{ scale: 1.05, zIndex: 10 }}
+              >
+                <Image src="https://placehold.co/400x400.png" alt="Youth group" data-ai-hint="youth group" fill className="object-cover"/>
+              </motion.div>
           </motion.div>
         </motion.div>
       </section>
@@ -140,9 +162,45 @@ export default function HomePage() {
         </motion.div>
       </section>
 
+      {/* Ministries Section */}
+      <section className="py-20 bg-background">
+        <motion.div 
+          className="container mx-auto px-4"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          variants={containerVariants}
+        >
+          <motion.h2 className="text-3xl font-bold text-center mb-2" variants={itemVariants}>
+            Pelayanan Kami
+          </motion.h2>
+          <motion.p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto" variants={itemVariants}>
+            Terlibat dalam komunitas dan bertumbuh bersama melalui berbagai pelayanan yang kami sediakan.
+          </motion.p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {ministries.map((ministry, index) => (
+              <motion.div key={index} variants={itemVariants}>
+                <Card className="overflow-hidden group text-center shadow-lg hover:shadow-2xl transition-shadow duration-300 rounded-2xl border-0">
+                  <div className="relative h-64">
+                    <Image src={ministry.image} alt={ministry.title} data-ai-hint={ministry.dataAiHint} fill className="object-cover group-hover:scale-105 transition-transform duration-300"/>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                    <div className="absolute bottom-4 left-4 text-left text-white">
+                       <div className="bg-white/20 backdrop-blur-sm p-3 rounded-full inline-block mb-2">
+                        <ministry.icon className="w-6 h-6 text-white"/>
+                       </div>
+                       <h3 className="text-xl font-bold">{ministry.title}</h3>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </section>
+
       {/* Perkenalan Pendeta Section */}
       <section 
-        className="py-20 bg-background"
+        className="py-20 bg-secondary"
       >
         <motion.div 
           className="container mx-auto px-4"
@@ -160,8 +218,8 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {pastors.map((pastor, index) => (
               <motion.div key={index} variants={itemVariants}>
-                <Card className="text-center overflow-hidden group border-border shadow-sm hover:shadow-lg transition-shadow duration-300 rounded-xl">
-                  <div className="relative h-80 bg-slate-200">
+                <Card className="text-center overflow-hidden group shadow-lg hover:shadow-2xl transition-all duration-300 rounded-2xl border-0 h-full flex flex-col">
+                  <div className="relative h-96">
                     <Image 
                       src={pastor.image} 
                       alt={pastor.name}
@@ -170,7 +228,7 @@ export default function HomePage() {
                       data-ai-hint={pastor.dataAiHint}
                     />
                   </div>
-                  <CardContent className="p-6">
+                  <CardContent className="p-6 flex-grow flex flex-col justify-center">
                     <h3 className="text-xl font-semibold">{pastor.name}</h3>
                     <p className="text-primary">{pastor.branch}</p>
                   </CardContent>
@@ -181,73 +239,30 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* Kisah Komunitas (Testimonials) Section */}
-      <section
-        className="py-20 bg-secondary"
-      >
-        <motion.div 
-          className="container mx-auto px-4"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-          variants={containerVariants}
-        >
-          <motion.h2 className="text-3xl font-bold text-center mb-12" variants={itemVariants}>
-            Kisah dari Komunitas Kami
-          </motion.h2>
-          <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <motion.div key={index} variants={itemVariants}>
-                <Card className="h-full shadow-sm hover:shadow-lg transition-shadow border-border bg-card rounded-xl">
-                  <CardContent className="p-8 flex flex-col justify-between h-full">
-                    <Quote className="w-8 h-8 text-primary/30 mb-4"/>
-                    <p className="text-muted-foreground mb-6 flex-grow">"{testimonial.quote}"</p>
-                    <div className="flex items-center">
-                      <Image
-                        src={testimonial.image}
-                        alt={testimonial.name}
-                        width={50}
-                        height={50}
-                        className="rounded-full mr-4"
-                        data-ai-hint={testimonial.dataAiHint}
-                      />
-                      <div>
-                        <p className="font-semibold">{testimonial.name}</p>
-                        <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      </section>
-
       {/* CTA Section */}
       <section
-        className="py-20 bg-cover bg-center"
+        className="py-20 bg-cover bg-center bg-fixed"
         style={{ backgroundImage: "url('https://placehold.co/1920x1080.png')" }}
+        data-ai-hint="church congregation"
       >
-        <div className="bg-black/60 py-20">
+        <div className="bg-black/70 py-20">
             <motion.div 
                 className="container mx-auto px-4 text-center text-white"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.5 }}
                 transition={{ duration: 0.5 }}
             >
-                <h2 className="text-3xl font-bold mb-4">Dapatkan Update Terbaru</h2>
-                <p className="mb-8 max-w-2xl mx-auto">
-                    Berlangganan untuk menerima berita, acara, dan renungan terbaru langsung ke kotak masuk Anda.
+                <Heart className="w-12 h-12 mx-auto mb-4 text-primary"/>
+                <h2 className="text-4xl font-bold mb-4">Bergabunglah Dengan Keluarga Kami</h2>
+                <p className="mb-8 max-w-2xl mx-auto text-lg text-slate-300">
+                    Kami ingin sekali terhubung dengan Anda. Temukan komunitas, tujuan, dan tempat di mana Anda dapat bertumbuh.
                 </p>
-                <div className="bg-white/90 p-2 rounded-lg max-w-lg mx-auto flex items-center shadow-lg">
-                    <Input type="email" placeholder="Masukkan email Anda" className="bg-transparent border-none text-slate-900 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-slate-500"/>
-                    <Button type="submit" size="lg" className="flex-shrink-0">
-                        Berlangganan
-                        <ArrowRight className="w-4 h-4 ml-2"/>
-                    </Button>
-                </div>
+                <Button size="lg" asChild>
+                  <Link href="/contact">
+                    Saya Baru <ArrowRight className="w-4 h-4 ml-2"/>
+                  </Link>
+                </Button>
             </motion.div>
         </div>
       </section>
