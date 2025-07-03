@@ -4,15 +4,15 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
+    --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 211 100% 50%; /* Brighter, bolder blue */
+    --primary: 211 100% 50%; /* Brighter, bolder blue (#007BFF) */
     --primary-foreground: 210 40% 98%;
-    --secondary: 200 53% 93%; /* Softer blue for backgrounds */
+    --secondary: 200 53% 93%; /* Soft Blue (#ADD8E6) */
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;

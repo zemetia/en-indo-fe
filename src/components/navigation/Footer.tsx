@@ -9,7 +9,7 @@ const Footer = () => {
   return (
     <footer className="bg-secondary text-secondary-foreground">
       <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
           {/* Company Info */}
           <div className="lg:col-span-2 space-y-4">
             <Link href="/" className="flex items-center space-x-2">
@@ -20,10 +20,10 @@ const Footer = () => {
               Membangun generasi pengikut Kristus di setiap bangsa, berkomitmen untuk menghormati Tuhan dan mengasihi sesama.
             </p>
             <div className="flex space-x-4 pt-2 text-muted-foreground">
-              <Link href="#" className="hover:text-primary"><Facebook size={20} /></Link>
-              <Link href="#" className="hover:text-primary"><Twitter size={20} /></Link>
-              <Link href="#" className="hover:text-primary"><Instagram size={20} /></Link>
-              <Link href="#" className="hover:text-primary"><Youtube size={20} /></Link>
+              <Link href="#" className="hover:text-primary transition-colors"><Facebook size={20} /></Link>
+              <Link href="#" className="hover:text-primary transition-colors"><Twitter size={20} /></Link>
+              <Link href="#" className="hover:text-primary transition-colors"><Instagram size={20} /></Link>
+              <Link href="#" className="hover:text-primary transition-colors"><Youtube size={20} /></Link>
             </div>
           </div>
 
@@ -31,10 +31,10 @@ const Footer = () => {
           <div>
             <h3 className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wider">Tautan Cepat</h3>
             <ul className="space-y-3 text-sm">
-              <li><Link href="/about" className="text-muted-foreground hover:text-primary">Tentang Kami</Link></li>
-              <li><Link href="/services" className="text-muted-foreground hover:text-primary">Pelayanan</Link></li>
-              <li><Link href="/events" className="text-muted-foreground hover:text-primary">Acara</Link></li>
-              <li><Link href="/contact" className="text-muted-foreground hover:text-primary">Kontak</Link></li>
+              <li><Link href="/about" className="text-muted-foreground hover:text-primary transition-colors">Tentang Kami</Link></li>
+              <li><Link href="/services" className="text-muted-foreground hover:text-primary transition-colors">Pelayanan</Link></li>
+              <li><Link href="/events" className="text-muted-foreground hover:text-primary transition-colors">Acara</Link></li>
+              <li><Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors">Kontak</Link></li>
             </ul>
           </div>
 
@@ -42,10 +42,10 @@ const Footer = () => {
           <div>
             <h3 className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wider">Pelayanan</h3>
             <ul className="space-y-3 text-sm">
-              <li><Link href="/services/youth" className="text-muted-foreground hover:text-primary">Pelayanan Remaja</Link></li>
-              <li><Link href="/services/campus" className="text-muted-foreground hover:text-primary">Pelayanan Kampus</Link></li>
-              <li><Link href="/services/lifegroup" className="text-muted-foreground hover:text-primary">Life Groups</Link></li>
-              <li><Link href="/services/missions" className="text-muted-foreground hover:text-primary">Misi</Link></li>
+              <li><Link href="/services/youth" className="text-muted-foreground hover:text-primary transition-colors">Pelayanan Remaja</Link></li>
+              <li><Link href="/services/campus" className="text-muted-foreground hover:text-primary transition-colors">Pelayanan Kampus</Link></li>
+              <li><Link href="/services/lifegroup" className="text-muted-foreground hover:text-primary transition-colors">Life Groups</Link></li>
+              <li><Link href="/services/missions" className="text-muted-foreground hover:text-primary transition-colors">Misi</Link></li>
             </ul>
           </div>
 

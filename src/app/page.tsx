@@ -18,7 +18,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
 export default function HomePage() {
@@ -50,52 +50,81 @@ export default function HomePage() {
     { name: 'Pdt. Jane Smith', branch: 'Every Nation Surabaya', image: 'https://placehold.co/400x400.png', dataAiHint: 'woman portrait' },
     { name: 'Pdt. Michael B.', branch: 'Every Nation Bandung', image: 'https://placehold.co/400x400.png', dataAiHint: 'man portrait smiling' },
   ];
+  
+  const testimonials = [
+    {
+      quote: 'Saya menemukan tujuan dan komunitas yang tulus di sini. Pertumbuhan rohani saya sangat luar biasa.',
+      name: 'Andi S.',
+      role: 'Profesional Muda',
+      image: 'https://placehold.co/100x100.png',
+      dataAiHint: 'man portrait'
+    },
+    {
+      quote: 'Sebagai sebuah keluarga, kami merasa diterima dan didukung. Anak-anak kami menyukai pelayanan anak.',
+      name: 'Keluarga Budi',
+      role: 'Keluarga',
+      image: 'https://placehold.co/100x100.png',
+      dataAiHint: 'family portrait'
+    },
+    {
+      quote: 'Pelayanan kampus benar-benar mengubah hidup saya selama masa kuliah. Saya belajar menjadi seorang pemimpin.',
+      name: 'Citra W.',
+      role: 'Mahasiswa',
+      image: 'https://placehold.co/100x100.png',
+      dataAiHint: 'woman portrait'
+    },
+  ];
 
   return (
     <div className="bg-background text-foreground overflow-x-hidden">
       {/* Hero Section */}
-      <section className="py-24 md:py-32 bg-background">
+      <section className="py-20 md:py-28">
         <motion.div
-            className="container mx-auto px-4 text-center"
+            className="container mx-auto px-4 grid md:grid-cols-2 gap-8 items-center"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
         >
-            <motion.h1 
-                className="text-4xl md:text-6xl font-bold mb-6 leading-tight max-w-4xl mx-auto"
-                variants={itemVariants}
+          <motion.div className="text-center md:text-left" variants={itemVariants}>
+            <h1 
+                className="text-4xl md:text-6xl font-bold mb-6 leading-tight"
             >
                 Membangun Generasi Pengikut Kristus
-            </motion.h1>
-            <motion.p 
-                className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto"
-                variants={itemVariants}
+            </h1>
+            <p 
+                className="text-lg text-muted-foreground mb-8"
             >
                 Every Nation Indonesia adalah gereja yang berkomitmen untuk menghormati Tuhan dengan menjadikan murid, melatih pemimpin, dan mengirim utusan Injil.
-            </motion.p>
-            <motion.div 
-                className="flex flex-col sm:flex-row gap-4 justify-center"
-                variants={itemVariants}
-            >
-                <Button asChild size="lg">
-                    <Link href="/contact">Terhubung dengan Kami</Link>
-                </Button>
-                <Button asChild size="lg" variant="outline">
-                    <Link href="/about">Pelajari Visi Kami</Link>
-                </Button>
-            </motion.div>
+            </p>
+            <Button asChild size="lg">
+                <Link href="/contact">Temukan Lokasi Terdekat</Link>
+            </Button>
+          </motion.div>
+          <motion.div className="grid grid-cols-2 grid-rows-2 gap-4 h-[450px]" variants={itemVariants}>
+              <div className="col-span-1 row-span-2 relative">
+                <Image src="https://placehold.co/600x800.png" alt="Church community" data-ai-hint="church community" fill className="object-cover rounded-lg shadow-lg"/>
+              </div>
+              <div className="col-span-1 row-span-1 relative">
+                <Image src="https://placehold.co/600x400.png" alt="Worship service" data-ai-hint="worship concert" fill className="object-cover rounded-lg shadow-lg"/>
+              </div>
+              <div className="col-span-1 row-span-1 relative">
+                <Image src="https://placehold.co/600x400.png" alt="Youth group" data-ai-hint="youth group" fill className="object-cover rounded-lg shadow-lg"/>
+              </div>
+          </motion.div>
         </motion.div>
       </section>
       
       {/* Visi Section */}
-      <motion.section 
+      <section 
         className="py-20 bg-secondary"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={containerVariants}
       >
-        <div className="container mx-auto px-4 text-center">
+        <motion.div 
+          className="container mx-auto px-4 text-center"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.5 }}
+          variants={containerVariants}
+        >
             <motion.div className="inline-block bg-primary/10 p-4 rounded-full mb-4" variants={itemVariants}>
               <Eye className="w-10 h-10 text-primary" />
             </motion.div>
@@ -108,57 +137,20 @@ export default function HomePage() {
             >
                 "Kami ada untuk menghormati Allah dengan mendirikan gereja-gereja dan pelayanan kampus yang berpusat pada Kristus, diberdayakan oleh Roh, dan bertanggung jawab secara sosial di setiap bangsa."
             </motion.p>
-        </div>
-      </motion.section>
+        </motion.div>
+      </section>
 
-      {/* Nilai-Nilai Kami Section */}
-      <motion.section
+      {/* Perkenalan Pendeta Section */}
+      <section 
         className="py-20 bg-background"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
-        variants={containerVariants}
       >
-        <div className="container mx-auto px-4">
-          <motion.h2 className="text-3xl font-bold mb-12 text-center" variants={itemVariants}>
-            Pilar Pelayanan Kami
-          </motion.h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 text-left">
-            {[
-              { icon: Cross, title: 'Berpusat pada Kristus', description: 'Menjadikan Yesus sebagai pusat dari semua yang kami lakukan.' },
-              { icon: Sparkles, title: 'Diberdayakan oleh Roh', description: 'Bergantung pada kuasa Roh Kudus dalam pelayanan.' },
-              { icon: Users, title: 'Komunitas Otentik', description: 'Membangun hubungan yang tulus dan saling mendukung.' },
-              { icon: BookOpen, title: 'Fokus Pemuridan', description: 'Berkomitmen untuk bertumbuh dan memuridkan.' },
-              { icon: Globe, title: 'Jangkauan Global', description: 'Membawa Injil hingga ke ujung bumi.' },
-              { icon: Award, title: 'Pengembangan Kepemimpinan', description: 'Melatih dan memperlengkapi pemimpin masa depan.' },
-            ].map((item, index) => (
-              <motion.div key={index} variants={itemVariants}>
-                <Card className="p-6 h-full shadow-sm hover:shadow-lg transition-shadow bg-card border-border">
-                    <div className="flex items-start space-x-4">
-                        <div className="bg-primary/10 p-3 rounded-lg">
-                          <item.icon className="w-6 h-6 text-primary" />
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                            <p className="text-muted-foreground">{item.description}</p>
-                        </div>
-                    </div>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </motion.section>
-      
-      {/* Pastors Section */}
-      <motion.section 
-        className="py-20 bg-secondary"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
-        variants={containerVariants}
-      >
-        <div className="container mx-auto px-4">
+        <motion.div 
+          className="container mx-auto px-4"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          variants={containerVariants}
+        >
           <motion.h2 className="text-3xl font-bold text-center mb-2" variants={itemVariants}>
             Gembala Sidang Kami
           </motion.h2>
@@ -168,8 +160,8 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {pastors.map((pastor, index) => (
               <motion.div key={index} variants={itemVariants}>
-                <Card className="text-center overflow-hidden group border-border shadow-sm">
-                  <div className="relative h-64 bg-slate-200">
+                <Card className="text-center overflow-hidden group border-border shadow-sm hover:shadow-lg transition-shadow duration-300">
+                  <div className="relative h-80 bg-slate-200">
                     <Image 
                       src={pastor.image} 
                       alt={pastor.name}
@@ -186,45 +178,25 @@ export default function HomePage() {
               </motion.div>
             ))}
           </div>
-        </div>
-      </motion.section>
+        </motion.div>
+      </section>
 
-      {/* Testimonials Section */}
-      <motion.section
-        className="py-20 bg-background"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
-        variants={containerVariants}
+      {/* Kisah Komunitas (Testimonials) Section */}
+      <section
+        className="py-20 bg-secondary"
       >
-        <div className="container mx-auto px-4">
+        <motion.div 
+          className="container mx-auto px-4"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          variants={containerVariants}
+        >
           <motion.h2 className="text-3xl font-bold text-center mb-12" variants={itemVariants}>
             Kisah dari Komunitas Kami
           </motion.h2>
           <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-8">
-            {[
-              {
-                quote: 'Saya menemukan tujuan dan komunitas yang tulus di sini. Pertumbuhan rohani saya sangat luar biasa.',
-                name: 'Andi S.',
-                role: 'Profesional Muda',
-                image: 'https://placehold.co/100x100.png',
-                dataAiHint: 'man portrait'
-              },
-              {
-                quote: 'Sebagai sebuah keluarga, kami merasa diterima dan didukung. Anak-anak kami menyukai pelayanan anak.',
-                name: 'Keluarga Budi',
-                role: 'Keluarga',
-                image: 'https://placehold.co/100x100.png',
-                dataAiHint: 'family portrait'
-              },
-              {
-                quote: 'Pelayanan kampus benar-benar mengubah hidup saya selama masa kuliah. Saya belajar menjadi seorang pemimpin.',
-                name: 'Citra W.',
-                role: 'Mahasiswa',
-                image: 'https://placehold.co/100x100.png',
-                dataAiHint: 'woman portrait'
-              },
-            ].map((testimonial, index) => (
+            {testimonials.map((testimonial, index) => (
               <motion.div key={index} variants={itemVariants}>
                 <Card className="h-full shadow-sm hover:shadow-lg transition-shadow border-border bg-card">
                   <CardContent className="p-8 flex flex-col justify-between h-full rounded-lg">
@@ -249,33 +221,36 @@ export default function HomePage() {
               </motion.div>
             ))}
           </div>
-        </div>
-      </motion.section>
+        </motion.div>
+      </section>
 
       {/* CTA Section */}
-      <motion.section
-        className="py-20 bg-secondary"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, amount: 0.5 }}
-        transition={{ duration: 0.5 }}
+      <section
+        className="py-20 bg-cover bg-center"
+        style={{ backgroundImage: "url('https://placehold.co/1920x1080.png')" }}
       >
-        <div className="container mx-auto px-4 text-center">
-            <Card className="max-w-4xl mx-auto p-8 md:p-12 shadow-lg bg-primary text-primary-foreground">
-                <h2 className="text-3xl font-bold mb-4">Siap Mengambil Langkah Selanjutnya?</h2>
-                <p className="text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
-                    Apakah Anda baru dalam iman atau sedang mencari gereja, kami siap menyambut Anda. Bergabunglah bersama kami dan temukan tempat Anda dalam keluarga Tuhan.
+        <div className="bg-black/50 py-20">
+            <motion.div 
+                className="container mx-auto px-4 text-center text-white"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ duration: 0.5 }}
+            >
+                <h2 className="text-3xl font-bold mb-4">Dapatkan Update Terbaru</h2>
+                <p className="mb-8 max-w-2xl mx-auto">
+                    Berlangganan untuk menerima berita, acara, dan renungan terbaru langsung ke kotak masuk Anda.
                 </p>
-                <div className="bg-white p-2 rounded-lg max-w-lg mx-auto flex items-center">
-                    <Input type="email" placeholder="Masukkan email Anda" className="bg-transparent border-none text-slate-900 focus-visible:ring-0 focus-visible:ring-offset-0"/>
-                    <Button type="submit" size="lg" variant="secondary" className="flex-shrink-0 text-primary hover:bg-accent">
+                <div className="bg-white/90 p-2 rounded-lg max-w-lg mx-auto flex items-center shadow-lg">
+                    <Input type="email" placeholder="Masukkan email Anda" className="bg-transparent border-none text-slate-900 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-slate-500"/>
+                    <Button type="submit" size="lg" className="flex-shrink-0">
                         Berlangganan
                         <ArrowRight className="w-4 h-4 ml-2"/>
                     </Button>
                 </div>
-            </Card>
+            </motion.div>
         </div>
-      </motion.section>
+      </section>
     </div>
   );
 }

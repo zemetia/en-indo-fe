@@ -17,10 +17,19 @@ const menuItems = [
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
+  const [hasScrolled, setHasScrolled] = React.useState(false);
   const pathname = usePathname();
 
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setHasScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <header className='sticky top-0 bg-background/80 backdrop-blur-md z-50 border-b border-border/80'>
+    <header className={`sticky top-0 z-50 transition-all duration-300 ${hasScrolled ? 'bg-background/80 backdrop-blur-md border-b' : 'bg-transparent'}`}>
       <div className='container mx-auto px-4'>
         <div className='flex items-center justify-between h-20'>
           {/* Logo */}
@@ -41,10 +50,10 @@ export default function Navbar() {
               <Link
                 key={item.name}
                 href={item.href}
-                className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                   pathname === item.href
-                    ? 'text-primary bg-primary/10'
-                    : 'text-muted-foreground hover:text-primary hover:bg-primary/5'
+                    ? 'text-primary'
+                    : `text-foreground/70 hover:text-primary`
                 }`}
               >
                 {item.name}
