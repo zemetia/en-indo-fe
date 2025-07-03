@@ -52,7 +52,7 @@ export default function HomePage() {
   return (
     <div className="bg-white text-gray-800 overflow-x-hidden">
       {/* Hero Section */}
-      <section className="bg-soft-blue-hsl pt-32 pb-16 md:pt-40 md:pb-24">
+      <section className="bg-soft-blue pt-32 pb-16 md:pt-40 md:pb-24">
         <div className="container mx-auto px-4">
           <motion.div
             className="grid md:grid-cols-2 gap-12 items-center"
@@ -116,7 +116,7 @@ export default function HomePage() {
 
       {/* Why Choose Us Section */}
       <motion.section
-        className="py-20 bg-soft-blue-hsl"
+        className="py-20 bg-soft-blue"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
@@ -139,7 +139,7 @@ export default function HomePage() {
               { icon: Award, title: 'Pengembangan Kepemimpinan' },
             ].map((item, index) => (
               <motion.div key={index} variants={itemVariants}>
-                <Card className="p-6 h-full shadow-sm hover:shadow-lg transition-shadow border-slate-100">
+                <Card className="p-6 h-full shadow-sm hover:shadow-lg transition-shadow bg-white border-blue-50">
                     <div className="bg-blue-100 p-4 rounded-lg inline-block mb-4">
                       <item.icon className="w-8 h-8 text-primary" />
                     </div>
@@ -187,7 +187,7 @@ export default function HomePage() {
       
        {/* Pastors Section */}
       <motion.section 
-        className="py-20 bg-soft-blue-hsl"
+        className="py-20 bg-soft-blue"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
