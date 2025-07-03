@@ -10,9 +10,9 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 211 100% 50%; /* Brighter, bolder blue (#007BFF) */
+    --primary: 211 90% 50%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 200 53% 93%; /* Soft Blue (#ADD8E6) */
+    --secondary: 216 34% 95%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
@@ -22,8 +22,8 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 211 100% 50%;
-    --radius: 0.5rem;
+    --ring: 211 90% 50%;
+    --radius: 0.8rem;
   }
  
   .dark {
