@@ -52,9 +52,9 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="bg-white text-slate-800 overflow-x-hidden">
+    <div className="bg-background text-foreground overflow-x-hidden">
       {/* Hero Section */}
-      <section className="py-24 md:py-32 bg-white">
+      <section className="py-24 md:py-32 bg-background">
         <motion.div
             className="container mx-auto px-4 text-center"
             variants={containerVariants}
@@ -68,7 +68,7 @@ export default function HomePage() {
                 Membangun Generasi Pengikut Kristus
             </motion.h1>
             <motion.p 
-                className="text-lg text-slate-600 mb-8 max-w-2xl mx-auto"
+                className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto"
                 variants={itemVariants}
             >
                 Every Nation Indonesia adalah gereja yang berkomitmen untuk menghormati Tuhan dengan menjadikan murid, melatih pemimpin, dan mengirim utusan Injil.
@@ -89,7 +89,7 @@ export default function HomePage() {
       
       {/* Visi Section */}
       <motion.section 
-        className="py-20 bg-slate-50"
+        className="py-20 bg-secondary"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.3 }}
@@ -103,7 +103,7 @@ export default function HomePage() {
                 Visi Kami
             </motion.h2>
             <motion.p 
-                className="text-slate-600 text-lg md:text-xl mb-12 max-w-3xl mx-auto"
+                className="text-muted-foreground text-lg md:text-xl mb-12 max-w-3xl mx-auto"
                 variants={itemVariants}
             >
                 "Kami ada untuk menghormati Allah dengan mendirikan gereja-gereja dan pelayanan kampus yang berpusat pada Kristus, diberdayakan oleh Roh, dan bertanggung jawab secara sosial di setiap bangsa."
@@ -113,7 +113,7 @@ export default function HomePage() {
 
       {/* Nilai-Nilai Kami Section */}
       <motion.section
-        className="py-20 bg-white"
+        className="py-20 bg-background"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
@@ -133,14 +133,14 @@ export default function HomePage() {
               { icon: Award, title: 'Pengembangan Kepemimpinan', description: 'Melatih dan memperlengkapi pemimpin masa depan.' },
             ].map((item, index) => (
               <motion.div key={index} variants={itemVariants}>
-                <Card className="p-6 h-full shadow-sm hover:shadow-lg transition-shadow bg-white border-slate-100">
+                <Card className="p-6 h-full shadow-sm hover:shadow-lg transition-shadow bg-card border-border">
                     <div className="flex items-start space-x-4">
                         <div className="bg-primary/10 p-3 rounded-lg">
                           <item.icon className="w-6 h-6 text-primary" />
                         </div>
                         <div>
                             <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                            <p className="text-slate-600">{item.description}</p>
+                            <p className="text-muted-foreground">{item.description}</p>
                         </div>
                     </div>
                 </Card>
@@ -152,7 +152,7 @@ export default function HomePage() {
       
       {/* Pastors Section */}
       <motion.section 
-        className="py-20 bg-slate-50"
+        className="py-20 bg-secondary"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
@@ -162,13 +162,13 @@ export default function HomePage() {
           <motion.h2 className="text-3xl font-bold text-center mb-2" variants={itemVariants}>
             Gembala Sidang Kami
           </motion.h2>
-          <motion.p className="text-center text-slate-600 mb-12" variants={itemVariants}>
+          <motion.p className="text-center text-muted-foreground mb-12" variants={itemVariants}>
             Para pemimpin yang berdedikasi dari berbagai cabang gereja kami.
           </motion.p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {pastors.map((pastor, index) => (
               <motion.div key={index} variants={itemVariants}>
-                <Card className="text-center overflow-hidden group border-slate-100 shadow-sm">
+                <Card className="text-center overflow-hidden group border-border shadow-sm">
                   <div className="relative h-64 bg-slate-200">
                     <Image 
                       src={pastor.image} 
@@ -191,7 +191,7 @@ export default function HomePage() {
 
       {/* Testimonials Section */}
       <motion.section
-        className="py-20 bg-white"
+        className="py-20 bg-background"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
@@ -226,10 +226,10 @@ export default function HomePage() {
               },
             ].map((testimonial, index) => (
               <motion.div key={index} variants={itemVariants}>
-                <Card className="h-full shadow-sm hover:shadow-lg transition-shadow border-slate-100 bg-slate-50">
+                <Card className="h-full shadow-sm hover:shadow-lg transition-shadow border-border bg-card">
                   <CardContent className="p-8 flex flex-col justify-between h-full rounded-lg">
                     <Quote className="w-8 h-8 text-primary/30 mb-4"/>
-                    <p className="text-slate-600 mb-6 flex-grow">"{testimonial.quote}"</p>
+                    <p className="text-muted-foreground mb-6 flex-grow">"{testimonial.quote}"</p>
                     <div className="flex items-center">
                       <Image
                         src={testimonial.image}
@@ -241,7 +241,7 @@ export default function HomePage() {
                       />
                       <div>
                         <p className="font-semibold">{testimonial.name}</p>
-                        <p className="text-sm text-slate-500">{testimonial.role}</p>
+                        <p className="text-sm text-muted-foreground">{testimonial.role}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -254,7 +254,7 @@ export default function HomePage() {
 
       {/* CTA Section */}
       <motion.section
-        className="py-20 bg-slate-50"
+        className="py-20 bg-secondary"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true, amount: 0.5 }}
@@ -268,7 +268,7 @@ export default function HomePage() {
                 </p>
                 <div className="bg-white p-2 rounded-lg max-w-lg mx-auto flex items-center">
                     <Input type="email" placeholder="Masukkan email Anda" className="bg-transparent border-none text-slate-900 focus-visible:ring-0 focus-visible:ring-offset-0"/>
-                    <Button type="submit" size="lg" className="flex-shrink-0">
+                    <Button type="submit" size="lg" variant="secondary" className="flex-shrink-0 text-primary hover:bg-accent">
                         Berlangganan
                         <ArrowRight className="w-4 h-4 ml-2"/>
                     </Button>
