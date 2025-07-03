@@ -34,8 +34,7 @@ export default function NotFound() {
           transition={{ delay: 0.3, duration: 0.5 }}
           className='text-gray-600 mb-8'
         >
-          Maaf, halaman yang Anda cari tidak dapat ditemukan atau Anda tidak
-          memiliki izin untuk mengaksesnya.
+          Maaf, halaman yang Anda cari tidak dapat ditemukan.
         </motion.p>
 
         <motion.div
@@ -44,11 +43,11 @@ export default function NotFound() {
           transition={{ delay: 0.4, duration: 0.5 }}
         >
           <Link
-            href='/dashboard'
+            href='/'
             className='inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors'
           >
             <FiArrowLeft className='mr-2' />
-            Kembali ke Dashboard
+            Kembali ke Beranda
           </Link>
         </motion.div>
       </div>

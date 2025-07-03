@@ -7,10 +7,11 @@ import '@/styles/globals.css';
 import '@/styles/colors.css';
 
 import Navbar from '@/components/navigation/Navbar';
+import Footer from '@/components/navigation/Footer';
 
 import { ToastProvider } from '@/context/ToastContext';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export default function RootLayout({
   children,
@@ -22,8 +23,11 @@ export default function RootLayout({
   const isLogin = pathname === '/login';
 
   return (
-    <html lang='id'>
+    <html lang='id' className={inter.variable}>
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
         <link rel='icon' href='/favicon/favicon.ico' />
         <link
           rel='icon'
@@ -53,12 +57,13 @@ export default function RootLayout({
         <meta name='msapplication-TileColor' content='#da532c' />
         <meta name='theme-color' content='#ffffff' />
       </head>
-      <body className={inter.className}>
+      <body>
         <ToastProvider>
           {!isDashboard && !isLogin && <Navbar />}
-          <div className={!isDashboard && !isLogin ? 'pt-16' : ''}>
+          <main>
             {children}
-          </div>
+          </main>
+          {!isDashboard && !isLogin && <Footer />}
         </ToastProvider>
       </body>
     </html>
