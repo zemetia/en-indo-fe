@@ -1,12 +1,12 @@
-import createMiddleware from 'next-intl/middleware';
- 
-export default createMiddleware({
-  locales: ['id', 'en'],
-  defaultLocale: 'id',
-  localePrefix: 'always'
-});
- 
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  // This middleware is a no-op and can be removed if not needed.
+  return NextResponse.next();
+}
+
 export const config = {
-  // Skip all paths that should not be internationalized.
-  matcher: ['/((?!api|_next|.*\\..*|dashboard|login).*)']
+  // This matcher ensures the middleware does not run on any path.
+  matcher: [],
 };

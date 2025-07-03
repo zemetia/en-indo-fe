@@ -72,7 +72,7 @@
 
   body,
   .p {
-    @apply font-body text-sm md:text-base;
+    @apply font-sans text-sm md:text-base;
   }
   /* #endregion  /**======== Typography =========== */
 
