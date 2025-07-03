@@ -16,7 +16,7 @@ export function getFromSessionStorage(key: string): string | null {
 
 // User Data Local Storage
 
-const SECRET_KEY = process.env.SECRET_KEY ?? ''; // Gantilah dengan kunci rahasia yang kuat
+const SECRET_KEY = process.env.NEXT_PUBLIC_SECRET_KEY ?? ''; // Gantilah dengan kunci rahasia yang kuat
 
 export interface Pelayanan {
   pelayanan_id: string;
@@ -39,9 +39,14 @@ import Cookies from 'js-cookie';
 export function getUserData(): UserData | null {
   const encryptedData = Cookies.get('userData');
   if (encryptedData) {
-    const bytes = CryptoJS.AES.decrypt(encryptedData, SECRET_KEY);
-    const userData = bytes.toString(CryptoJS.enc.Utf8);
-    return userData ? JSON.parse(userData) : null;
+    try {
+      const bytes = CryptoJS.AES.decrypt(encryptedData, SECRET_KEY);
+      const userData = bytes.toString(CryptoJS.enc.Utf8);
+      return userData ? JSON.parse(userData) : null;
+    } catch (error) {
+      console.error("Failed to decrypt or parse user data:", error);
+      return null;
+    }
   }
   return null;
 }
@@ -56,7 +61,7 @@ export function setUserData(userData: UserData) {
     JSON.stringify(userData),
     SECRET_KEY
   ).toString();
-  Cookies.set('userData', encryptedData, { expires: 3 }); // Set cookie to expire in 7 days
+  Cookies.set('userData', encryptedData, { expires: 3 }); // Set cookie to expire in 3 days
 }
 
 export function Logout() {
