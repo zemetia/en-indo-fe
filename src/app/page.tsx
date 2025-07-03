@@ -181,7 +181,7 @@ export default function HomePage() {
       </section>
 
       {/* Locations Map Section */}
-      <section className="w-full h-screen bg-blue-50 relative">
+      <section className="w-full h-screen bg-white relative">
         <div className="absolute top-12 left-1/2 -translate-x-1/2 z-10 text-center px-4">
             <motion.h2 
               className="text-3xl md:text-4xl font-bold text-blue-900"
@@ -216,12 +216,12 @@ export default function HomePage() {
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill="#EBF5FF"
+                  fill="#D6EAF8"
                   stroke="#FFFFFF"
                   strokeWidth={0.5}
                   style={{
                     default: { outline: "none" },
-                    hover: { fill: "#D6EAF8", outline: "none" },
+                    hover: { fill: "#A9CCE3", outline: "none" },
                     pressed: { outline: "none" },
                   }}
                 />
