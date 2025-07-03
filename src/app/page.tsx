@@ -10,12 +10,14 @@ import {
   Send,
   Sparkles,
   Award,
+  Quote,
+  Eye,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function HomePage() {
   const containerVariants = {
@@ -40,6 +42,12 @@ export default function HomePage() {
       },
     },
   };
+  
+  const pastors = [
+    { name: 'Pdt. John Doe', branch: 'Every Nation Jakarta Pusat', image: '/images/pastor1.jpg', dataAiHint: 'man portrait' },
+    { name: 'Pdt. Jane Smith', branch: 'Every Nation Surabaya', image: '/images/pastor2.jpg', dataAiHint: 'woman portrait' },
+    { name: 'Pdt. Michael B.', branch: 'Every Nation Bandung', image: '/images/pastor3.jpg', dataAiHint: 'man portrait smiling' },
+  ];
 
   return (
     <div className="bg-white text-gray-800 overflow-x-hidden">
@@ -70,7 +78,7 @@ export default function HomePage() {
             </motion.div>
             <motion.div variants={itemVariants}>
               <Image
-                src="https://placehold.co/600x400.png"
+                src="/images/hero-worship.jpg"
                 alt="Church community"
                 width={600}
                 height={400}
@@ -81,10 +89,34 @@ export default function HomePage() {
           </motion.div>
         </div>
       </section>
+      
+      {/* Vision Section */}
+      <motion.section 
+        className="py-20 bg-white"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.3 }}
+        variants={containerVariants}
+      >
+        <div className="container mx-auto px-4 text-center">
+            <motion.div className="inline-block bg-blue-100 p-4 rounded-full mb-4" variants={itemVariants}>
+              <Eye className="w-10 h-10 text-primary" />
+            </motion.div>
+            <motion.h2 className="text-3xl font-bold mb-4 text-slate-800" variants={itemVariants}>
+                Visi Kami
+            </motion.h2>
+            <motion.p 
+                className="text-slate-600 text-lg md:text-xl mb-12 max-w-3xl mx-auto"
+                variants={itemVariants}
+            >
+                "Kami ada untuk menghormati Allah dengan mendirikan gereja-gereja dan pelayanan kampus yang berpusat pada Kristus, diberdayakan oleh Roh, dan bertanggung jawab secara sosial di setiap bangsa."
+            </motion.p>
+        </div>
+      </motion.section>
 
       {/* Why Choose Us Section */}
       <motion.section
-        className="py-20"
+        className="py-20 bg-soft-blue-hsl"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
@@ -121,7 +153,7 @@ export default function HomePage() {
 
       {/* Working Process Section */}
       <motion.section
-        className="py-20 bg-soft-blue-hsl"
+        className="py-20 bg-white"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
@@ -152,6 +184,46 @@ export default function HomePage() {
           </div>
         </div>
       </motion.section>
+      
+       {/* Pastors Section */}
+      <motion.section 
+        className="py-20 bg-soft-blue-hsl"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={containerVariants}
+      >
+        <div className="container mx-auto px-4">
+          <motion.h2 className="text-3xl font-bold text-center mb-2 text-slate-800" variants={itemVariants}>
+            Perkenalkan Pendeta Kami
+          </motion.h2>
+          <motion.p className="text-center text-slate-600 mb-12" variants={itemVariants}>
+            Para pemimpin yang berdedikasi dari berbagai cabang gereja kami.
+          </motion.p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {pastors.map((pastor, index) => (
+              <motion.div key={index} variants={itemVariants}>
+                <Card className="text-center overflow-hidden group">
+                  <div className="relative h-64">
+                    <Image 
+                      src={pastor.image} 
+                      alt={pastor.name} 
+                      width={400} 
+                      height={400}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      data-ai-hint={pastor.dataAiHint}
+                    />
+                  </div>
+                  <CardContent className="p-6">
+                    <h3 className="text-xl font-semibold text-slate-800">{pastor.name}</h3>
+                    <p className="text-primary">{pastor.branch}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </motion.section>
 
       {/* Testimonials Section */}
       <motion.section
@@ -171,21 +243,21 @@ export default function HomePage() {
                 quote: 'Saya menemukan tujuan dan komunitas yang tulus di sini. Pertumbuhan rohani saya sangat luar biasa.',
                 name: 'Andi S.',
                 role: 'Profesional Muda',
-                image: 'https://placehold.co/100x100.png',
+                image: '/images/person1.jpg',
                 dataAiHint: 'man portrait'
               },
               {
                 quote: 'Sebagai sebuah keluarga, kami merasa diterima dan didukung. Anak-anak kami menyukai pelayanan anak.',
                 name: 'Keluarga Budi',
                 role: 'Keluarga',
-                image: 'https://placehold.co/100x100.png',
+                image: '/images/family1.jpg',
                 dataAiHint: 'family portrait'
               },
               {
                 quote: 'Pelayanan kampus benar-benar mengubah hidup saya selama masa kuliah. Saya belajar menjadi seorang pemimpin.',
                 name: 'Citra W.',
                 role: 'Mahasiswa',
-                image: 'https://placehold.co/100x100.png',
+                image: '/images/person2.jpg',
                 dataAiHint: 'woman portrait'
               },
             ].map((testimonial, index) => (
