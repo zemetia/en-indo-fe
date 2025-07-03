@@ -15,6 +15,7 @@ import {
   ArrowRight,
   User,
   Heart,
+  MapPin,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
@@ -83,6 +84,15 @@ export default function HomePage() {
     { title: "Pelayanan Anak", icon: Sparkles, image: "https://placehold.co/600x800.png", dataAiHint: "children playing" },
   ];
 
+  const locations = [
+    { id: 1, name: 'EN Jakarta', top: '55%', left: '20%' },
+    { id: 2, name: 'EN Bandung', top: '58%', left: '23%' },
+    { id: 3, name: 'EN Surabaya', top: '62%', left: '35%' },
+    { id: 4, name: 'EN Medan', top: '25%', left: '5%' },
+    { id: 5, name: 'EN Makassar', top: '52%', left: '55%' },
+    { id: 6, name: 'EN Jayapura', top: '45%', left: '90%' },
+  ];
+
   return (
     <div className="bg-white text-gray-800 overflow-x-hidden">
       {/* Hero Section */}
@@ -95,7 +105,8 @@ export default function HomePage() {
         >
           <motion.div className="text-center md:text-left" variants={itemVariants}>
             <h1 
-                className="text-4xl md:text-6xl font-bold mb-6 leading-tight text-gray-900"
+                className="text-4xl md:text-6xl font-bold mb-6 leading-tight"
+                style={{ color: '#002D62' }}
             >
                 Membangun Generasi Pengikut Kristus
             </h1>
@@ -138,7 +149,8 @@ export default function HomePage() {
       
       {/* Visi Section */}
       <section 
-        className="py-20 bg-blue-50"
+        className="py-20"
+        style={{ backgroundColor: '#F0F8FF' }}
       >
         <motion.div 
           className="container mx-auto px-4 text-center"
@@ -147,10 +159,10 @@ export default function HomePage() {
           viewport={{ once: true, amount: 0.5 }}
           variants={containerVariants}
         >
-            <motion.div className="inline-block bg-blue-200/50 p-4 rounded-full mb-4" variants={itemVariants}>
-              <Eye className="w-10 h-10 text-blue-600" />
+            <motion.div className="inline-block p-4 rounded-full mb-4" style={{ backgroundColor: 'rgba(173, 216, 230, 0.5)' }} variants={itemVariants}>
+              <Eye className="w-10 h-10 text-blue-700" />
             </motion.div>
-            <motion.h2 className="text-3xl font-bold mb-4 text-gray-900" variants={itemVariants}>
+            <motion.h2 className="text-3xl font-bold mb-4" style={{ color: '#002D62' }} variants={itemVariants}>
                 Visi Kami
             </motion.h2>
             <motion.p 
@@ -159,6 +171,52 @@ export default function HomePage() {
             >
                 "Kami ada untuk menghormati Allah dengan mendirikan gereja-gereja dan pelayanan kampus yang berpusat pada Kristus, diberdayakan oleh Roh, dan bertanggung jawab secara sosial di setiap bangsa."
             </motion.p>
+        </motion.div>
+      </section>
+
+      {/* Locations Map Section */}
+      <section className="py-20 bg-white">
+        <motion.div 
+          className="container mx-auto px-4"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          variants={containerVariants}
+        >
+          <motion.h2 className="text-3xl font-bold text-center mb-2" style={{ color: '#002D62' }} variants={itemVariants}>
+            Hadir di Seluruh Indonesia
+          </motion.h2>
+          <motion.p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto" variants={itemVariants}>
+            Temukan gereja Every Nation terdekat di kota Anda. Kami siap menyambut Anda dan keluarga.
+          </motion.p>
+          <motion.div className="relative w-full max-w-5xl mx-auto aspect-[2/1] rounded-2xl p-4" variants={itemVariants}>
+            <svg viewBox="0 0 1000 500" className="w-full h-full drop-shadow-sm">
+              <path 
+                d="M2,255L82,242L116,193L153,205L194,149L245,213L320,195L383,235L382,259L432,271L465,243L544,244L564,288L627,272L678,321L717,294L715,264L764,257L771,221L825,233L852,203L903,212L941,162L995,153L993,212L943,243L942,285L994,302L952,357L883,348L848,375L814,357L745,368L708,392L654,383L621,411L571,399L545,431L480,419L445,445L401,424L372,447L314,429L262,459L170,447L124,472L88,443L31,438L2,382L2,255Z"
+                fill="#D6EAF8"
+                stroke="#A9CCE3"
+                strokeWidth="1"
+              />
+            </svg>
+            {locations.map((location) => (
+              <div
+                key={location.id}
+                className="absolute group transform -translate-x-1/2 -translate-y-1/2"
+                style={{ top: location.top, left: location.left }}
+              >
+                <motion.div
+                  whileHover={{ scale: 1.5 }}
+                  transition={{ type: 'spring', stiffness: 300 }}
+                >
+                  <MapPin className="w-6 h-6 text-blue-700 fill-current drop-shadow-lg cursor-pointer" style={{ color: '#0053A0', fill: 'white' }} />
+                </motion.div>
+                <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-max px-3 py-1.5 bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
+                  {location.name}
+                  <div className="absolute top-full mt-[-1px] left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-800"></div>
+                </div>
+              </div>
+            ))}
+          </motion.div>
         </motion.div>
       </section>
 
@@ -171,7 +229,7 @@ export default function HomePage() {
           viewport={{ once: true, amount: 0.2 }}
           variants={containerVariants}
         >
-          <motion.h2 className="text-3xl font-bold text-center mb-2 text-gray-900" variants={itemVariants}>
+          <motion.h2 className="text-3xl font-bold text-center mb-2" style={{ color: '#002D62' }} variants={itemVariants}>
             Pelayanan Kami
           </motion.h2>
           <motion.p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto" variants={itemVariants}>
@@ -200,7 +258,8 @@ export default function HomePage() {
 
       {/* Perkenalan Pendeta Section */}
       <section 
-        className="py-20 bg-blue-50"
+        className="py-20"
+        style={{ backgroundColor: '#F0F8FF' }}
       >
         <motion.div 
           className="container mx-auto px-4"
@@ -209,7 +268,7 @@ export default function HomePage() {
           viewport={{ once: true, amount: 0.2 }}
           variants={containerVariants}
         >
-          <motion.h2 className="text-3xl font-bold text-center mb-2 text-gray-900" variants={itemVariants}>
+          <motion.h2 className="text-3xl font-bold text-center mb-2" style={{ color: '#002D62' }} variants={itemVariants}>
             Gembala Sidang Kami
           </motion.h2>
           <motion.p className="text-center text-gray-600 mb-12" variants={itemVariants}>
@@ -229,7 +288,7 @@ export default function HomePage() {
                     />
                   </div>
                   <CardContent className="p-6 flex-grow flex flex-col justify-center">
-                    <h3 className="text-xl font-semibold text-gray-900">{pastor.name}</h3>
+                    <h3 className="text-xl font-semibold" style={{ color: '#002D62' }}>{pastor.name}</h3>
                     <p className="text-blue-600">{pastor.branch}</p>
                   </CardContent>
                 </Card>
@@ -245,7 +304,7 @@ export default function HomePage() {
         style={{ backgroundImage: "url('https://placehold.co/1920x1080.png')" }}
         data-ai-hint="church congregation"
       >
-        <div className="bg-blue-900/80 py-20">
+        <div style={{ backgroundColor: 'rgba(0, 45, 98, 0.8)' }} className="py-20">
             <motion.div 
                 className="container mx-auto px-4 text-center text-white"
                 initial={{ opacity: 0, y: 20 }}
