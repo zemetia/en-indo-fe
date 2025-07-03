@@ -23,6 +23,12 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+  ComposableMap,
+  Geographies,
+  Geography,
+  Marker,
+} from 'react-simple-maps';
 
 export default function HomePage() {
   const containerVariants = {
@@ -85,13 +91,16 @@ export default function HomePage() {
   ];
 
   const locations = [
-    { id: 1, name: 'EN Jakarta', top: '55%', left: '20%' },
-    { id: 2, name: 'EN Bandung', top: '58%', left: '23%' },
-    { id: 3, name: 'EN Surabaya', top: '62%', left: '35%' },
-    { id: 4, name: 'EN Medan', top: '25%', left: '5%' },
-    { id: 5, name: 'EN Makassar', top: '52%', left: '55%' },
-    { id: 6, name: 'EN Jayapura', top: '45%', left: '90%' },
+    { id: 1, name: 'EN Jakarta', coordinates: [106.8456, -6.2088] },
+    { id: 2, name: 'EN Bandung', coordinates: [107.6191, -6.9175] },
+    { id: 3, name: 'EN Surabaya', coordinates: [112.7521, -7.2575] },
+    { id: 4, name: 'EN Medan', coordinates: [98.6722, 3.5952] },
+    { id: 5, name: 'EN Makassar', coordinates: [119.4327, -5.1477] },
+    { id: 6, name: 'EN Jayapura', coordinates: [140.7181, -2.5333] },
   ];
+
+  const geoUrl =
+    'https://raw.githubusercontent.com/deldersveld/topojson/master/countries/indonesia/indonesia-provinces.json';
 
   return (
     <div className="bg-white text-gray-800 overflow-x-hidden">
@@ -105,8 +114,7 @@ export default function HomePage() {
         >
           <motion.div className="text-center md:text-left" variants={itemVariants}>
             <h1 
-                className="text-4xl md:text-6xl font-bold mb-6 leading-tight"
-                style={{ color: '#002D62' }}
+                className="text-4xl md:text-6xl font-bold mb-6 leading-tight text-blue-900"
             >
                 Membangun Generasi Pengikut Kristus
             </h1>
@@ -149,8 +157,7 @@ export default function HomePage() {
       
       {/* Visi Section */}
       <section 
-        className="py-20"
-        style={{ backgroundColor: '#F0F8FF' }}
+        className="py-20 bg-blue-50"
       >
         <motion.div 
           className="container mx-auto px-4 text-center"
@@ -159,10 +166,10 @@ export default function HomePage() {
           viewport={{ once: true, amount: 0.5 }}
           variants={containerVariants}
         >
-            <motion.div className="inline-block p-4 rounded-full mb-4" style={{ backgroundColor: 'rgba(173, 216, 230, 0.5)' }} variants={itemVariants}>
+            <motion.div className="inline-block p-4 rounded-full mb-4 bg-blue-100" variants={itemVariants}>
               <Eye className="w-10 h-10 text-blue-700" />
             </motion.div>
-            <motion.h2 className="text-3xl font-bold mb-4" style={{ color: '#002D62' }} variants={itemVariants}>
+            <motion.h2 className="text-3xl font-bold mb-4 text-blue-900" variants={itemVariants}>
                 Visi Kami
             </motion.h2>
             <motion.p 
@@ -183,45 +190,61 @@ export default function HomePage() {
           viewport={{ once: true, amount: 0.2 }}
           variants={containerVariants}
         >
-          <motion.h2 className="text-3xl font-bold text-center mb-2" style={{ color: '#002D62' }} variants={itemVariants}>
+          <motion.h2 className="text-3xl font-bold text-center mb-2 text-blue-900" variants={itemVariants}>
             Hadir di Seluruh Indonesia
           </motion.h2>
           <motion.p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto" variants={itemVariants}>
             Temukan gereja Every Nation terdekat di kota Anda. Kami siap menyambut Anda dan keluarga.
           </motion.p>
           <motion.div className="relative w-full max-w-5xl mx-auto aspect-[2/1] rounded-2xl p-4" variants={itemVariants}>
-            <svg viewBox="0 0 1000 500" className="w-full h-full drop-shadow-sm">
-              <path 
-                d="M2,255L82,242L116,193L153,205L194,149L245,213L320,195L383,235L382,259L432,271L465,243L544,244L564,288L627,272L678,321L717,294L715,264L764,257L771,221L825,233L852,203L903,212L941,162L995,153L993,212L943,243L942,285L994,302L952,357L883,348L848,375L814,357L745,368L708,392L654,383L621,411L571,399L545,431L480,419L445,445L401,424L372,447L314,429L262,459L170,447L124,472L88,443L31,438L2,382L2,255Z"
-                fill="#D6EAF8"
-                stroke="#A9CCE3"
-                strokeWidth="1"
-              />
-            </svg>
-            {locations.map((location) => (
-              <div
-                key={location.id}
-                className="absolute group transform -translate-x-1/2 -translate-y-1/2"
-                style={{ top: location.top, left: location.left }}
-              >
-                <motion.div
-                  whileHover={{ scale: 1.5 }}
-                  transition={{ type: 'spring', stiffness: 300 }}
-                >
-                  <MapPin className="w-6 h-6 text-blue-700 fill-current drop-shadow-lg cursor-pointer" style={{ color: '#0053A0', fill: 'white' }} />
-                </motion.div>
-                <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-max px-3 py-1.5 bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
-                  {location.name}
-                  <div className="absolute top-full mt-[-1px] left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-800"></div>
-                </div>
-              </div>
-            ))}
+            <ComposableMap
+              projection="geoMercator"
+              projectionConfig={{
+                scale: 1200,
+                center: [118, -2],
+              }}
+              className="w-full h-full"
+            >
+              <Geographies geography={geoUrl}>
+                {({ geographies }) =>
+                  geographies.map((geo) => (
+                    <Geography
+                      key={geo.rsmKey}
+                      geography={geo}
+                      fill="#D6EAF8"
+                      stroke="#A9CCE3"
+                    />
+                  ))
+                }
+              </Geographies>
+              {locations.map(({ id, name, coordinates }) => (
+                <Marker key={id} coordinates={coordinates as [number, number]}>
+                  <g className="group cursor-pointer">
+                    <motion.circle
+                      r={6}
+                      fill="#0053A0"
+                      stroke="#fff"
+                      strokeWidth={2}
+                      whileHover={{ scale: 1.5 }}
+                      transition={{ type: 'spring', stiffness: 300 }}
+                    />
+                    <text
+                      textAnchor="middle"
+                      y={-15}
+                      className="text-xs font-semibold fill-slate-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                    >
+                      {name}
+                    </text>
+                  </g>
+                </Marker>
+              ))}
+            </ComposableMap>
           </motion.div>
         </motion.div>
       </section>
 
       {/* Ministries Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-blue-50">
         <motion.div 
           className="container mx-auto px-4"
           initial="hidden"
@@ -229,7 +252,7 @@ export default function HomePage() {
           viewport={{ once: true, amount: 0.2 }}
           variants={containerVariants}
         >
-          <motion.h2 className="text-3xl font-bold text-center mb-2" style={{ color: '#002D62' }} variants={itemVariants}>
+          <motion.h2 className="text-3xl font-bold text-center mb-2 text-blue-900" variants={itemVariants}>
             Pelayanan Kami
           </motion.h2>
           <motion.p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto" variants={itemVariants}>
@@ -238,7 +261,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {ministries.map((ministry, index) => (
               <motion.div key={index} variants={itemVariants}>
-                <Card className="overflow-hidden group text-center shadow-lg hover:shadow-2xl transition-shadow duration-300 rounded-2xl border-0">
+                <Card className="overflow-hidden group text-center shadow-lg hover:shadow-2xl transition-shadow duration-300 rounded-2xl border-0 h-full flex flex-col">
                   <div className="relative h-64">
                     <Image src={ministry.image} alt={ministry.title} data-ai-hint={ministry.dataAiHint} fill className="object-cover group-hover:scale-105 transition-transform duration-300"/>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
@@ -258,8 +281,7 @@ export default function HomePage() {
 
       {/* Perkenalan Pendeta Section */}
       <section 
-        className="py-20"
-        style={{ backgroundColor: '#F0F8FF' }}
+        className="py-20 bg-white"
       >
         <motion.div 
           className="container mx-auto px-4"
@@ -268,7 +290,7 @@ export default function HomePage() {
           viewport={{ once: true, amount: 0.2 }}
           variants={containerVariants}
         >
-          <motion.h2 className="text-3xl font-bold text-center mb-2" style={{ color: '#002D62' }} variants={itemVariants}>
+          <motion.h2 className="text-3xl font-bold text-center mb-2 text-blue-900" variants={itemVariants}>
             Gembala Sidang Kami
           </motion.h2>
           <motion.p className="text-center text-gray-600 mb-12" variants={itemVariants}>
@@ -277,7 +299,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {pastors.map((pastor, index) => (
               <motion.div key={index} variants={itemVariants}>
-                <Card className="text-center overflow-hidden group shadow-lg hover:shadow-2xl transition-all duration-300 rounded-2xl border-0 h-full flex flex-col bg-white">
+                <Card className="text-center overflow-hidden group shadow-lg hover:shadow-2xl transition-all duration-300 rounded-2xl border-0 h-full flex flex-col">
                   <div className="relative h-96">
                     <Image 
                       src={pastor.image} 
@@ -287,8 +309,8 @@ export default function HomePage() {
                       data-ai-hint={pastor.dataAiHint}
                     />
                   </div>
-                  <CardContent className="p-6 flex-grow flex flex-col justify-center">
-                    <h3 className="text-xl font-semibold" style={{ color: '#002D62' }}>{pastor.name}</h3>
+                  <CardContent className="p-6 flex-grow flex flex-col justify-center bg-blue-50">
+                    <h3 className="text-xl font-semibold text-blue-900">{pastor.name}</h3>
                     <p className="text-blue-600">{pastor.branch}</p>
                   </CardContent>
                 </Card>
@@ -304,7 +326,7 @@ export default function HomePage() {
         style={{ backgroundImage: "url('https://placehold.co/1920x1080.png')" }}
         data-ai-hint="church congregation"
       >
-        <div style={{ backgroundColor: 'rgba(0, 45, 98, 0.8)' }} className="py-20">
+        <div className="bg-blue-900/80 backdrop-brightness-75 py-20">
             <motion.div 
                 className="container mx-auto px-4 text-center text-white"
                 initial={{ opacity: 0, y: 20 }}
