@@ -51,17 +51,18 @@ export default function Navbar() {
               <Link
                 key={item.name}
                 href={item.href}
-                className={`relative px-4 py-2 text-sm font-medium transition-colors ${
+                className={`relative px-4 py-2 text-sm font-medium transition-colors z-10 ${
                   pathname === item.href
-                    ? 'text-blue-600'
-                    : `text-gray-700 hover:text-blue-600`
+                    ? 'text-white'
+                    : 'text-gray-700 hover:text-blue-600'
                 }`}
               >
                 {item.name}
                 {pathname === item.href && (
                    <motion.div
-                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"
-                      layoutId="underline"
+                      className="absolute inset-0 bg-blue-600 rounded-full -z-10"
+                      layoutId="active-nav-pill"
+                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
                       />
                 )}
               </Link>
