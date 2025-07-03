@@ -127,7 +127,7 @@ export default function HomePage() {
               <Button asChild size="lg" className="bg-blue-600 text-white hover:bg-blue-700 transition-transform duration-300 hover:scale-105">
                   <Link href="/contact">Temukan Lokasi</Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-colors duration-300">
+              <Button asChild size="lg" variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-all duration-300">
                   <Link href="/about">Tentang Kami</Link>
               </Button>
             </div>
@@ -200,7 +200,7 @@ export default function HomePage() {
             <ComposableMap
               projection="geoMercator"
               projectionConfig={{
-                scale: 1200,
+                scale: 1000,
                 center: [118, -2],
               }}
               className="w-full h-full"
@@ -220,13 +220,12 @@ export default function HomePage() {
               {locations.map(({ id, name, coordinates }) => (
                 <Marker key={id} coordinates={coordinates as [number, number]}>
                   <g className="group cursor-pointer">
-                    <motion.circle
+                    <circle
                       r={6}
-                      fill="#0053A0"
+                      fill="#1E40AF"
                       stroke="#fff"
                       strokeWidth={2}
-                      whileHover={{ scale: 1.5 }}
-                      transition={{ type: 'spring', stiffness: 300 }}
+                      className="transition-transform duration-300 group-hover:scale-150"
                     />
                     <text
                       textAnchor="middle"
