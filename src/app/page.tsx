@@ -100,8 +100,7 @@ export default function HomePage() {
   ];
 
   const geoUrl =
-    'https://raw.githubusercontent.com/deldersveld/topojson/master/countries/indonesia/indonesia-provinces.json';
-
+'https://raw.githubusercontent.com/tvalentius/Indonesia-topojson/refs/heads/master/indonesia-topojson-city-regency.json';
   return (
     <div className="bg-white text-gray-800 overflow-x-hidden">
       {/* Hero Section */}
@@ -114,7 +113,8 @@ export default function HomePage() {
         >
           <motion.div className="text-center md:text-left" variants={itemVariants}>
             <h1 
-                className="text-4xl md:text-6xl font-bold mb-6 leading-tight text-blue-900"
+                className="text-4xl md:text-6xl font-bold mb-6 leading-tight"
+                style={{color: '#003366'}}
             >
                 Membangun Generasi Pengikut Kristus
             </h1>
@@ -157,7 +157,8 @@ export default function HomePage() {
       
       {/* Visi Section */}
       <section 
-        className="py-20 bg-blue-50"
+        className="py-20"
+        style={{backgroundColor: '#E6F0F6'}}
       >
         <motion.div 
           className="container mx-auto px-4 text-center"
@@ -166,10 +167,10 @@ export default function HomePage() {
           viewport={{ once: true, amount: 0.5 }}
           variants={containerVariants}
         >
-            <motion.div className="inline-block p-4 rounded-full mb-4 bg-blue-100" variants={itemVariants}>
+            <motion.div className="inline-block p-4 rounded-full mb-4 bg-white" variants={itemVariants}>
               <Eye className="w-10 h-10 text-blue-700" />
             </motion.div>
-            <motion.h2 className="text-3xl font-bold mb-4 text-blue-900" variants={itemVariants}>
+            <motion.h2 className="text-3xl font-bold mb-4" style={{color: '#003366'}} variants={itemVariants}>
                 Visi Kami
             </motion.h2>
             <motion.p 
@@ -182,74 +183,80 @@ export default function HomePage() {
       </section>
 
       {/* Locations Map Section */}
-      <section className="py-20 bg-white">
-        <motion.div 
-          className="container mx-auto px-4"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-          variants={containerVariants}
-        >
-          <motion.h2 className="text-3xl font-bold text-center mb-2 text-blue-900" variants={itemVariants}>
-            Hadir di Seluruh Indonesia
-          </motion.h2>
-          <motion.p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto" variants={itemVariants}>
-            Temukan gereja Every Nation terdekat di kota Anda. Kami siap menyambut Anda dan keluarga.
-          </motion.p>
-          <div className="relative w-full max-w-5xl mx-auto aspect-[2/1] rounded-2xl p-4">
-            <ComposableMap
-              projection="geoMercator"
-              projectionConfig={{
-                scale: 1000,
-                center: [118, -2],
-              }}
-              style={{ width: "100%", height: "auto" }}
+      <section className="w-full h-screen bg-blue-50 relative">
+        <div className="absolute top-12 left-1/2 -translate-x-1/2 z-10 text-center px-4">
+            <motion.h2 
+              className="text-3xl md:text-4xl font-bold text-blue-900"
+              initial={{ opacity: 0, y: -20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
             >
-              <Geographies geography={geoUrl}>
-                {({ geographies }) =>
-                  geographies.map((geo) => (
-                    <Geography
-                      key={geo.rsmKey}
-                      geography={geo}
-                      fill="#D6EAF8"
-                      stroke="#FFFFFF"
-                      style={{
-                        default: { outline: "none" },
-                        hover: { fill: "#AED6F1", outline: "none" },
-                        pressed: { outline: "none" },
-                      }}
-                    />
-                  ))
-                }
-              </Geographies>
-              {locations.map(({ id, name, coordinates }) => (
-                <Marker key={id} coordinates={coordinates}>
-                  <g className="group cursor-pointer">
-                    <circle
-                      r={6}
-                      fill="#1E40AF"
-                      stroke="#fff"
-                      strokeWidth={2}
-                      className="transition-transform duration-300 group-hover:scale-150"
-                    />
-                    <text
-                      textAnchor="middle"
-                      y={-15}
-                      style={{ fontFamily: "system-ui", fill: "#1E3A8A", fontSize: 12, fontWeight: 'bold', pointerEvents: 'none' }}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    >
-                      {name}
-                    </text>
-                  </g>
-                </Marker>
-              ))}
-            </ComposableMap>
-          </div>
-        </motion.div>
+              Hadir di Seluruh Indonesia
+            </motion.h2>
+            <motion.p 
+              className="text-gray-600 mt-2 max-w-2xl mx-auto"
+              initial={{ opacity: 0, y: -20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              Temukan gereja Every Nation terdekat di kota Anda. Kami siap menyambut Anda dan keluarga.
+            </motion.p>
+        </div>
+        <ComposableMap
+          projection="geoMercator"
+          projectionConfig={{
+            scale: 1200,
+            center: [118, -2],
+          }}
+          style={{ width: "100%", height: "100%" }}
+        >
+          <Geographies geography={geoUrl}>
+            {({ geographies }) =>
+              geographies.map((geo) => (
+                <Geography
+                  key={geo.rsmKey}
+                  geography={geo}
+                  fill="#EBF5FF"
+                  stroke="#FFFFFF"
+                  strokeWidth={0.5}
+                  style={{
+                    default: { outline: "none" },
+                    hover: { fill: "#AED6F1", outline: "none" },
+                    pressed: { outline: "none" },
+                  }}
+                />
+              ))
+            }
+          </Geographies>
+          {locations.map(({ id, name, coordinates }) => (
+            <Marker key={id} coordinates={coordinates}>
+              <g className="group cursor-pointer">
+                <motion.circle
+                  r={8}
+                  fill="#1E40AF"
+                  stroke="#fff"
+                  strokeWidth={2}
+                  whileHover={{ r: 12 }}
+                  transition={{ type: 'spring', stiffness: 300 }}
+                />
+                <text
+                  textAnchor="middle"
+                  y={-20}
+                  style={{ fontFamily: "Roboto, system-ui", fill: "#1E3A8A", fontSize: 14, fontWeight: 'bold', pointerEvents: 'none' }}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                >
+                  {name}
+                </text>
+              </g>
+            </Marker>
+          ))}
+        </ComposableMap>
       </section>
 
       {/* Ministries Section */}
-      <section className="py-20 bg-blue-50">
+      <section className="py-20" style={{backgroundColor: '#E6F0F6'}}>
         <motion.div 
           className="container mx-auto px-4"
           initial="hidden"
@@ -257,7 +264,7 @@ export default function HomePage() {
           viewport={{ once: true, amount: 0.2 }}
           variants={containerVariants}
         >
-          <motion.h2 className="text-3xl font-bold text-center mb-2 text-blue-900" variants={itemVariants}>
+          <motion.h2 className="text-3xl font-bold text-center mb-2" style={{color: '#003366'}} variants={itemVariants}>
             Pelayanan Kami
           </motion.h2>
           <motion.p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto" variants={itemVariants}>
@@ -295,7 +302,7 @@ export default function HomePage() {
           viewport={{ once: true, amount: 0.2 }}
           variants={containerVariants}
         >
-          <motion.h2 className="text-3xl font-bold text-center mb-2 text-blue-900" variants={itemVariants}>
+          <motion.h2 className="text-3xl font-bold text-center mb-2" style={{color: '#003366'}} variants={itemVariants}>
             Gembala Sidang Kami
           </motion.h2>
           <motion.p className="text-center text-gray-600 mb-12" variants={itemVariants}>
@@ -314,9 +321,9 @@ export default function HomePage() {
                       data-ai-hint={pastor.dataAiHint}
                     />
                   </div>
-                  <CardContent className="p-6 flex-grow flex flex-col justify-center bg-blue-50">
-                    <h3 className="text-xl font-semibold text-blue-900">{pastor.name}</h3>
-                    <p className="text-blue-600">{pastor.branch}</p>
+                  <CardContent className="p-6 flex-grow flex flex-col justify-center" style={{backgroundColor: '#E6F0F6'}}>
+                    <h3 className="text-xl font-semibold" style={{color: '#003366'}}>{pastor.name}</h3>
+                    <p style={{color: '#005f9e'}}>{pastor.branch}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -331,7 +338,7 @@ export default function HomePage() {
         style={{ backgroundImage: "url('https://placehold.co/1920x1080.png')" }}
         data-ai-hint="church congregation"
       >
-        <div className="bg-blue-900/80 backdrop-brightness-75 py-20">
+        <div className="backdrop-brightness-75 py-20" style={{backgroundColor: 'rgba(0, 51, 102, 0.8)'}}>
             <motion.div 
                 className="container mx-auto px-4 text-center text-white"
                 initial={{ opacity: 0, y: 20 }}
@@ -339,12 +346,12 @@ export default function HomePage() {
                 viewport={{ once: true, amount: 0.5 }}
                 transition={{ duration: 0.5 }}
             >
-                <Heart className="w-12 h-12 mx-auto mb-4 text-blue-400"/>
+                <Heart className="w-12 h-12 mx-auto mb-4" style={{color: '#ADD8E6'}}/>
                 <h2 className="text-4xl font-bold mb-4">Bergabunglah Dengan Keluarga Kami</h2>
-                <p className="mb-8 max-w-2xl mx-auto text-lg text-blue-100">
+                <p className="mb-8 max-w-2xl mx-auto text-lg" style={{color: '#E6F0F6'}}>
                     Kami ingin sekali terhubung dengan Anda. Temukan komunitas, tujuan, dan tempat di mana Anda dapat bertumbuh.
                 </p>
-                <Button size="lg" asChild className="bg-blue-500 hover:bg-blue-400 text-white transition-transform duration-300 hover:scale-105">
+                <Button size="lg" asChild className="text-white transition-transform duration-300 hover:scale-105" style={{backgroundColor: '#007BFF', ':hover': {backgroundColor: '#005f9e'}}}>
                   <Link href="/contact">
                     Saya Baru <ArrowRight className="w-4 h-4 ml-2"/>
                   </Link>
