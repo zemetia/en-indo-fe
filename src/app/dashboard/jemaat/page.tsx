@@ -178,7 +178,7 @@ export default function DataJemaatPage() {
             >
               <div className='flex items-start justify-between'>
                 <div className='flex items-center space-x-4 min-w-0'>
-                    <div className='w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0'>
+                    <div className={`w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 ring-4 ${item.is_aktif ? 'ring-green-300' : 'ring-red-300'}`}>
                         <BsPeople className='w-6 h-6 text-blue-600'/>
                     </div>
                     <div className='min-w-0'>
