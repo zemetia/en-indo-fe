@@ -26,6 +26,8 @@ import {
   Group,
   HandHelping,
   Fingerprint,
+  Footprints,
+  Check,
 } from 'lucide-react';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
@@ -95,6 +97,18 @@ export default function DetailJemaatPage() {
   const [jemaat, setJemaat] = useState<JemaatData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // --- Mock data for Spiritual Journey ---
+  const journeySteps = [
+    { name: 'One to One' },
+    { name: 'Baptis Selam' },
+    { name: 'Victory Weekend' },
+    { name: 'Church Community' },
+    { name: 'L113' },
+    { name: 'L215' },
+  ];
+  // This will be replaced with actual data from `jemaat` object later
+  const completedSteps = ['One to One', 'Baptis Selam', 'Victory Weekend'];
 
   useEffect(() => {
     const fetchJemaat = async () => {
@@ -222,7 +236,7 @@ export default function DetailJemaatPage() {
       <div className='space-y-6'>
         {/* Header Section */}
         <Card>
-          <CardContent className="p-6">
+          <CardContent className='p-6'>
             <div className='flex flex-col md:flex-row justify-between items-start md:items-center'>
               <div className='flex items-center space-x-4'>
                 <div className='w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center border-4 border-white ring-2 ring-blue-200'>
@@ -261,83 +275,138 @@ export default function DetailJemaatPage() {
           <div className='lg:col-span-2 space-y-6'>
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
+                <CardTitle className='flex items-center'>
                   <User className='w-5 h-5 mr-3 text-blue-600' />
                   Informasi Pribadi
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-4'>
-                    <InfoItem icon={User} label="Nama Lengkap" value={jemaat.nama} />
-                    <InfoItem icon={VenetianMask} label="Nama Panggilan" value={jemaat.nama_lain} />
-                    <InfoItem icon={Users} label="Jenis Kelamin" value={jemaat.gender === 'L' ? 'Laki-laki' : 'Perempuan'} />
-                    <InfoItem icon={MapPin} label="Tempat Lahir" value={jemaat.tempat_lahir} />
-                    <InfoItem icon={Cake} label="Tanggal Lahir" value={jemaat.tanggal_lahir} />
-                    <InfoItem icon={Smile} label="Fase Hidup" value={jemaat.fase_hidup} />
+                  <InfoItem icon={User} label='Nama Lengkap' value={jemaat.nama} />
+                  <InfoItem
+                    icon={VenetianMask}
+                    label='Nama Panggilan'
+                    value={jemaat.nama_lain}
+                  />
+                  <InfoItem
+                    icon={Users}
+                    label='Jenis Kelamin'
+                    value={jemaat.gender === 'L' ? 'Laki-laki' : 'Perempuan'}
+                  />
+                  <InfoItem
+                    icon={MapPin}
+                    label='Tempat Lahir'
+                    value={jemaat.tempat_lahir}
+                  />
+                  <InfoItem
+                    icon={Cake}
+                    label='Tanggal Lahir'
+                    value={jemaat.tanggal_lahir}
+                  />
+                  <InfoItem
+                    icon={Smile}
+                    label='Fase Hidup'
+                    value={jemaat.fase_hidup}
+                  />
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
+                <CardTitle className='flex items-center'>
                   <Heart className='w-5 h-5 mr-3 text-blue-600' />
                   Informasi Perkawinan & Keluarga
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-4'>
-                    <InfoItem icon={Heart} label="Status Perkawinan" value={jemaat.status_perkawinan} />
-                    <InfoItem icon={Heart} label="Nama Pasangan" value={jemaat.nama_pasangan} />
-                    <InfoItem icon={Calendar} label="Tanggal Perkawinan" value={jemaat.tanggal_perkawinan} />
-                    <InfoItem icon={User} label="Nama Ayah" value={jemaat.ayah} />
-                    <InfoItem icon={User} label="Nama Ibu" value={jemaat.ibu} />
+                  <InfoItem
+                    icon={Heart}
+                    label='Status Perkawinan'
+                    value={jemaat.status_perkawinan}
+                  />
+                  <InfoItem
+                    icon={Heart}
+                    label='Nama Pasangan'
+                    value={jemaat.nama_pasangan}
+                  />
+                  <InfoItem
+                    icon={Calendar}
+                    label='Tanggal Perkawinan'
+                    value={jemaat.tanggal_perkawinan}
+                  />
+                  <InfoItem icon={User} label='Nama Ayah' value={jemaat.ayah} />
+                  <InfoItem icon={User} label='Nama Ibu' value={jemaat.ibu} />
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
+                <CardTitle className='flex items-center'>
                   <Phone className='w-5 h-5 mr-3 text-blue-600' />
                   Informasi Kontak & Alamat
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-4'>
-                    <InfoItem icon={Phone} label="Nomor Telepon" value={jemaat.nomor_telepon} />
-                    <InfoItem icon={Mail} label="Email" value={jemaat.email} />
-                    <InfoItem icon={MapPin} label="Kabupaten/Kota" value={jemaat.kabupaten} />
-                    <InfoItem icon={Home} label="Alamat" value={jemaat.alamat} />
+                  <InfoItem
+                    icon={Phone}
+                    label='Nomor Telepon'
+                    value={jemaat.nomor_telepon}
+                  />
+                  <InfoItem icon={Mail} label='Email' value={jemaat.email} />
+                  <InfoItem
+                    icon={MapPin}
+                    label='Kabupaten/Kota'
+                    value={jemaat.kabupaten}
+                  />
+                  <InfoItem icon={Home} label='Alamat' value={jemaat.alamat} />
                 </div>
               </CardContent>
             </Card>
-
           </div>
 
           {/* Kolom Kanan */}
           <div className='space-y-6'>
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
+                <CardTitle className='flex items-center'>
                   <Building className='w-5 h-5 mr-3 text-blue-600' />
                   Informasi Gereja
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className='space-y-6'>
-                    <InfoItem icon={Building} label="Gereja" value={jemaat.church} />
-                    <InfoItem icon={Fingerprint} label="Kode Jemaat" value={jemaat.kode_jemaat} />
-                    <InfoItem icon={BadgeInfo} label="Status Keanggotaan" value={jemaat.status} />
-                    <InfoItem icon={BookUser} label="Komitmen Berjemaat" value={jemaat.komitmen_berjemaat} />
-                    <InfoItem icon={Stethoscope} label="Kerinduan" value={jemaat.kerinduan} />
+                  <InfoItem icon={Building} label='Gereja' value={jemaat.church} />
+                  <InfoItem
+                    icon={Fingerprint}
+                    label='Kode Jemaat'
+                    value={jemaat.kode_jemaat}
+                  />
+                  <InfoItem
+                    icon={BadgeInfo}
+                    label='Status Keanggotaan'
+                    value={jemaat.status}
+                  />
+                  <InfoItem
+                    icon={BookUser}
+                    label='Komitmen Berjemaat'
+                    value={jemaat.komitmen_berjemaat}
+                  />
+                  <InfoItem
+                    icon={Stethoscope}
+                    label='Kerinduan'
+                    value={jemaat.kerinduan}
+                  />
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
+                <CardTitle className='flex items-center'>
                   <Briefcase className='w-5 h-5 mr-3 text-blue-600' />
                   Keterlibatan
                 </CardTitle>
@@ -394,6 +463,49 @@ export default function DetailJemaatPage() {
                     )}
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className='flex items-center'>
+                  <Footprints className='w-5 h-5 mr-3 text-blue-600' />
+                  Spiritual Journey
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ol className='relative border-l border-gray-200 ml-3'>
+                  {journeySteps.map((step, index) => {
+                    const isCompleted = completedSteps.includes(step.name);
+                    return (
+                      <li key={step.name} className='mb-6 ml-6 last:mb-0'>
+                        <span
+                          className={`absolute flex items-center justify-center w-6 h-6 rounded-full -left-3 ring-4 ring-white ${
+                            isCompleted ? 'bg-green-100' : 'bg-gray-100'
+                          }`}
+                        >
+                          {isCompleted ? (
+                            <Check className='w-4 h-4 text-green-600' />
+                          ) : (
+                            <div className='w-3 h-3 bg-gray-400 rounded-full'></div>
+                          )}
+                        </span>
+                        <p
+                          className={`font-medium ${
+                            isCompleted ? 'text-gray-900' : 'text-gray-500'
+                          }`}
+                        >
+                          {step.name}
+                        </p>
+                        {!isCompleted && index === completedSteps.length && (
+                          <p className='text-xs text-blue-600 mt-0.5'>
+                            Langkah Berikutnya
+                          </p>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ol>
               </CardContent>
             </Card>
           </div>
