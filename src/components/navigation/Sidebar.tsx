@@ -14,7 +14,7 @@ import {
   FiLogOut,
 } from 'react-icons/fi';
 
-import { dashboardMenu, MenuItem, ADMIN_ROLE } from '@/constant/menu';
+import { dashboardMenu, MenuItem, hasAccess, ADMIN_ROLE } from '@/constant/menu';
 import { getUserData, Logout } from '@/lib/helper';
 
 import UserProfile from './UserProfile';
@@ -25,96 +25,38 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [expandedMenus, setExpandedMenus] = React.useState<string[]>([]);
   const [isMobile, setIsMobile] = React.useState(false);
-  const [userRoles, setUserRoles] = React.useState<string[]>([]);
-  const [userPelayanan, setUserPelayanan] = React.useState<any[]>([]);
   const [filteredMenu, setFilteredMenu] = React.useState<MenuItem[]>([]);
   const [userData, setUserData] = React.useState<any>(null);
 
-  // Get user data and set roles
   React.useEffect(() => {
     const data = getUserData();
     if (data) {
       setUserData(data);
-      const roles = data.pelayanan.map((p: any) => p.pelayanan.toLowerCase());
-      setUserRoles(roles);
-      setUserPelayanan(data.pelayanan);
+      const userRoles = data.pelayanan.map((p: any) => p.pelayanan.toLowerCase());
+      const userPelayanan = data.pelayanan;
+
+      // Filter the menu based on user permissions
+      const filterMenu = (menu: MenuItem[]): MenuItem[] => {
+        return menu
+          .filter(item => hasAccess(item, userRoles, userPelayanan))
+          .map(item => {
+            if (item.submenu) {
+              return { ...item, submenu: filterMenu(item.submenu) };
+            }
+            return item;
+          })
+          .filter(item => item.submenu ? item.submenu.length > 0 : true); // Also remove parent if all children are filtered out
+      };
+      
+      setFilteredMenu(filterMenu(dashboardMenu));
     }
   }, []);
 
-  // Fungsi untuk memeriksa apakah user memiliki akses ke menu berdasarkan PIC status
-  const hasAccess = React.useCallback(
-    (menu: MenuItem) => {
-      // Admin punya akses ke semua
-      if (userRoles.includes(ADMIN_ROLE)) return true;
-
-      // Periksa apakah user memiliki satu dari roles yang diperlukan
-      const hasRole =
-        menu.permissions.includes('*') ||
-        menu.permissions.some((permission) => userRoles.includes(permission));
-
-      // Jika menu tidak memerlukan PIC, cukup periksa role
-      if (!menu.requirePIC) return hasRole;
-
-      // Jika menu memerlukan PIC, periksa apakah user adalah PIC di salah satu pelayanan yang relevan
-      if (hasRole && menu.requirePIC) {
-        return userPelayanan.some(
-          (p) =>
-            menu.permissions.includes(p.pelayanan.toLowerCase()) && p.is_pic
-        );
-      }
-
-      return false;
-    },
-    [userRoles, userPelayanan]
-  );
-
-  // Filter menu based on user roles and PIC status
-  React.useEffect(() => {
-    if (userRoles.length === 0) return;
-
-    const isAdmin = userRoles.includes(ADMIN_ROLE);
-
-    if (isAdmin) {
-      // Admin can access all menus
-      setFilteredMenu(dashboardMenu);
-    } else {
-      // Filter menus based on user roles and PIC status
-      const allowedMenus = dashboardMenu.filter((menu) => {
-        // Check if user has any of the required permissions for this menu
-        const hasMenuPermission = hasAccess(menu);
-
-        // If menu doesn't have direct permission but has submenu, check submenu permissions
-        if (!hasMenuPermission && menu.submenu) {
-          // If any submenu has permission, include this menu
-          return menu.submenu.some((submenu) => hasAccess(submenu));
-        }
-
-        return hasMenuPermission;
-      });
-
-      // Filter submenu items for menus that have permission
-      const filteredWithSubmenu = allowedMenus.map((menu) => {
-        if (!menu.submenu) return menu;
-
-        // Only keep submenu items user has access to
-        const filteredSubmenu = menu.submenu.filter((submenu) =>
-          hasAccess(submenu)
-        );
-
-        return { ...menu, submenu: filteredSubmenu };
-      });
-
-      setFilteredMenu(filteredWithSubmenu);
-    }
-  }, [userRoles, userPelayanan, hasAccess]);
-
-  // Toggle collapse on mobile and set mobile state
   React.useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
       if (mobile) {
-        // Hanya set collapsed ketika sidebar tertutup di mobile
         if (!isMobileOpen) {
           setIsCollapsed(true);
         }
@@ -137,11 +79,10 @@ export default function Sidebar() {
   const isActive = (href: string) => pathname === href;
   const isSubmenuActive = (item: MenuItem) => {
     if (!item.submenu) return false;
-    return item.submenu.some((submenu) => pathname === submenu.href);
+    return item.submenu.some((submenu) => pathname.startsWith(submenu.href));
   };
 
   const toggleMobileMenu = () => {
-    // Saat sidebar dibuka di mobile, tampilkan versi normal
     if (!isMobileOpen && isMobile) {
       setIsCollapsed(false);
     }

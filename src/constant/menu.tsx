@@ -27,43 +27,38 @@ export type MenuItem = {
   submenu?: MenuItem[];
 };
 
-// Permission map untuk semua path
-export const permissionMap: Record<
-  string,
-  { roles: string[]; requirePIC?: boolean }
-> = {
-  '/dashboard': { roles: ['*'] }, // Semua orang bisa akses dashboard
-  '/dashboard/jemaat': { roles: ['admin', 'jemaat'] },
-  '/dashboard/lifegroup': { roles: ['admin', 'lifegroup'] },
-  '/dashboard/event': { roles: ['admin', 'event'] },
-  '/dashboard/event/daftar': { roles: ['admin', 'event'] },
-  '/dashboard/event/ibadah': { roles: ['admin', 'event'] },
-  '/dashboard/event/tambah': { roles: ['admin', 'event'], requirePIC: true }, // Hanya PIC yang bisa tambah event
-  '/dashboard/musik': { roles: ['admin', 'musik', 'Pemusik', 'Singer', 'WL'] },
-  '/dashboard/musik/jadwal-saya': {
-    roles: ['admin', 'musik', 'Pemusik', 'Singer', 'WL'],
-  },
-  '/dashboard/musik/penjadwalan': {
-    roles: ['admin', 'musik'],
-    requirePIC: true,
-  }, // Hanya PIC musik yang bisa menjadwalkan
-  '/dashboard/musik/list-lagu': {
-    roles: ['admin', 'musik', 'Pemusik', 'Singer', 'WL'],
-  },
-  '/dashboard/musik/list-pelayan': {
-    roles: ['admin', 'musik'],
-    requirePIC: true,
-  }, // Hanya PIC yang bisa kelola pelayan
-  '/dashboard/pelayanan': { roles: ['admin', 'pelayanan'] },
-  '/dashboard/departemen': { roles: ['admin', 'departemen'] },
-  '/dashboard/pemuridan': { roles: ['admin', 'pemuridan', 'lifegroup'] },
-  '/dashboard/role': { roles: ['admin'] },
-  '/dashboard/role/user-role': { roles: ['admin'] },
-  '/dashboard/role/role-permission': { roles: ['admin'] },
-  '/dashboard/pengaturan': { roles: ['*'] }, // Semua orang bisa akses pengaturan
-};
-
 export const ADMIN_ROLE = 'admin';
+
+// Centralized function to check permissions
+export const hasAccess = (
+  menu: MenuItem,
+  userRoles: string[],
+  userPelayanan: any[]
+): boolean => {
+  // Admin has access to everything
+  if (userRoles.includes(ADMIN_ROLE)) {
+    return true;
+  }
+
+  // Check if user has any of the required roles
+  const hasRequiredRole =
+    menu.permissions.includes('*') ||
+    menu.permissions.some((permission) => userRoles.includes(permission));
+
+  // If the menu doesn't require PIC status, role is enough
+  if (!menu.requirePIC) {
+    return hasRequiredRole;
+  }
+
+  // If it requires PIC status, check both role and PIC status
+  if (hasRequiredRole && menu.requirePIC) {
+    return userPelayanan.some(
+      (p) => menu.permissions.includes(p.pelayanan.toLowerCase()) && p.is_pic
+    );
+  }
+
+  return false;
+};
 
 export const dashboardMenu: MenuItem[] = [
   {
