@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, Save, Users } from 'lucide-react';
+import { Calendar, Save, Users, Minus, Plus, Baby, User } from 'lucide-react';
 import { motion } from 'framer-motion';
-
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 interface AttendanceCount {
   dewasa: number;
@@ -35,7 +36,7 @@ export default function SimpleAttendancePage() {
   ) => {
     setAttendance((prev) => ({
       ...prev,
-      [category]: value,
+      [category]: Math.max(0, value),
     }));
   };
 
@@ -68,147 +69,108 @@ export default function SimpleAttendancePage() {
               <div>
                 <label
                   htmlFor='event'
-                  className='block text-sm font-medium text-gray-700'
+                  className='block text-sm font-medium text-gray-700 mb-2'
                 >
                   Pilih Event
                 </label>
-                <div className='mt-1 relative'>
-                  <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
-                    <Calendar className='h-5 w-5 text-gray-400' />
-                  </div>
-                  <select
-                    id='event'
-                    value={selectedEvent}
-                    onChange={(e) => setSelectedEvent(e.target.value)}
-                    className='block w-full pl-10 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md'
-                    required
-                  >
-                    <option value=''>Pilih Event</option>
-                    {events.map((event) => (
-                      <option key={event.id} value={event.id}>
-                        {event.name}
-                      </option>
-                    ))}
-                  </select>
+                 <div className='mt-1 relative'>
+                  <Calendar className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none' />
+                  <Select value={selectedEvent} onValueChange={setSelectedEvent}>
+                    <SelectTrigger className="w-full md:w-1/2 lg:w-1/3 pl-10">
+                      <SelectValue placeholder="Pilih Event" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {events.map((event) => (
+                        <SelectItem key={event.id} value={event.id}>
+                          {event.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
               <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+                {/* Dewasa */}
                 <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: 0.1 }}
-                  className='bg-emerald-50 p-4 rounded-lg'
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: 0.1 }}
+                    className='bg-emerald-50 p-4 rounded-xl border border-emerald-100 flex flex-col justify-between'
                 >
-                  <div className='flex items-center space-x-3'>
-                    <div className='p-2 bg-emerald-100 rounded-lg'>
-                      <Users className='h-5 w-5 text-emerald-600' />
+                    <div className="flex items-center space-x-3 mb-4">
+                        <div className="p-3 bg-emerald-100 rounded-lg">
+                            <Users className="h-6 w-6 text-emerald-600" />
+                        </div>
+                        <h4 className="text-lg font-medium text-emerald-800">Dewasa</h4>
                     </div>
-                    <div className='flex-1'>
-                      <label
-                        htmlFor='dewasa'
-                        className='block text-sm font-medium text-emerald-700'
-                      >
-                        Dewasa
-                      </label>
-                      <input
-                        type='number'
-                        id='dewasa'
-                        min='0'
-                        value={attendance.dewasa}
-                        onChange={(e) =>
-                          handleCountChange(
-                            'dewasa',
-                            parseInt(e.target.value) || 0
-                          )
-                        }
-                        className='mt-1 block w-full border-emerald-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm'
-                      />
+                    <div className="flex items-center justify-between bg-white rounded-full p-2 shadow-sm">
+                        <Button size="icon" variant="ghost" onClick={() => handleCountChange('dewasa', attendance.dewasa - 1)} className="w-10 h-10 text-emerald-700 rounded-full hover:bg-emerald-100">
+                            <Minus className="h-5 w-5" />
+                        </Button>
+                        <p className="text-4xl font-bold text-emerald-900 mx-4">{attendance.dewasa}</p>
+                        <Button size="icon" variant="ghost" onClick={() => handleCountChange('dewasa', attendance.dewasa + 1)} className="w-10 h-10 text-emerald-700 rounded-full hover:bg-emerald-100">
+                            <Plus className="h-5 w-5" />
+                        </Button>
                     </div>
-                  </div>
                 </motion.div>
 
+                {/* Youth */}
                 <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: 0.2 }}
-                  className='bg-emerald-50 p-4 rounded-lg'
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: 0.2 }}
+                    className='bg-sky-50 p-4 rounded-xl border border-sky-100 flex flex-col justify-between'
                 >
-                  <div className='flex items-center space-x-3'>
-                    <div className='p-2 bg-emerald-100 rounded-lg'>
-                      <Users className='h-5 w-5 text-emerald-600' />
+                    <div className="flex items-center space-x-3 mb-4">
+                        <div className="p-3 bg-sky-100 rounded-lg">
+                            <User className="h-6 w-6 text-sky-600" />
+                        </div>
+                        <h4 className="text-lg font-medium text-sky-800">Youth</h4>
                     </div>
-                    <div className='flex-1'>
-                      <label
-                        htmlFor='youth'
-                        className='block text-sm font-medium text-emerald-700'
-                      >
-                        Youth
-                      </label>
-                      <input
-                        type='number'
-                        id='youth'
-                        min='0'
-                        value={attendance.youth}
-                        onChange={(e) =>
-                          handleCountChange(
-                            'youth',
-                            parseInt(e.target.value) || 0
-                          )
-                        }
-                        className='mt-1 block w-full border-emerald-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm'
-                      />
+                    <div className="flex items-center justify-between bg-white rounded-full p-2 shadow-sm">
+                        <Button size="icon" variant="ghost" onClick={() => handleCountChange('youth', attendance.youth - 1)} className="w-10 h-10 text-sky-700 rounded-full hover:bg-sky-100">
+                            <Minus className="h-5 w-5" />
+                        </Button>
+                        <p className="text-4xl font-bold text-sky-900 mx-4">{attendance.youth}</p>
+                        <Button size="icon" variant="ghost" onClick={() => handleCountChange('youth', attendance.youth + 1)} className="w-10 h-10 text-sky-700 rounded-full hover:bg-sky-100">
+                            <Plus className="h-5 w-5" />
+                        </Button>
                     </div>
-                  </div>
                 </motion.div>
 
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: 0.3 }}
-                  className='bg-emerald-50 p-4 rounded-lg'
+                {/* Kids */}
+                 <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: 0.3 }}
+                    className='bg-amber-50 p-4 rounded-xl border border-amber-100 flex flex-col justify-between'
                 >
-                  <div className='flex items-center space-x-3'>
-                    <div className='p-2 bg-emerald-100 rounded-lg'>
-                      <Users className='h-5 w-5 text-emerald-600' />
+                    <div className="flex items-center space-x-3 mb-4">
+                        <div className="p-3 bg-amber-100 rounded-lg">
+                            <Baby className="h-6 w-6 text-amber-600" />
+                        </div>
+                        <h4 className="text-lg font-medium text-amber-800">Kids</h4>
                     </div>
-                    <div className='flex-1'>
-                      <label
-                        htmlFor='kids'
-                        className='block text-sm font-medium text-emerald-700'
-                      >
-                        Kids
-                      </label>
-                      <input
-                        type='number'
-                        id='kids'
-                        min='0'
-                        value={attendance.kids}
-                        onChange={(e) =>
-                          handleCountChange(
-                            'kids',
-                            parseInt(e.target.value) || 0
-                          )
-                        }
-                        className='mt-1 block w-full border-emerald-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm'
-                      />
+                    <div className="flex items-center justify-between bg-white rounded-full p-2 shadow-sm">
+                        <Button size="icon" variant="ghost" onClick={() => handleCountChange('kids', attendance.kids - 1)} className="w-10 h-10 text-amber-700 rounded-full hover:bg-amber-100">
+                            <Minus className="h-5 w-5" />
+                        </Button>
+                        <p className="text-4xl font-bold text-amber-900 mx-4">{attendance.kids}</p>
+                        <Button size="icon" variant="ghost" onClick={() => handleCountChange('kids', attendance.kids + 1)} className="w-10 h-10 text-amber-700 rounded-full hover:bg-amber-100">
+                            <Plus className="h-5 w-5" />
+                        </Button>
                     </div>
-                  </div>
                 </motion.div>
               </div>
             </div>
           </div>
 
           <div className='flex justify-end'>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              type='submit'
-              className='inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500'
-            >
+            <Button type="submit" size="lg">
               <Save className='h-4 w-4 mr-2' />
               Simpan Kehadiran
-            </motion.button>
+            </Button>
           </div>
         </form>
       </motion.div>

@@ -6,6 +6,15 @@ import { Calendar, Search, Check, X, Save } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 interface Participant {
   id: string;
@@ -100,144 +109,130 @@ export default function ManualAttendancePage() {
       >
         <form onSubmit={handleSubmit} className='space-y-6'>
           <div className='bg-white p-6 rounded-xl shadow-sm border border-gray-200'>
-            <div className='space-y-6'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
               <div>
                 <label
                   htmlFor='event'
-                  className='block text-sm font-medium text-gray-700'
+                  className='block text-sm font-medium text-gray-700 mb-2'
                 >
                   Pilih Event
                 </label>
                 <div className='mt-1 relative'>
-                  <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
-                    <Calendar className='h-5 w-5 text-gray-400' />
-                  </div>
-                  <select
-                    id='event'
-                    value={selectedEvent}
-                    onChange={(e) => setSelectedEvent(e.target.value)}
-                    className='block w-full pl-10 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md'
-                    required
-                  >
-                    <option value=''>Pilih Event</option>
-                    {events.map((event) => (
-                      <option key={event.id} value={event.id}>
-                        {event.name}
-                      </option>
-                    ))}
-                  </select>
+                  <Calendar className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none' />
+                  <Select value={selectedEvent} onValueChange={setSelectedEvent}>
+                    <SelectTrigger className="w-full pl-10">
+                      <SelectValue placeholder="Pilih Event" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {events.map((event) => (
+                        <SelectItem key={event.id} value={event.id}>
+                          {event.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
               <div>
                 <label
                   htmlFor='search'
-                  className='block text-sm font-medium text-gray-700'
+                  className='block text-sm font-medium text-gray-700 mb-2'
                 >
                   Cari Jemaat
                 </label>
                 <div className='mt-1 relative'>
-                  <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
-                    <Search className='h-5 w-5 text-gray-400' />
-                  </div>
-                  <input
+                  <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none' />
+                  <Input
                     type='text'
                     id='search'
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder='Cari berdasarkan nama atau email...'
-                    className='block w-full pl-10 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-md'
+                    className='pl-10'
                   />
                 </div>
               </div>
-
-              <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
-                <table className='w-full text-sm text-left text-gray-500'>
-                  <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
-                    <tr>
-                      <th scope='col' className='px-6 py-3 font-medium'>
-                        Nama
-                      </th>
-                      <th scope='col' className='px-6 py-3 font-medium'>
-                        Email
-                      </th>
-                      <th scope='col' className='px-6 py-3 font-medium'>
-                        Status
-                      </th>
-                      <th scope='col' className='px-6 py-3 font-medium text-center'>
-                        Aksi
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredParticipants.map((participant) => (
-                      <motion.tr
-                        key={participant.id}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.2 }}
-                        className='bg-white border-b last:border-b-0 hover:bg-gray-50'
-                      >
-                        <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
-                          {participant.name}
-                        </td>
-                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                          {participant.email}
-                        </td>
-                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              participant.isPresent
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : 'bg-gray-100 text-gray-800'
-                            }`}
-                          >
-                            {participant.isPresent ? 'Hadir' : 'Belum Hadir'}
-                          </span>
-                        </td>
-                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center'>
-                          <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            type="button"
-                            onClick={() => toggleAttendance(participant.id)}
-                            className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white ${
-                              participant.isPresent
-                                ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
-                                : 'bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500'
-                            } focus:outline-none focus:ring-2 focus:ring-offset-2`}
-                          >
-                            {participant.isPresent ? (
-                              <>
-                                <X className='h-4 w-4 mr-1' />
-                                Batalkan
-                              </>
-                            ) : (
-                              <>
-                                <Check className='h-4 w-4 mr-1' />
-                                Hadir
-                              </>
-                            )}
-                          </motion.button>
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            </div>
+            
+            <div className='mt-6 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
+                <div className="overflow-x-auto">
+                    <table className='w-full text-sm text-left text-gray-500'>
+                    <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
+                        <tr>
+                        <th scope='col' className='px-6 py-3 font-medium'>
+                            Nama
+                        </th>
+                        <th scope='col' className='px-6 py-3 font-medium'>
+                            Email
+                        </th>
+                        <th scope='col' className='px-6 py-3 font-medium'>
+                            Status
+                        </th>
+                        <th scope='col' className='px-6 py-3 font-medium text-center'>
+                            Aksi
+                        </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredParticipants.map((participant, index) => (
+                        <motion.tr
+                            key={participant.id}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.2, delay: index * 0.05 }}
+                            className='bg-white border-b last:border-b-0 even:bg-slate-50 hover:bg-slate-100 transition-colors'
+                        >
+                            <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
+                            {participant.name}
+                            </td>
+                            <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                            {participant.email}
+                            </td>
+                            <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                            <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                participant.isPresent
+                                    ? 'bg-emerald-100 text-emerald-800'
+                                    : 'bg-gray-100 text-gray-800'
+                                }`}
+                            >
+                                {participant.isPresent ? 'Hadir' : 'Belum Hadir'}
+                            </span>
+                            </td>
+                            <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center'>
+                            <Button
+                                size="sm"
+                                variant={participant.isPresent ? "destructive" : "default"}
+                                onClick={() => toggleAttendance(participant.id)}
+                                className={`transition-all ${participant.isPresent ? "bg-red-100 text-red-700 hover:bg-red-200" : "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"}`}
+                            >
+                                {participant.isPresent ? (
+                                <>
+                                    <X className='h-4 w-4 mr-1' />
+                                    Batalkan
+                                </>
+                                ) : (
+                                <>
+                                    <Check className='h-4 w-4 mr-1' />
+                                    Hadir
+                                </>
+                                )}
+                            </Button>
+                            </td>
+                        </motion.tr>
+                        ))}
+                    </tbody>
+                    </table>
+                </div>
             </div>
           </div>
 
           <div className='flex justify-end'>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              type='submit'
-              className='inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500'
-            >
+            <Button type="submit" size="lg">
               <Save className='h-4 w-4 mr-2' />
               Simpan Kehadiran
-            </motion.button>
+            </Button>
           </div>
         </form>
       </motion.div>
