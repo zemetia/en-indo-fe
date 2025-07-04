@@ -260,7 +260,7 @@ export default function DetailJemaatPage() {
                   <div>
                     <p className='text-sm text-gray-500'>Tempat Lahir</p>
                     <p className='font-medium text-gray-900'>
-                      {jemaat.tanggal_lahir}
+                      {jemaat.tempat_lahir}
                     </p>
                   </div>
                 </div>

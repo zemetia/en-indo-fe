@@ -9,7 +9,6 @@ export const metadata: Metadata = {
 };
 
 export default function LoginPage() {
-  LoginGuard;
   return (
     <LoginGuard>
       <LoginForm />
