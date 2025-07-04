@@ -82,27 +82,68 @@ export default function EventDetailPage() {
     // --- Mock API Call ---
     const fetchEvent = () => {
       setLoading(true);
-      const mockEventData: Event = {
-        id: eventId,
-        title: 'Ibadah Minggu Pagi',
-        bannerImage: 'https://placehold.co/1200x400.png',
-        description: 'Ibadah rutin mingguan untuk seluruh jemaat Every Nation Jakarta. Mari datang dan bersekutu bersama dalam hadirat Tuhan.',
-        capacity: 500,
-        type: eventId === '1' ? 'ibadah' : 'event', // Make it dynamic for testing
-        eventDate: '2024-05-12',
-        eventLocation: 'Gedung Gereja Utama',
-        startDatetime: '2024-05-12T08:00:00+07:00',
-        endDatetime: '2024-05-12T10:00:00+07:00',
-        allDay: false,
-        timezone: 'Asia/Jakarta',
-        recurrenceRule: { frequency: 'WEEKLY', byWeekday: ['SU'] },
-        isPublic: true,
-        pics: [
-          { id: 'user1', name: 'Pdt. Budi Santoso', imageUrl: 'https://placehold.co/100x100.png' },
-          { id: 'user2', name: 'Ev. Rina Wijaya', imageUrl: 'https://placehold.co/100x100.png' },
-        ],
-      };
-      
+      let mockEventData: Event;
+
+      if (eventId === '1') {
+        mockEventData = {
+          id: '1',
+          title: 'Ibadah Minggu Pagi',
+          bannerImage: 'https://placehold.co/1200x400.png',
+          description: 'Ibadah rutin mingguan untuk seluruh jemaat Every Nation Jakarta. Mari datang dan bersekutu bersama dalam hadirat Tuhan.',
+          capacity: 500,
+          type: 'ibadah',
+          eventDate: '2025-07-20',
+          eventLocation: 'Gedung Gereja Utama',
+          startDatetime: '2025-07-20T08:00:00+07:00',
+          endDatetime: '2025-07-20T10:00:00+07:00',
+          allDay: false,
+          timezone: 'Asia/Jakarta',
+          recurrenceRule: { frequency: 'WEEKLY', byWeekday: ['SU'] },
+          isPublic: true,
+          pics: [
+            { id: 'user1', name: 'Pdt. Budi Santoso', imageUrl: 'https://placehold.co/100x100.png' },
+            { id: 'user2', name: 'Ev. Rina Wijaya', imageUrl: 'https://placehold.co/100x100.png' },
+          ],
+        };
+      } else if (eventId === '2') {
+        mockEventData = {
+          id: '2',
+          title: 'Rapat Panitia Natal 2025',
+          bannerImage: 'https://placehold.co/1200x400.png',
+          description: 'Rapat koordinasi untuk persiapan acara Natal tahun ini. Kehadiran semua panitia diwajibkan.',
+          capacity: 50,
+          type: 'event',
+          eventDate: '2025-07-22',
+          eventLocation: 'Ruang Meeting 3, Lt. 2',
+          startDatetime: '2025-07-22T19:00:00+07:00',
+          endDatetime: '2025-07-22T21:00:00+07:00',
+          allDay: false,
+          timezone: 'Asia/Jakarta',
+          isPublic: false,
+          pics: [
+            { id: 'user3', name: 'Michael Tan', imageUrl: 'https://placehold.co/100x100.png' },
+          ],
+        };
+      } else {
+        // Default fallback for other IDs
+        mockEventData = {
+          id: eventId,
+          title: 'Event Lainnya',
+          bannerImage: 'https://placehold.co/1200x400.png',
+          description: 'Detail untuk event ini.',
+          capacity: 100,
+          type: 'event',
+          eventDate: '2025-07-25',
+          eventLocation: 'Aula',
+          startDatetime: '2025-07-25T10:00:00+07:00',
+          endDatetime: '2025-07-25T12:00:00+07:00',
+          allDay: false,
+          timezone: 'Asia/Jakarta',
+          isPublic: true,
+          pics: [],
+        };
+      }
+
       setTimeout(() => {
         setEvent(mockEventData);
         setParticipants(MOCK_PARTICIPANTS);
@@ -312,7 +353,7 @@ export default function EventDetailPage() {
                             </p>
                             <div className="p-4 bg-white border-2 border-emerald-500 rounded-lg inline-block">
                                 <QRCodeSVG 
-                                    value={JSON.stringify({ eventId: event.id, title: event.title, date: event.eventDate })} 
+                                    value={JSON.stringify({ eventId: event.id, title: event.title, date: event.eventDate, generatedAt: new Date().toISOString() })} 
                                     size={200}
                                     level="H"
                                     includeMargin
