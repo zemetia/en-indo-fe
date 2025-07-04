@@ -37,84 +37,6 @@ interface Church {
   nama: string;
 }
 
-// Mock data untuk pelayanan
-const mockPelayanan: Pelayanan[] = [
-  {
-    id: '1',
-    nama: 'Tim Worship',
-    gereja: 'Every Nation Jakarta',
-    jumlah_person: 15,
-    is_aktif: true,
-  },
-  {
-    id: '2',
-    nama: 'Tim Multimedia',
-    gereja: 'Every Nation Jakarta',
-    jumlah_person: 8,
-    is_aktif: true,
-  },
-  {
-    id: '3',
-    nama: 'Tim Usher',
-    gereja: 'Every Nation Jakarta',
-    jumlah_person: 12,
-    is_aktif: true,
-  },
-  {
-    id: '4',
-    nama: 'Tim Doa',
-    gereja: 'Every Nation Jakarta',
-    jumlah_person: 10,
-    is_aktif: true,
-  },
-];
-
-// Mock data untuk person
-const mockPersons: Person[] = [
-  {
-    id: '1',
-    nama: 'John Doe',
-    gender: 'L',
-    church: 'Every Nation Jakarta',
-    is_aktif: true,
-  },
-  {
-    id: '2',
-    nama: 'Jane Smith',
-    gender: 'P',
-    church: 'Every Nation Jakarta',
-    is_aktif: true,
-  },
-  {
-    id: '3',
-    nama: 'Michael Johnson',
-    gender: 'L',
-    church: 'Every Nation Jakarta',
-    is_aktif: true,
-  },
-  {
-    id: '4',
-    nama: 'Sarah Williams',
-    gender: 'P',
-    church: 'Every Nation Jakarta',
-    is_aktif: true,
-  },
-  {
-    id: '5',
-    nama: 'David Brown',
-    gender: 'L',
-    church: 'Every Nation Jakarta',
-    is_aktif: true,
-  },
-];
-
-// Mock data untuk gereja
-const mockChurches: Church[] = [
-  { id: '1', nama: 'Every Nation Jakarta' },
-  { id: '2', nama: 'Every Nation Bandung' },
-  { id: '3', nama: 'Every Nation Surabaya' },
-];
-
 export default function DataPelayananPage() {
   const [pelayanan, setPelayanan] = useState<Array<Pelayanan> | null>(null);
   const [persons, setPersons] = useState<Array<Person> | null>(null);
@@ -128,31 +50,23 @@ export default function DataPelayananPage() {
     null
   );
   const [isPIC, setIsPIC] = useState(false);
-  const [showAssignModal, setShowAssignModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'person' | 'church' | 'pelayanan'>(
     'person'
   );
   const [showSuccess, setShowSuccess] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        setPelayanan(mockPelayanan);
-        setPersons(mockPersons);
-        setChurches(mockChurches);
-        setError(null);
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const token = getToken();
+      if (!token) {
+        setError('Token autentikasi tidak ditemukan. Silakan login kembali.');
+        setLoading(false);
+        return;
+      }
 
-        // Kode axios yang dikomentari untuk referensi nanti
-        /*
-        const token = getToken();
-        if (!token) {
-          setError('Token autentikasi tidak ditemukan. Silakan login kembali.');
-          setLoading(false);
-          return;
-        }
-
-        const [pelayananResponse, personsResponse, churchesResponse] = await Promise.all([
+      const [pelayananResponse, personsResponse, churchesResponse] =
+        await Promise.all([
           axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/pelayanan`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
@@ -164,17 +78,19 @@ export default function DataPelayananPage() {
           }),
         ]);
 
-        setPelayanan(pelayananResponse.data);
-        setPersons(personsResponse.data);
-        setChurches(churchesResponse.data);
-        */
-      } catch (error) {
-        setError('Gagal mengambil data. Silakan coba lagi nanti.');
-      } finally {
-        setLoading(false);
-      }
-    };
+      setPelayanan(pelayananResponse.data.data);
+      setPersons(personsResponse.data.data);
+      setChurches(churchesResponse.data.data);
+      setError(null);
+    } catch (error) {
+      setError('Gagal mengambil data. Silakan coba lagi nanti.');
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -182,43 +98,24 @@ export default function DataPelayananPage() {
     try {
       if (!selectedPerson || !selectedChurch || !selectedPelayanan) return;
 
-      // Simulasi assign pelayanan dengan mock data
-      console.log(
-        `Assigning pelayanan ${selectedPelayanan.id} to person ${selectedPerson.id} at church ${selectedChurch.id} as PIC: ${isPIC}`
-      );
-
-      // Kode axios yang dikomentari untuk referensi nanti
-      /*
       const token = getToken();
       if (!token) return;
 
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/person/${selectedPerson.id}/pelayanan`,
-        { 
+        {
           pelayanan_id: selectedPelayanan.id,
           church_id: selectedChurch.id,
-          is_pic: isPIC
+          is_pic: isPIC,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Refresh data setelah assign
-      const [pelayananResponse, personsResponse] = await Promise.all([
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/pelayanan`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/person`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
-
-      setPelayanan(pelayananResponse.data);
-      setPersons(personsResponse.data);
-      */
-
       setShowSuccess(true);
+      fetchData(); // Refresh data setelah assign
     } catch (error) {
       console.error('Gagal mengassign pelayanan:', error);
+      setError('Gagal mengassign pelayanan. Silakan coba lagi.');
     }
   };
 

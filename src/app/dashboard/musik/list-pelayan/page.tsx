@@ -1,5 +1,6 @@
 'use client';
 
+import axios from 'axios';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import * as React from 'react';
@@ -13,31 +14,184 @@ import {
 } from 'react-icons/fi';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
+import { getToken } from '@/lib/helper';
 
-// Dummy data untuk contoh
-const dummyMusicians = [
-  {
-    id: '1',
-    nama: 'John Doe',
-    email: 'john@example.com',
-    telepon: '081234567890',
-    instrument: 'Gitar',
-    status: 'active',
-    pengalaman: '3 tahun',
-  },
-  {
-    id: '2',
-    nama: 'Jane Smith',
-    email: 'jane@example.com',
-    telepon: '081234567891',
-    instrument: 'Piano',
-    status: 'active',
-    pengalaman: '5 tahun',
-  },
-  // Tambahkan data dummy lainnya sesuai kebutuhan
-];
+interface Musician {
+  id: string;
+  nama: string;
+  email: string;
+  telepon: string;
+  instrument: string;
+  status: 'active' | 'inactive';
+  pengalaman: string;
+}
 
 export default function ListPelayanPage() {
+  const [musicians, setMusicians] = React.useState<Musician[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const fetchMusicians = async () => {
+      setLoading(true);
+      try {
+        const token = getToken();
+        if (!token) {
+          setError('Akses ditolak. Silakan login kembali.');
+          return;
+        }
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/pelayan-musik`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setMusicians(response.data.data);
+      } catch (err) {
+        setError('Gagal memuat daftar pelayan musik.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMusicians();
+  }, []);
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className='flex justify-center items-center py-10'>
+          <div className='w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin'></div>
+        </div>
+      );
+    }
+
+    if (error) {
+      return <p className='text-center text-red-500'>{error}</p>;
+    }
+
+    if (musicians.length === 0) {
+      return (
+        <div className='bg-gray-50 rounded-xl p-8 text-center'>
+          <FiUser className='w-10 h-10 text-gray-400 mx-auto mb-4' />
+          <h3 className='text-lg font-semibold text-gray-900 mb-2'>
+            Tidak ada data pelayan
+          </h3>
+          <p className='text-gray-600 max-w-md mx-auto mb-6'>
+            Belum ada data pelayan musik yang tersedia. Silakan tambahkan
+            pelayan baru.
+          </p>
+          <Link
+            href='/dashboard/musik/list-pelayan/tambah'
+            className='px-4 py-2 bg-amber-600 rounded-lg text-white hover:bg-amber-700 transition-colors'
+          >
+            Tambah Pelayan Baru
+          </Link>
+        </div>
+      );
+    }
+
+    return (
+      <div className='overflow-x-auto bg-white rounded-xl shadow-sm border border-amber-50'>
+        <table className='min-w-full divide-y divide-amber-100'>
+          <thead className='bg-amber-50'>
+            <tr>
+              <th className='px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider'>
+                Nama
+              </th>
+              <th className='px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider'>
+                Kontak
+              </th>
+              <th className='px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider'>
+                Instrumen
+              </th>
+              <th className='px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider'>
+                Pengalaman
+              </th>
+              <th className='px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider'>
+                Status
+              </th>
+              <th className='px-6 py-3 text-right text-xs font-medium text-amber-700 uppercase tracking-wider'>
+                Aksi
+              </th>
+            </tr>
+          </thead>
+          <tbody className='bg-white divide-y divide-amber-50'>
+            {musicians.map((musician, index) => (
+              <motion.tr
+                key={musician.id}
+                className='hover:bg-amber-50'
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <td className='px-6 py-4 whitespace-nowrap'>
+                  <div className='flex items-center'>
+                    <div className='flex-shrink-0 h-10 w-10'>
+                      <div className='h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center'>
+                        <FiUser className='h-6 w-6 text-amber-600' />
+                      </div>
+                    </div>
+                    <div className='ml-4'>
+                      <div className='text-sm font-medium text-gray-900'>
+                        {musician.nama}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td className='px-6 py-4 whitespace-nowrap'>
+                  <div className='text-sm text-gray-500'>
+                    {musician.email}
+                  </div>
+                  <div className='text-sm text-gray-500'>
+                    {musician.telepon}
+                  </div>
+                </td>
+                <td className='px-6 py-4 whitespace-nowrap'>
+                  <div className='flex items-center'>
+                    <FiMusic className='h-4 w-4 text-amber-500 mr-2' />
+                    <span className='text-sm text-gray-500'>
+                      {musician.instrument}
+                    </span>
+                  </div>
+                </td>
+                <td className='px-6 py-4 whitespace-nowrap'>
+                  <div className='text-sm text-gray-500'>
+                    {musician.pengalaman}
+                  </div>
+                </td>
+                <td className='px-6 py-4 whitespace-nowrap'>
+                  <span
+                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      musician.status === 'active'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}
+                  >
+                    {musician.status === 'active' ? 'Aktif' : 'Tidak Aktif'}
+                  </span>
+                </td>
+                <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
+                  <div className='flex space-x-2 justify-end'>
+                    <Link
+                      href={`/dashboard/musik/list-pelayan/${musician.id}/edit`}
+                      className='text-amber-600 hover:text-amber-900'
+                    >
+                      <FiEdit2 className='w-5 h-5' />
+                    </Link>
+                    <button className='text-red-600 hover:text-red-900'>
+                      <FiTrash2 className='w-5 h-5' />
+                    </button>
+                  </div>
+                </td>
+              </motion.tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
   return (
     <div className='space-y-6'>
       <FeaturedCard
@@ -100,122 +254,7 @@ export default function ListPelayanPage() {
           </div>
         </div>
 
-        {dummyMusicians.length === 0 ? (
-          <div className='bg-gray-50 rounded-xl p-8 text-center'>
-            <FiUser className='w-10 h-10 text-gray-400 mx-auto mb-4' />
-            <h3 className='text-lg font-semibold text-gray-900 mb-2'>
-              Tidak ada data pelayan
-            </h3>
-            <p className='text-gray-600 max-w-md mx-auto mb-6'>
-              Belum ada data pelayan musik yang tersedia. Silakan tambahkan
-              pelayan baru.
-            </p>
-            <Link
-              href='/dashboard/musik/list-pelayan/tambah'
-              className='px-4 py-2 bg-amber-600 rounded-lg text-white hover:bg-amber-700 transition-colors'
-            >
-              Tambah Pelayan Baru
-            </Link>
-          </div>
-        ) : (
-          <div className='overflow-x-auto bg-white rounded-xl shadow-sm border border-amber-50'>
-            <table className='min-w-full divide-y divide-amber-100'>
-              <thead className='bg-amber-50'>
-                <tr>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider'>
-                    Nama
-                  </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider'>
-                    Kontak
-                  </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider'>
-                    Instrumen
-                  </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider'>
-                    Pengalaman
-                  </th>
-                  <th className='px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider'>
-                    Status
-                  </th>
-                  <th className='px-6 py-3 text-right text-xs font-medium text-amber-700 uppercase tracking-wider'>
-                    Aksi
-                  </th>
-                </tr>
-              </thead>
-              <tbody className='bg-white divide-y divide-amber-50'>
-                {dummyMusicians.map((musician, index) => (
-                  <motion.tr
-                    key={musician.id}
-                    className='hover:bg-amber-50'
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='flex items-center'>
-                        <div className='flex-shrink-0 h-10 w-10'>
-                          <div className='h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center'>
-                            <FiUser className='h-6 w-6 text-amber-600' />
-                          </div>
-                        </div>
-                        <div className='ml-4'>
-                          <div className='text-sm font-medium text-gray-900'>
-                            {musician.nama}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='text-sm text-gray-500'>
-                        {musician.email}
-                      </div>
-                      <div className='text-sm text-gray-500'>
-                        {musician.telepon}
-                      </div>
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='flex items-center'>
-                        <FiMusic className='h-4 w-4 text-amber-500 mr-2' />
-                        <span className='text-sm text-gray-500'>
-                          {musician.instrument}
-                        </span>
-                      </div>
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='text-sm text-gray-500'>
-                        {musician.pengalaman}
-                      </div>
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap'>
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          musician.status === 'active'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {musician.status === 'active' ? 'Aktif' : 'Tidak Aktif'}
-                      </span>
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
-                      <div className='flex space-x-2 justify-end'>
-                        <Link
-                          href={`/dashboard/musik/list-pelayan/${musician.id}/edit`}
-                          className='text-amber-600 hover:text-amber-900'
-                        >
-                          <FiEdit2 className='w-5 h-5' />
-                        </Link>
-                        <button className='text-red-600 hover:text-red-900'>
-                          <FiTrash2 className='w-5 h-5' />
-                        </button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        {renderContent()}
       </div>
     </div>
   );
