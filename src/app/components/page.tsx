@@ -21,6 +21,13 @@ import UnderlineLink from '@/components/links/UnderlineLink';
 import UnstyledLink from '@/components/links/UnstyledLink';
 import NextImage from '@/components/NextImage';
 import Skeleton from '@/components/Skeleton';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 type Color = (typeof colorList)[number];
 
@@ -67,25 +74,21 @@ export default function ComponentPage() {
                 globals.css to change your color.
               </p>
               <div className='flex flex-wrap gap-2'>
-                <select
-                  name='color'
-                  id='color'
+                <Select
                   value={color}
-                  className={clsx(
-                    'block max-w-xs rounded',
-                    mode === 'dark'
-                      ? 'bg-dark border border-gray-600'
-                      : 'border-gray-300 bg-white',
-                    'focus:border-primary-400 focus:ring-primary-400 focus:outline-none focus:ring'
-                  )}
-                  onChange={(e) => setColor(e.target.value as Color)}
+                  onValueChange={(value) => setColor(value as Color)}
                 >
-                  {colorList.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className='w-[180px]'>
+                    <SelectValue placeholder='Pilih Warna' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {colorList.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <ButtonLink href='https://github.com/theodorusclarence/ts-nextjs-tailwind-starter/blob/main/src/styles/colors.css'>
                   Check list of colors
                 </ButtonLink>

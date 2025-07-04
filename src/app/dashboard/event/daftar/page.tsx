@@ -4,6 +4,14 @@ import { motion } from 'framer-motion';
 import * as React from 'react';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 type Event = {
   id: string;
@@ -75,41 +83,48 @@ export default function DaftarEventPage() {
       {/* Search and Filter */}
       <div className='bg-white rounded-xl shadow-sm p-6'>
         <div className='flex flex-col md:flex-row gap-4 mb-6'>
-          <input
+          <Input
             type='text'
             placeholder='Cari event...'
-            className='flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500'
+            className='flex-1'
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <select
-            className='px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500'
+          <Select
             value={filterType}
-            onChange={(e) =>
-              setFilterType(e.target.value as 'all' | 'event' | 'ibadah')
+            onValueChange={(value) =>
+              setFilterType(value as 'all' | 'event' | 'ibadah')
             }
           >
-            <option value='all'>Semua</option>
-            <option value='event'>Event</option>
-            <option value='ibadah'>Ibadah</option>
-          </select>
+            <SelectTrigger className='w-full md:w-[180px]'>
+              <SelectValue placeholder='Filter tipe' />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='all'>Semua</SelectItem>
+              <SelectItem value='event'>Event</SelectItem>
+              <SelectItem value='ibadah'>Ibadah</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Event List */}
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-          {filteredEvents.map((event) => (
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+          {filteredEvents.map((event, index) => (
             <motion.div
               key={event.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className='bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow'
+              transition={{ delay: index * 0.1 }}
+              className='bg-white rounded-xl shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-lg hover:border-blue-500 hover:-translate-y-1'
             >
               <div
                 className={`px-4 py-2 ${
-                  event.type === 'event' ? 'bg-amber-500' : 'bg-blue-500'
-                } text-white`}
+                  event.type === 'event'
+                    ? 'bg-amber-100 text-amber-800'
+                    : 'bg-blue-100 text-blue-800'
+                } `}
               >
-                <span className='text-sm font-medium'>
+                <span className='text-sm font-semibold'>
                   {event.type === 'event' ? 'Event' : 'Ibadah'}
                 </span>
               </div>
