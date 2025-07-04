@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar, Plus, Clock, MapPin, Users, Music, Repeat } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -34,8 +34,12 @@ interface Event {
 
 export default function EventPage() {
   const router = useRouter();
-  const [selectedDate, setSelectedDate] = useState(new Date());
   const [view, setView] = useState<'month' | 'week' | 'day'>('month');
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Mock data events - nantinya akan diambil dari API
   const events: Event[] = [
@@ -219,8 +223,14 @@ export default function EventPage() {
                       </div>
                       <div className='flex items-center text-sm text-gray-500'>
                         <Clock className='h-4 w-4 mr-2' />
-                        {formatTime(event.startDatetime)} -{' '}
-                        {formatTime(event.endDatetime)}
+                        {isClient ? (
+                          <>
+                            {formatTime(event.startDatetime)} -{' '}
+                            {formatTime(event.endDatetime)}
+                          </>
+                        ) : (
+                          <span className="w-20 h-4 bg-gray-200 rounded animate-pulse inline-block" />
+                        )}
                       </div>
                       <div className='flex items-center text-sm text-gray-500'>
                         <MapPin className='h-4 w-4 mr-2' />
