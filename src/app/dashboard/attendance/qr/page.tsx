@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Calendar, QrCode, Save, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import QrScanner from 'react-qr-scanner';
@@ -15,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useToast } from '@/context/ToastContext';
 
 interface ScannedParticipant {
   id: string;
@@ -24,7 +24,7 @@ interface ScannedParticipant {
 }
 
 export default function QrAttendancePage() {
-  const router = useRouter();
+  const { showToast } = useToast();
   const [selectedEvent, setSelectedEvent] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [scannedParticipants, setScannedParticipants] = useState<
@@ -51,12 +51,19 @@ export default function QrAttendancePage() {
           );
           if (!isAlreadyScanned) {
             setScannedParticipants((prev) => [
-              ...prev,
               { ...participant, timestamp },
+              ...prev,
             ]);
+            showToast(`${participant.name} berhasil di-scan.`, 'success');
+          } else {
+            showToast(
+              `${participant.name} sudah di-scan sebelumnya.`,
+              'warning'
+            );
           }
         }
       } catch (error) {
+        showToast('QR code tidak valid.', 'error');
         console.error('Invalid QR code data:', error);
       }
     }
@@ -64,6 +71,7 @@ export default function QrAttendancePage() {
 
   const handleError = (error: any) => {
     console.error('QR Scanner error:', error);
+    showToast('Gagal mengakses kamera. Mohon izinkan akses kamera.', 'error');
   };
 
   const removeParticipant = (participantId: string) => {
@@ -74,12 +82,19 @@ export default function QrAttendancePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedEvent) {
+      showToast('Silakan pilih event terlebih dahulu.', 'error');
+      return;
+    }
     // TODO: Implement API call to save attendance
     console.log('Saving attendance:', {
       eventId: selectedEvent,
       scannedParticipants,
     });
-    router.push('/dashboard/attendance');
+    showToast('Kehadiran berhasil disimpan!', 'success');
+    setScannedParticipants([]);
+    setSelectedEvent('');
+    setIsScanning(false);
   };
 
   return (
@@ -210,6 +225,7 @@ export default function QrAttendancePage() {
                           <Button
                             size='sm'
                             variant='destructive'
+                            type='button'
                             onClick={() => removeParticipant(participant.id)}
                             className='bg-red-100 text-red-700 hover:bg-red-200'
                           >

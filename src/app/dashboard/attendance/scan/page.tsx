@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { QrCode, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import QrScanner from 'react-qr-scanner';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
+import { useToast } from '@/context/ToastContext';
 
 interface Event {
   id: string;
@@ -16,7 +16,7 @@ interface Event {
 }
 
 export default function ScanAttendancePage() {
-  const router = useRouter();
+  const { showToast } = useToast();
   const [isScanning, setIsScanning] = useState(false);
   const [scannedEvent, setScannedEvent] = useState<Event | null>(null);
   const [scanSuccess, setScanSuccess] = useState(false);
@@ -26,11 +26,13 @@ export default function ScanAttendancePage() {
       try {
         const event = JSON.parse(data.text);
         if (event && event.id) {
-            setScannedEvent(event);
-            setScanSuccess(true);
-            setIsScanning(false);
+          setScannedEvent(event);
+          setScanSuccess(true);
+          setIsScanning(false);
+          showToast(`Event "${event.name}" berhasil di-scan.`, 'success');
         }
       } catch (error) {
+        showToast('QR code event tidak valid.', 'error');
         console.error('Invalid QR code data:', error);
       }
     }
@@ -38,6 +40,7 @@ export default function ScanAttendancePage() {
 
   const handleError = (error: any) => {
     console.error('QR Scanner error:', error);
+    showToast('Gagal mengakses kamera. Mohon izinkan akses kamera.', 'error');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,7 +48,12 @@ export default function ScanAttendancePage() {
     if (scannedEvent) {
       // TODO: Implement API call to save attendance
       console.log('Saving attendance for event:', scannedEvent);
-      router.push('/dashboard/attendance');
+      showToast(
+        `Kehadiran Anda untuk event "${scannedEvent.name}" telah disimpan!`,
+        'success'
+      );
+      setScannedEvent(null);
+      setScanSuccess(false);
     }
   };
 

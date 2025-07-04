@@ -1,21 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import {
-  Calendar,
-  Search,
-  Check,
-  X,
-  Save,
-  QrCode,
-  Download,
-  Users,
-} from 'lucide-react';
+import { Download, Check, X, Save, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
+import { useToast } from '@/context/ToastContext';
 
 interface Participant {
   id: string;
@@ -32,12 +23,33 @@ interface Event {
   location: string;
 }
 
+const initialParticipantsData: Participant[] = [
+  {
+    id: '1',
+    name: 'John Doe',
+    email: 'john@example.com',
+    isPresent: false,
+  },
+  {
+    id: '2',
+    name: 'Jane Smith',
+    email: 'jane@example.com',
+    isPresent: false,
+  },
+  {
+    id: '3',
+    name: 'Bob Johnson',
+    email: 'bob@example.com',
+    isPresent: false,
+  },
+];
+
 export default function EventAttendancePage({
   params,
 }: {
   params: { id: string };
 }) {
-  const router = useRouter();
+  const { showToast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [filteredParticipants, setFilteredParticipants] = useState<
@@ -57,26 +69,7 @@ export default function EventAttendancePage({
 
   // Mock data participants - nantinya akan diambil dari API
   useEffect(() => {
-    setParticipants([
-      {
-        id: '1',
-        name: 'John Doe',
-        email: 'john@example.com',
-        isPresent: false,
-      },
-      {
-        id: '2',
-        name: 'Jane Smith',
-        email: 'jane@example.com',
-        isPresent: false,
-      },
-      {
-        id: '3',
-        name: 'Bob Johnson',
-        email: 'bob@example.com',
-        isPresent: false,
-      },
-    ]);
+    setParticipants(initialParticipantsData);
   }, []);
 
   useEffect(() => {
@@ -112,12 +105,15 @@ export default function EventAttendancePage({
       eventId: params.id,
       presentParticipants,
     });
-    router.push('/dashboard/attendance');
+    showToast('Kehadiran berhasil disimpan!', 'success');
+    setParticipants(initialParticipantsData);
+    setSearchQuery('');
   };
 
   const downloadQR = () => {
     // TODO: Implement QR code download
     console.log('Downloading QR code for event:', event?.id);
+    showToast('Fitur download QR belum diimplementasikan.', 'info');
   };
 
   return (
