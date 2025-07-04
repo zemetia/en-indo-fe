@@ -205,30 +205,11 @@ export default function DataJemaatPage() {
                         <p className='text-sm text-gray-500 truncate'>{item.church}</p>
                     </div>
                 </div>
-              </div>
-              
-              <div className='mt-4 pt-4 border-t border-gray-100 space-y-2'>
-                <div className='flex items-center text-sm text-gray-600'>
-                    <FiMail className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
-                    <span className='truncate'>{item.email || '-'}</span>
-                </div>
-                <div className='flex items-center text-sm text-gray-600'>
-                    <FiPhone className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
-                    <span className='truncate'>{item.nomor_telepon || '-'}</span>
-                </div>
-                <div className='flex items-center text-sm text-gray-600'>
-                    <BsGeoAlt className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
-                    <span className='truncate'>{item.alamat || '-'}</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className='bg-gray-50 px-4 py-2 flex justify-end'>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <button
                             onClick={(e) => e.stopPropagation()}
-                            className='p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100 transition-colors'
+                            className='p-2 -mr-2 -mt-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100 transition-colors'
                             aria-label="Actions"
                         >
                             <FiMoreVertical className='w-4 h-4' />
@@ -250,7 +231,24 @@ export default function DataJemaatPage() {
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
+              </div>
+              
+              <div className='mt-4 pt-4 border-t border-gray-100 space-y-2'>
+                <div className='flex items-center text-sm text-gray-600'>
+                    <FiMail className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
+                    <span className='truncate'>{item.email || '-'}</span>
+                </div>
+                <div className='flex items-center text-sm text-gray-600'>
+                    <FiPhone className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
+                    <span className='truncate'>{item.nomor_telepon || '-'}</span>
+                </div>
+                <div className='flex items-center text-sm text-gray-600'>
+                    <BsGeoAlt className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
+                    <span className='truncate'>{item.alamat || '-'}</span>
+                </div>
+              </div>
             </div>
+            
           </motion.div>
         ))}
       </div>
