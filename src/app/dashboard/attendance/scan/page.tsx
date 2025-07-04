@@ -21,13 +21,15 @@ export default function ScanAttendancePage() {
   const [scannedEvent, setScannedEvent] = useState<Event | null>(null);
   const [scanSuccess, setScanSuccess] = useState(false);
 
-  const handleScan = (data: any) => {
-    if (data) {
+  const handleScan = (data: { text: string } | null) => {
+    if (data && data.text) {
       try {
         const event = JSON.parse(data.text);
-        setScannedEvent(event);
-        setScanSuccess(true);
-        setIsScanning(false);
+        if (event && event.id) {
+            setScannedEvent(event);
+            setScanSuccess(true);
+            setIsScanning(false);
+        }
       } catch (error) {
         console.error('Invalid QR code data:', error);
       }

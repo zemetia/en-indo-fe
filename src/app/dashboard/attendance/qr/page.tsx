@@ -38,21 +38,23 @@ export default function QrAttendancePage() {
     { id: '3', name: 'Ibadah Kids' },
   ];
 
-  const handleScan = (data: any) => {
-    if (data) {
+  const handleScan = (data: { text: string } | null) => {
+    if (data && data.text) {
       try {
         const participant = JSON.parse(data.text);
-        const timestamp = new Date().toLocaleString('id-ID');
+        if (participant && participant.id) {
+          const timestamp = new Date().toLocaleString('id-ID');
 
-        // Check if participant already scanned
-        const isAlreadyScanned = scannedParticipants.some(
-          (p) => p.id === participant.id
-        );
-        if (!isAlreadyScanned) {
-          setScannedParticipants((prev) => [
-            ...prev,
-            { ...participant, timestamp },
-          ]);
+          // Check if participant already scanned
+          const isAlreadyScanned = scannedParticipants.some(
+            (p) => p.id === participant.id
+          );
+          if (!isAlreadyScanned) {
+            setScannedParticipants((prev) => [
+              ...prev,
+              { ...participant, timestamp },
+            ]);
+          }
         }
       } catch (error) {
         console.error('Invalid QR code data:', error);
