@@ -3,8 +3,9 @@
 import { motion } from 'framer-motion';
 import * as React from 'react';
 import { BsCalendarWeek, BsPeople, BsPersonPlus } from 'react-icons/bs';
-import { FiEdit2, FiTrash2, FiUserCheck, FiUsers } from 'react-icons/fi';
+import { FiUserCheck, FiUsers } from 'react-icons/fi';
 import axios from 'axios';
+import Link from 'next/link';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import { getToken } from '@/lib/helper';
@@ -57,16 +58,6 @@ export default function DaftarLifegroupPage() {
     console.log('Tambah life group');
   };
 
-  const handleEdit = (lifeGroup: LifeGroup) => {
-    // TODO: Implementasi edit life group
-    console.log('Edit life group:', lifeGroup);
-  };
-
-  const handleDelete = (id: string) => {
-    // TODO: Implementasi hapus life group
-    console.log('Hapus life group:', id);
-  };
-
   const renderContent = () => {
     if (loading) {
       return (
@@ -99,70 +90,57 @@ export default function DaftarLifegroupPage() {
             transition={{ delay: index * 0.1 }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
+            className="h-full"
           >
-            <div className='bg-white rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md border border-emerald-50'>
-              <div className='flex items-start space-x-4'>
-                <div className='p-3 rounded-lg bg-emerald-600 text-white'>
-                  <BsPeople className='w-6 h-6' />
-                </div>
-                <div className='flex-1'>
-                  <div className='flex justify-between items-start'>
-                    <h3 className='text-lg font-semibold text-gray-900'>
-                      {lifeGroup.nama}
-                    </h3>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        lifeGroup.status === 'Aktif'
-                          ? 'bg-emerald-100 text-emerald-700'
-                          : 'bg-red-100 text-red-700'
-                      }`}
-                    >
-                      {lifeGroup.status}
-                    </span>
+            <Link href={`/dashboard/lifegroup/${lifeGroup.id}`} className='block h-full'>
+              <div className='bg-white rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md border border-emerald-50 h-full flex flex-col'>
+                <div className='flex items-start space-x-4'>
+                  <div className='p-3 rounded-lg bg-emerald-600 text-white'>
+                    <BsPeople className='w-6 h-6' />
                   </div>
-                  <p className='mt-1 text-sm text-gray-500 line-clamp-2'>
-                    {lifeGroup.deskripsi}
-                  </p>
+                  <div className='flex-1'>
+                    <div className='flex justify-between items-start'>
+                      <h3 className='text-lg font-semibold text-gray-900'>
+                        {lifeGroup.nama}
+                      </h3>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          lifeGroup.status === 'Aktif'
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : 'bg-red-100 text-red-700'
+                        }`}
+                      >
+                        {lifeGroup.status}
+                      </span>
+                    </div>
+                    <p className='mt-1 text-sm text-gray-500 line-clamp-2'>
+                      {lifeGroup.deskripsi}
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              <div className='mt-4 space-y-2'>
-                <div className='flex items-center text-sm text-gray-500'>
-                  <FiUsers className='w-4 h-4 mr-2' />
-                  <span>{lifeGroup.jumlahAnggota} Anggota</span>
+                <div className='mt-4 space-y-2 flex-grow'>
+                  <div className='flex items-center text-sm text-gray-500'>
+                    <FiUsers className='w-4 h-4 mr-2' />
+                    <span>{lifeGroup.jumlahAnggota} Anggota</span>
+                  </div>
+                  <div className='flex items-center text-sm text-gray-500'>
+                    <BsCalendarWeek className='w-4 h-4 mr-2' />
+                    <span>{lifeGroup.jadwal}</span>
+                  </div>
+                  <div className='flex items-center text-sm text-gray-500'>
+                    <FiUserCheck className='w-4 h-4 mr-2' />
+                    <span>{lifeGroup.pembina}</span>
+                  </div>
                 </div>
-                <div className='flex items-center text-sm text-gray-500'>
-                  <BsCalendarWeek className='w-4 h-4 mr-2' />
-                  <span>{lifeGroup.jadwal}</span>
-                </div>
-                <div className='flex items-center text-sm text-gray-500'>
-                  <FiUserCheck className='w-4 h-4 mr-2' />
-                  <span>{lifeGroup.pembina}</span>
-                </div>
-              </div>
 
-              <div className='mt-4 border-t border-emerald-50 pt-4'>
-                <div className='flex justify-between items-center'>
+                <div className='mt-4 border-t border-emerald-50 pt-4'>
                   <div className='flex items-center text-sm text-gray-500'>
                     <span>{lifeGroup.lokasi}</span>
                   </div>
-                  <div className='flex space-x-2'>
-                    <button
-                      onClick={() => handleEdit(lifeGroup)}
-                      className='p-2 text-gray-400 hover:text-emerald-600 transition-colors'
-                    >
-                      <FiEdit2 className='w-5 h-5' />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(lifeGroup.id)}
-                      className='p-2 text-gray-400 hover:text-red-600 transition-colors'
-                    >
-                      <FiTrash2 className='w-5 h-5' />
-                    </button>
-                  </div>
                 </div>
               </div>
-            </div>
+            </Link>
           </motion.div>
         ))}
       </div>
