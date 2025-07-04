@@ -151,43 +151,32 @@ export default function ManualAttendancePage() {
                 </div>
               </div>
 
-              <div className='overflow-x-auto'>
-                <table className='min-w-full divide-y divide-gray-200'>
-                  <thead className='bg-gray-50'>
+              <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
+                <table className='w-full text-sm text-left text-gray-500'>
+                  <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
                     <tr>
-                      <th
-                        scope='col'
-                        className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
-                      >
+                      <th scope='col' className='px-6 py-3 font-medium'>
                         Nama
                       </th>
-                      <th
-                        scope='col'
-                        className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
-                      >
+                      <th scope='col' className='px-6 py-3 font-medium'>
                         Email
                       </th>
-                      <th
-                        scope='col'
-                        className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
-                      >
+                      <th scope='col' className='px-6 py-3 font-medium'>
                         Status
                       </th>
-                      <th
-                        scope='col'
-                        className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
-                      >
+                      <th scope='col' className='px-6 py-3 font-medium text-center'>
                         Aksi
                       </th>
                     </tr>
                   </thead>
-                  <tbody className='bg-white divide-y divide-gray-200'>
+                  <tbody>
                     {filteredParticipants.map((participant) => (
                       <motion.tr
                         key={participant.id}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.2 }}
+                        className='bg-white border-b last:border-b-0 hover:bg-gray-50'
                       >
                         <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
                           {participant.name}
@@ -206,10 +195,11 @@ export default function ManualAttendancePage() {
                             {participant.isPresent ? 'Hadir' : 'Belum Hadir'}
                           </span>
                         </td>
-                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                        <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center'>
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
+                            type="button"
                             onClick={() => toggleAttendance(participant.id)}
                             className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white ${
                               participant.isPresent

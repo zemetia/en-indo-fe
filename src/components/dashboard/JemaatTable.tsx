@@ -44,86 +44,74 @@ export default function JemaatTable({
   };
 
   return (
-    <div className='bg-white rounded-xl shadow-sm overflow-hidden'>
-      <div className='overflow-x-auto'>
-        <table className='w-full'>
-          <thead className='bg-gray-50'>
-            <tr>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Kode
-              </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Nama
-              </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Gender
-              </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Status
-              </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Kontak
-              </th>
-              <th className='px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                Aksi
-              </th>
+    <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
+      <table className='w-full text-sm text-left text-gray-500'>
+        <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
+          <tr>
+            <th scope='col' className='px-6 py-3 font-medium'>
+              Kode
+            </th>
+            <th scope='col' className='px-6 py-3 font-medium'>
+              Nama
+            </th>
+            <th scope='col' className='px-6 py-3 font-medium'>
+              Gender
+            </th>
+            <th scope='col' className='px-6 py-3 font-medium'>
+              Status
+            </th>
+            <th scope='col' className='px-6 py-3 font-medium'>
+              Kontak
+            </th>
+            <th scope='col' className='px-6 py-3 font-medium text-right'>
+              Aksi
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((jemaat) => (
+            <tr
+              key={jemaat.id}
+              className='bg-white border-b last:border-b-0 hover:bg-gray-50 cursor-pointer'
+              onClick={() => handleRowClick(jemaat)}
+            >
+              <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
+                {jemaat.kodeJemaat}
+              </td>
+              <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
+                {jemaat.nama}
+              </td>
+              <td className='px-6 py-4 whitespace-nowrap'>
+                {jemaat.gender === 'L' ? 'Laki-laki' : 'Perempuan'}
+              </td>
+              <td className='px-6 py-4 whitespace-nowrap'>{jemaat.status}</td>
+              <td className='px-6 py-4 whitespace-nowrap'>
+                {jemaat.nomorTelepon}
+              </td>
+              <td className='px-6 py-4 whitespace-nowrap text-right'>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(jemaat);
+                  }}
+                  className='text-blue-600 hover:text-blue-900 mr-4'
+                >
+                  <FiEdit2 className='w-5 h-5' />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(jemaat.id);
+                  }}
+                  className='text-red-600 hover:text-red-900'
+                >
+                  <FiTrash2 className='w-5 h-5' />
+                </button>
+              </td>
             </tr>
-          </thead>
-          <tbody className='bg-white divide-y divide-gray-200'>
-            {data.map((jemaat) => (
-              <tr
-                key={jemaat.id}
-                className='hover:bg-gray-50 cursor-pointer'
-                onClick={() => handleRowClick(jemaat)}
-              >
-                <td className='px-6 py-4 whitespace-nowrap'>
-                  <div className='text-sm font-medium text-gray-900'>
-                    {jemaat.kodeJemaat}
-                  </div>
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap'>
-                  <div className='text-sm font-medium text-gray-900'>
-                    {jemaat.nama}
-                  </div>
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap'>
-                  <div className='text-sm text-gray-500'>
-                    {jemaat.gender === 'L' ? 'Laki-laki' : 'Perempuan'}
-                  </div>
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap'>
-                  <div className='text-sm text-gray-500'>{jemaat.status}</div>
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap'>
-                  <div className='text-sm text-gray-500'>
-                    {jemaat.nomorTelepon}
-                  </div>
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap text-right'>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEdit(jemaat);
-                    }}
-                    className='text-primary-600 hover:text-primary-900 mr-4'
-                  >
-                    <FiEdit2 className='w-5 h-5' />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete(jemaat.id);
-                    }}
-                    className='text-red-600 hover:text-red-900'
-                  >
-                    <FiTrash2 className='w-5 h-5' />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

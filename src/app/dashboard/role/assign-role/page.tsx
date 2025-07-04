@@ -69,59 +69,51 @@ export default function AssignRolePage() {
     }
 
     return (
-      <div className='bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden'>
-        <div className='overflow-x-auto'>
-          <table className='min-w-full divide-y divide-gray-200'>
-            <thead className='bg-gray-50'>
-              <tr>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Nama
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Email
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Role Saat Ini
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Departemen
-                </th>
-                <th className='px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Aksi
-                </th>
+      <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
+        <table className='w-full text-sm text-left text-gray-500'>
+          <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
+            <tr>
+              <th scope='col' className='px-6 py-3 font-medium'>
+                Nama
+              </th>
+              <th scope='col' className='px-6 py-3 font-medium'>
+                Email
+              </th>
+              <th scope='col' className='px-6 py-3 font-medium'>
+                Role Saat Ini
+              </th>
+              <th scope='col' className='px-6 py-3 font-medium'>
+                Departemen
+              </th>
+              <th scope='col' className='px-6 py-3 font-medium text-right'>
+                Aksi
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map((user) => (
+              <tr key={user.id} className='bg-white border-b last:border-b-0 hover:bg-gray-50'>
+                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
+                  {user.nama}
+                </td>
+                <td className='px-6 py-4 whitespace-nowrap'>{user.email}</td>
+                <td className='px-6 py-4 whitespace-nowrap'>
+                  <span className='px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800'>
+                    {user.currentRole}
+                  </span>
+                </td>
+                <td className='px-6 py-4 whitespace-nowrap'>
+                  {user.department}
+                </td>
+                <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
+                  <button className='text-primary-600 hover:text-primary-900'>
+                    Edit Role
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody className='bg-white divide-y divide-gray-200'>
-              {users.map((user) => (
-                <tr key={user.id} className='hover:bg-gray-50'>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <div className='text-sm font-medium text-gray-900'>
-                      {user.nama}
-                    </div>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <div className='text-sm text-gray-500'>{user.email}</div>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <span className='px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800'>
-                      {user.currentRole}
-                    </span>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <div className='text-sm text-gray-500'>
-                      {user.department}
-                    </div>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
-                    <button className='text-primary-600 hover:text-primary-900'>
-                      Edit Role
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
     );
   };

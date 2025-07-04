@@ -72,7 +72,7 @@ export default function ListPelayanPage() {
 
     if (musicians.length === 0) {
       return (
-        <div className='bg-gray-50 rounded-xl p-8 text-center'>
+        <div className='text-center py-10 bg-gray-50 rounded-xl'>
           <FiUser className='w-10 h-10 text-gray-400 mx-auto mb-4' />
           <h3 className='text-lg font-semibold text-gray-900 mb-2'>
             Tidak ada data pelayan
@@ -92,73 +92,61 @@ export default function ListPelayanPage() {
     }
 
     return (
-      <div className='overflow-x-auto bg-white rounded-xl shadow-sm border border-amber-50'>
-        <table className='min-w-full divide-y divide-amber-100'>
-          <thead className='bg-amber-50'>
+      <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
+        <table className='w-full text-sm text-left text-gray-500'>
+          <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
             <tr>
-              <th className='px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider'>
+              <th scope='col' className='px-6 py-3 font-medium'>
                 Nama
               </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider'>
+              <th scope='col' className='px-6 py-3 font-medium'>
                 Kontak
               </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider'>
+              <th scope='col' className='px-6 py-3 font-medium'>
                 Instrumen
               </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider'>
+              <th scope='col' className='px-6 py-3 font-medium'>
                 Pengalaman
               </th>
-              <th className='px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider'>
+              <th scope='col' className='px-6 py-3 font-medium'>
                 Status
               </th>
-              <th className='px-6 py-3 text-right text-xs font-medium text-amber-700 uppercase tracking-wider'>
+              <th scope='col' className='px-6 py-3 font-medium text-right'>
                 Aksi
               </th>
             </tr>
           </thead>
-          <tbody className='bg-white divide-y divide-amber-50'>
+          <tbody>
             {musicians.map((musician, index) => (
               <motion.tr
                 key={musician.id}
-                className='hover:bg-amber-50'
+                className='bg-white border-b last:border-b-0 hover:bg-gray-50'
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                <td className='px-6 py-4 whitespace-nowrap'>
+                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
                   <div className='flex items-center'>
                     <div className='flex-shrink-0 h-10 w-10'>
                       <div className='h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center'>
                         <FiUser className='h-6 w-6 text-amber-600' />
                       </div>
                     </div>
-                    <div className='ml-4'>
-                      <div className='text-sm font-medium text-gray-900'>
-                        {musician.nama}
-                      </div>
-                    </div>
+                    <div className='ml-4'>{musician.nama}</div>
                   </div>
                 </td>
                 <td className='px-6 py-4 whitespace-nowrap'>
-                  <div className='text-sm text-gray-500'>
-                    {musician.email}
-                  </div>
-                  <div className='text-sm text-gray-500'>
-                    {musician.telepon}
-                  </div>
+                  <div>{musician.email}</div>
+                  <div className='text-gray-400'>{musician.telepon}</div>
                 </td>
                 <td className='px-6 py-4 whitespace-nowrap'>
                   <div className='flex items-center'>
-                    <FiMusic className='h-4 w-4 text-amber-500 mr-2' />
-                    <span className='text-sm text-gray-500'>
-                      {musician.instrument}
-                    </span>
+                    <FiMusic className='h-4 w-4 text-gray-400 mr-2' />
+                    <span>{musician.instrument}</span>
                   </div>
                 </td>
                 <td className='px-6 py-4 whitespace-nowrap'>
-                  <div className='text-sm text-gray-500'>
-                    {musician.pengalaman}
-                  </div>
+                  {musician.pengalaman}
                 </td>
                 <td className='px-6 py-4 whitespace-nowrap'>
                   <span
@@ -175,7 +163,7 @@ export default function ListPelayanPage() {
                   <div className='flex space-x-2 justify-end'>
                     <Link
                       href={`/dashboard/musik/list-pelayan/${musician.id}/edit`}
-                      className='text-amber-600 hover:text-amber-900'
+                      className='text-blue-600 hover:text-blue-900'
                     >
                       <FiEdit2 className='w-5 h-5' />
                     </Link>
@@ -202,7 +190,7 @@ export default function ListPelayanPage() {
         gradientTo='to-amber-700'
       />
 
-      <div className='bg-white rounded-xl shadow-sm p-6 border border-amber-50'>
+      <div className='bg-white rounded-xl shadow-sm p-6 border border-gray-200'>
         <div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0'>
           <div>
             <h2 className='text-lg font-semibold text-gray-900'>
@@ -222,7 +210,7 @@ export default function ListPelayanPage() {
         </div>
 
         {/* Search and Filter */}
-        <div className='bg-white rounded-xl shadow-sm p-4 border border-amber-50 mb-6'>
+        <div className='bg-white rounded-xl shadow-sm p-4 border border-gray-200 mb-6'>
           <div className='flex flex-col md:flex-row gap-4'>
             <div className='flex-1'>
               <div className='relative'>

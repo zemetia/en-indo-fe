@@ -74,76 +74,68 @@ export default function UserRolePage() {
     }
 
     return (
-      <div className='bg-white rounded-xl shadow-sm overflow-hidden'>
-        <div className='overflow-x-auto'>
-          <table className='w-full'>
-            <thead className='bg-gray-50'>
-              <tr>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Nama Role
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Deskripsi
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Jumlah User
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Status
-                </th>
-                <th className='px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                  Aksi
-                </th>
+      <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
+        <table className='w-full text-sm text-left text-gray-500'>
+          <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
+            <tr>
+              <th scope='col' className='px-6 py-3 font-medium'>
+                Nama Role
+              </th>
+              <th scope='col' className='px-6 py-3 font-medium'>
+                Deskripsi
+              </th>
+              <th scope='col' className='px-6 py-3 font-medium'>
+                Jumlah User
+              </th>
+              <th scope='col' className='px-6 py-3 font-medium'>
+                Status
+              </th>
+              <th scope='col' className='px-6 py-3 font-medium text-right'>
+                Aksi
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {roles.map((role) => (
+              <tr key={role.id} className='bg-white border-b last:border-b-0 hover:bg-gray-50'>
+                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
+                  {role.nama}
+                </td>
+                <td className='px-6 py-4'>
+                  <div className='text-sm text-gray-500'>{role.deskripsi}</div>
+                </td>
+                <td className='px-6 py-4 whitespace-nowrap'>
+                  {role.jumlahUser} user
+                </td>
+                <td className='px-6 py-4 whitespace-nowrap'>
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      role.status === 'Aktif'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}
+                  >
+                    {role.status}
+                  </span>
+                </td>
+                <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
+                  <button
+                    onClick={() => handleEdit(role)}
+                    className='text-primary-600 hover:text-primary-900 mr-4'
+                  >
+                    <FiEdit2 className='w-5 h-5' />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(role.id)}
+                    className='text-red-600 hover:text-red-900'
+                  >
+                    <FiTrash2 className='w-5 h-5' />
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody className='bg-white divide-y divide-gray-200'>
-              {roles.map((role) => (
-                <tr key={role.id} className='hover:bg-gray-50'>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <div className='text-sm font-medium text-gray-900'>
-                      {role.nama}
-                    </div>
-                  </td>
-                  <td className='px-6 py-4'>
-                    <div className='text-sm text-gray-500'>
-                      {role.deskripsi}
-                    </div>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <div className='text-sm text-gray-500'>
-                      {role.jumlahUser} user
-                    </div>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        role.status === 'Aktif'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}
-                    >
-                      {role.status}
-                    </span>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
-                    <button
-                      onClick={() => handleEdit(role)}
-                      className='text-primary-600 hover:text-primary-900 mr-4'
-                    >
-                      <FiEdit2 className='w-5 h-5' />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(role.id)}
-                      className='text-red-600 hover:text-red-900'
-                    >
-                      <FiTrash2 className='w-5 h-5' />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
     );
   };
