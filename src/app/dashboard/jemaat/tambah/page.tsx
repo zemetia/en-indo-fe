@@ -100,7 +100,7 @@ export default function TambahJemaatPage() {
   );
 
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={200}>
       <div className='space-y-6 pb-16'>
         <FeaturedCard
           title='Tambah Jemaat Baru'
