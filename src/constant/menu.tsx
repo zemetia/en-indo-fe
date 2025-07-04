@@ -1,3 +1,4 @@
+
 import { BsCalendarEvent, BsCalendarWeek } from 'react-icons/bs';
 import {
   FiCalendar,
@@ -223,8 +224,8 @@ export const dashboardMenu: MenuItem[] = [
     permissions: ['admin', 'pemuridan', 'lifegroup'],
   },
   {
-    title: 'Pelayanan',
-    description: 'Kelola pelayanan pengguna',
+    title: 'Manajemen Role',
+    description: 'Kelola role dan izin pengguna',
     icon: TbUserStar,
     href: '/dashboard/role',
     color: 'bg-cyan-500',
