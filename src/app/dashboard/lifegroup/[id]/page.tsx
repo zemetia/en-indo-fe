@@ -154,10 +154,10 @@ export default function LifeGroupDetailPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                 {/* Left Column - Leader and Info */}
                 <div className="lg:col-span-1 space-y-6">
-                    <Card className="shadow-lg border-2 border-amber-300 bg-amber-50">
+                    <Card className="shadow-lg border-2 border-emerald-300 bg-emerald-50">
                         <CardHeader>
-                            <CardTitle className="flex items-center text-amber-800">
-                                <Star className="w-5 h-5 mr-3 text-amber-600" />
+                            <CardTitle className="flex items-center text-emerald-800">
+                                <Star className="w-5 h-5 mr-3 text-emerald-600" />
                                 Pemimpin Life Group
                             </CardTitle>
                         </CardHeader>
@@ -200,7 +200,7 @@ export default function LifeGroupDetailPage() {
                         </CardContent>
                     </Card>
 
-                    <Button asChild size="lg" className="w-full bg-green-600 hover:bg-green-700">
+                    <Button asChild size="lg" className="w-full bg-green-600 hover:bg-green-700 text-white">
                         <Link href={lifeGroup.whatsapp_link} target="_blank">
                             <MessageSquare className="w-5 h-5 mr-2" />
                             Join Grup WhatsApp
