@@ -3,8 +3,7 @@
 import { Inter } from 'next/font/google';
 import { usePathname } from 'next/navigation';
 
-import '@/styles/globals.css';
-import '@/styles/colors.css';
+import '@/app/globals.css';
 
 import Navbar from '@/components/navigation/Navbar';
 import Footer from '@/components/navigation/Footer';
