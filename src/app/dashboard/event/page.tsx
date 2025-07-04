@@ -9,6 +9,7 @@ import { id } from 'date-fns/locale';
 import Image from 'next/image';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
+import { Button } from '@/components/ui/button';
 
 interface PIC {
   id: string;
