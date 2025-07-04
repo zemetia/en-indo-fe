@@ -72,37 +72,11 @@ export const dashboardMenu: MenuItem[] = [
   },
   {
     title: 'Kehadiran',
-    description: 'Kelola pencatatan kehadiran',
+    description: 'Pindai QR Code untuk kehadiran',
     icon: FiCheckSquare,
     href: '/dashboard/attendance',
     color: 'bg-emerald-500',
     permissions: ['admin', 'event'],
-    submenu: [
-      {
-        title: 'Pencatatan Sederhana',
-        description: 'Catat jumlah kehadiran berdasarkan kategori',
-        icon: FiUsers,
-        href: '/dashboard/attendance/simple',
-        color: 'bg-emerald-600',
-        permissions: ['admin', 'event'],
-      },
-      {
-        title: 'Pencatatan Manual',
-        description: 'Tandai kehadiran jemaat secara manual',
-        icon: FiCheckSquare,
-        href: '/dashboard/attendance/manual',
-        color: 'bg-emerald-700',
-        permissions: ['admin', 'event'],
-      },
-      {
-        title: 'Scan QR Code',
-        description: 'Scan QR Code untuk pencatatan kehadiran',
-        icon: QrCode,
-        href: '/dashboard/attendance/qr',
-        color: 'bg-emerald-800',
-        permissions: ['admin', 'event'],
-      },
-    ],
   },
   {
     title: 'Data Jemaat',
