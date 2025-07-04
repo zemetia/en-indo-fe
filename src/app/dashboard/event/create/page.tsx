@@ -2,10 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, Save, X } from 'lucide-react';
+import { Save, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
-import { id } from 'date-fns/locale';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import { Input } from '@/components/ui/input';
@@ -33,11 +32,6 @@ interface EventFormData {
   recurrenceRule?: {
     frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
     interval: number;
-    byWeekday?: string[];
-    byMonthDay?: number[];
-    byMonth?: number[];
-    count?: number;
-    until?: string;
   };
 }
 
@@ -60,8 +54,10 @@ export default function CreateEventPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // If not recurring, ensure recurrenceRule is undefined
+    const finalFormData = isRecurring ? formData : { ...formData, recurrenceRule: undefined };
     // TODO: Implement API call to create event
-    console.log('Creating event:', formData);
+    console.log('Creating event:', finalFormData);
     router.push('/dashboard/event');
   };
 
@@ -76,6 +72,17 @@ export default function CreateEventPage() {
       [name]:
         type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
     }));
+  };
+  
+  const handleRecurrenceChange = (key: keyof NonNullable<EventFormData['recurrenceRule']>, value: string | number) => {
+    setFormData(prev => ({
+        ...prev,
+        recurrenceRule: {
+            frequency: prev.recurrenceRule?.frequency || 'WEEKLY',
+            interval: prev.recurrenceRule?.interval || 1,
+            [key]: value,
+        }
+    }))
   };
 
   return (
@@ -98,10 +105,10 @@ export default function CreateEventPage() {
           onSubmit={handleSubmit}
           className='p-6 bg-white rounded-xl shadow-sm border border-gray-200'
         >
-          <div className='space-y-6'>
+          <div className='space-y-8'>
             {/* Basic Information */}
             <div>
-              <h3 className='text-lg font-medium text-gray-900 mb-4'>
+              <h3 className='text-lg font-medium text-gray-900 mb-4 pb-2 border-b'>
                 Informasi Dasar
               </h3>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
@@ -166,14 +173,14 @@ export default function CreateEventPage() {
                   rows={3}
                   value={formData.description}
                   onChange={handleInputChange}
-                  className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm'
+                  className='mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2'
                 />
               </div>
             </div>
 
             {/* Date and Time */}
             <div>
-              <h3 className='text-lg font-medium text-gray-900 mb-4'>
+              <h3 className='text-lg font-medium text-gray-900 mb-4 pb-2 border-b'>
                 Tanggal dan Waktu
               </h3>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
@@ -264,11 +271,11 @@ export default function CreateEventPage() {
 
             {/* Recurrence Settings */}
             <div>
-              <div className='flex items-center justify-between'>
+              <div className='flex items-center justify-between pb-2 border-b'>
                 <h3 className='text-lg font-medium text-gray-900'>
                   Pengaturan Pengulangan
                 </h3>
-                <label className='flex items-center'>
+                <label className='flex items-center cursor-pointer'>
                   <input
                     type='checkbox'
                     checked={isRecurring}
@@ -282,76 +289,60 @@ export default function CreateEventPage() {
               </div>
 
               {isRecurring && (
-                <div className='mt-4 grid grid-cols-1 md:grid-cols-2 gap-4'>
-                  <div>
-                    <label
-                      htmlFor='frequency'
-                      className='block text-sm font-medium text-gray-700 mb-2'
-                    >
-                      Frekuensi
-                    </label>
-                    <Select
-                      name='frequency'
-                      value={formData.recurrenceRule?.frequency || 'WEEKLY'}
-                      onValueChange={(value) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          recurrenceRule: {
-                            ...prev.recurrenceRule,
-                            frequency: value as
-                              | 'DAILY'
-                              | 'WEEKLY'
-                              | 'MONTHLY'
-                              | 'YEARLY',
-                            interval: prev.recurrenceRule?.interval || 1,
-                          },
-                        }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder='Pilih Frekuensi' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value='DAILY'>Setiap hari</SelectItem>
-                        <SelectItem value='WEEKLY'>Setiap minggu</SelectItem>
-                        <SelectItem value='MONTHLY'>Setiap bulan</SelectItem>
-                        <SelectItem value='YEARLY'>Setiap tahun</SelectItem>
-                      </SelectContent>
-                    </Select>
+                <motion.div 
+                    initial={{opacity: 0, height: 0}}
+                    animate={{opacity: 1, height: 'auto'}}
+                    exit={{opacity: 0, height: 0}}
+                    className='mt-4 p-4 bg-gray-50 rounded-lg border'
+                >
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                    <div>
+                      <label
+                        htmlFor='frequency'
+                        className='block text-sm font-medium text-gray-700 mb-2'
+                      >
+                        Frekuensi
+                      </label>
+                      <Select
+                        name='frequency'
+                        value={formData.recurrenceRule?.frequency}
+                        onValueChange={(value) => handleRecurrenceChange('frequency', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder='Pilih Frekuensi' />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value='DAILY'>Setiap hari</SelectItem>
+                          <SelectItem value='WEEKLY'>Setiap minggu</SelectItem>
+                          <SelectItem value='MONTHLY'>Setiap bulan</SelectItem>
+                          <SelectItem value='YEARLY'>Setiap tahun</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label
+                        htmlFor='interval'
+                        className='block text-sm font-medium text-gray-700 mb-2'
+                      >
+                        Interval
+                      </label>
+                      <Input
+                        type='number'
+                        name='interval'
+                        id='interval'
+                        min='1'
+                        value={formData.recurrenceRule?.interval || 1}
+                        onChange={(e) => handleRecurrenceChange('interval', parseInt(e.target.value))}
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label
-                      htmlFor='interval'
-                      className='block text-sm font-medium text-gray-700 mb-2'
-                    >
-                      Interval
-                    </label>
-                    <Input
-                      type='number'
-                      name='interval'
-                      id='interval'
-                      min='1'
-                      value={formData.recurrenceRule?.interval || 1}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          recurrenceRule: {
-                            ...prev.recurrenceRule,
-                            frequency:
-                              prev.recurrenceRule?.frequency || 'WEEKLY',
-                            interval: parseInt(e.target.value),
-                          },
-                        }))
-                      }
-                    />
-                  </div>
-                </div>
+                </motion.div>
               )}
             </div>
 
             {/* Additional Settings */}
             <div>
-              <h3 className='text-lg font-medium text-gray-900 mb-4'>
+              <h3 className='text-lg font-medium text-gray-900 mb-4 pb-2 border-b'>
                 Pengaturan Tambahan
               </h3>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
@@ -417,7 +408,7 @@ export default function CreateEventPage() {
             </div>
           </div>
 
-          <div className='flex justify-end space-x-4 mt-6'>
+          <div className='flex justify-end space-x-4 mt-8 pt-6 border-t'>
             <Button
               type='button'
               onClick={() => router.back()}
@@ -426,7 +417,7 @@ export default function CreateEventPage() {
               <X className='h-4 w-4 mr-2' />
               Batal
             </Button>
-            <Button type='submit'>
+            <Button type='submit' className="bg-emerald-600 hover:bg-emerald-700">
               <Save className='h-4 w-4 mr-2' />
               Simpan Event
             </Button>

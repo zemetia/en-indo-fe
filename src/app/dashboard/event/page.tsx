@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, Plus, Clock, MapPin, Users, Music } from 'lucide-react';
+import { Calendar, Plus, Clock, MapPin, Users, Music, Repeat } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
 import { id } from 'date-fns/locale';
@@ -26,14 +26,10 @@ interface Event {
     frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
     interval: number;
     byWeekday?: string[];
-    byMonthDay?: number[];
-    byMonth?: number[];
-    count?: number;
-    until?: string;
   };
   isPublic: boolean;
   discipleshipJourneyId?: string;
-  lagu?: { id: string; title: string }[];
+  lagu?: { id:string; title: string }[];
 }
 
 export default function EventPage() {
@@ -78,11 +74,6 @@ export default function EventPage() {
       endDatetime: '2024-05-15T21:00:00+07:00',
       allDay: false,
       timezone: 'Asia/Jakarta',
-      recurrenceRule: {
-        frequency: 'MONTHLY',
-        interval: 1,
-        byMonthDay: [15],
-      },
       isPublic: false,
     },
   ];
@@ -92,7 +83,9 @@ export default function EventPage() {
   };
 
   const handleEventClick = (eventId: string) => {
-    router.push(`/dashboard/event/${eventId}`);
+    // This will require a detail page to be created later
+    // router.push(`/dashboard/event/${eventId}`);
+    console.log(`Navigating to event detail page for ID: ${eventId}`);
   };
 
   const getEventTypeColor = (type: Event['type']) => {
@@ -108,6 +101,18 @@ export default function EventPage() {
 
   const formatTime = (datetime: string) => {
     return format(parseISO(datetime), 'HH:mm', { locale: id });
+  };
+
+  const formatRecurrence = (rule: Event['recurrenceRule']) => {
+    if (!rule) return '';
+    const intervalText = rule.interval > 1 ? `Setiap ${rule.interval}` : 'Setiap';
+    switch (rule.frequency) {
+        case 'DAILY': return `${intervalText} hari`;
+        case 'WEEKLY': return `${intervalText} minggu`;
+        case 'MONTHLY': return `${intervalText} bulan`;
+        case 'YEARLY': return `${intervalText} tahun`;
+        default: return 'Berulang';
+    }
   };
 
   return (
@@ -134,7 +139,7 @@ export default function EventPage() {
               <div className='flex items-center space-x-4'>
                 <button
                   onClick={() => setView('month')}
-                  className={`px-4 py-2 rounded-md ${
+                  className={`px-4 py-2 rounded-md text-sm font-medium ${
                     view === 'month'
                       ? 'bg-emerald-100 text-emerald-800'
                       : 'text-gray-600 hover:bg-gray-100'
@@ -144,7 +149,7 @@ export default function EventPage() {
                 </button>
                 <button
                   onClick={() => setView('week')}
-                  className={`px-4 py-2 rounded-md ${
+                  className={`px-4 py-2 rounded-md text-sm font-medium ${
                     view === 'week'
                       ? 'bg-emerald-100 text-emerald-800'
                       : 'text-gray-600 hover:bg-gray-100'
@@ -154,7 +159,7 @@ export default function EventPage() {
                 </button>
                 <button
                   onClick={() => setView('day')}
-                  className={`px-4 py-2 rounded-md ${
+                  className={`px-4 py-2 rounded-md text-sm font-medium ${
                     view === 'day'
                       ? 'bg-emerald-100 text-emerald-800'
                       : 'text-gray-600 hover:bg-gray-100'
@@ -235,16 +240,10 @@ export default function EventPage() {
 
                     {event.recurrenceRule && (
                       <div className='mt-2 pt-2 border-t border-gray-100'>
-                        <p className='text-xs text-gray-500'>
-                          Event berulang:{' '}
-                          {event.recurrenceRule.frequency === 'DAILY'
-                            ? 'Setiap hari'
-                            : event.recurrenceRule.frequency === 'WEEKLY'
-                            ? 'Setiap minggu'
-                            : event.recurrenceRule.frequency === 'MONTHLY'
-                            ? 'Setiap bulan'
-                            : 'Setiap tahun'}
-                        </p>
+                        <div className="flex items-center text-xs text-emerald-600 font-medium">
+                          <Repeat className='h-3 w-3 mr-1.5'/>
+                          {formatRecurrence(event.recurrenceRule)}
+                        </div>
                       </div>
                     )}
                   </div>
