@@ -32,22 +32,6 @@ interface RecurrenceRule {
   byWeekday?: string[];
 }
 
-interface EventFormData {
-  title: string;
-  description: string;
-  capacity: number;
-  type: 'event' | 'ibadah' | 'spiritual_journey';
-  eventLocation: string;
-  startDatetime: string;
-  endDatetime: string;
-  allDay: boolean;
-  timezone: string;
-  isPublic: boolean;
-  bannerImage: File | null;
-  pics: User[];
-  recurrenceRule?: RecurrenceRule;
-}
-
 const MOCK_USERS: User[] = [
   { id: 'user1', name: 'Pdt. Budi Santoso', avatar: 'https://placehold.co/100x100.png' },
   { id: 'user2', name: 'Pdt. Rina Wijaya', avatar: 'https://placehold.co/100x100.png' },
@@ -67,22 +51,24 @@ export default function CreateEventPage() {
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [picSearch, setPicSearch] = useState('');
 
-  const [formData, setFormData] = useState<EventFormData>({
+  const [formData, setFormData] = useState({
     title: '',
     description: '',
     capacity: 99999,
-    type: 'event',
+    type: 'event' as 'event' | 'ibadah' | 'spiritual_journey',
     eventLocation: '',
-    startDatetime: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
-    endDatetime: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
+    eventDate: format(new Date(), "yyyy-MM-dd"),
+    startTime: format(new Date(), "HH:mm"),
+    endTime: format(new Date(), "HH:mm"),
     allDay: false,
     timezone: 'Asia/Jakarta',
     isPublic: false,
-    bannerImage: null,
-    pics: [],
+    bannerImage: null as File | null,
+    pics: [] as User[],
     recurrenceRule: {
-        frequency: 'WEEKLY',
-        byWeekday: [],
+        frequency: 'WEEKLY' as 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY',
+        byWeekday: [] as string[],
+        endDate: undefined as string | undefined,
     }
   });
 
@@ -139,7 +125,22 @@ export default function CreateEventPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const finalFormData = isRecurring ? formData : { ...formData, recurrenceRule: undefined };
+    
+    const startDatetime = formData.allDay ? `${formData.eventDate}T00:00` : `${formData.eventDate}T${formData.startTime}`;
+    const endDatetime = formData.allDay ? `${formData.eventDate}T23:59` : `${formData.eventDate}T${formData.endTime}`;
+
+    const submissionData = {
+      ...formData,
+      startDatetime,
+      endDatetime,
+    };
+    
+    // Clean up temporary fields before submission
+    delete (submissionData as any).eventDate;
+    delete (submissionData as any).startTime;
+    delete (submissionData as any).endTime;
+
+    const finalFormData = isRecurring ? submissionData : { ...submissionData, recurrenceRule: undefined };
     console.log('Creating event:', finalFormData);
     showToast('Event berhasil dibuat!', 'success');
     router.push('/dashboard/event');
@@ -224,15 +225,23 @@ export default function CreateEventPage() {
                         </Select>
                     </Field>
                 </div>
-                <div className='mt-4 grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <div className='mt-4 grid grid-cols-1 md:grid-cols-3 gap-4'>
+                    <Field label="Tanggal Event">
+                        <Input type='date' name='eventDate' value={formData.eventDate} onChange={handleInputChange} required />
+                    </Field>
                     <Field label="Waktu Mulai">
-                        <Input type='datetime-local' name='startDatetime' value={formData.startDatetime} onChange={handleInputChange} required />
+                        <Input type='time' name='startTime' value={formData.startTime} onChange={handleInputChange} required disabled={formData.allDay} />
                     </Field>
                     <Field label="Waktu Selesai">
-                        <Input type='datetime-local' name='endDatetime' value={formData.endDatetime} onChange={handleInputChange} required />
+                        <Input type='time' name='endTime' value={formData.endTime} onChange={handleInputChange} required disabled={formData.allDay} />
                     </Field>
                 </div>
-                <div className='mt-4'><label className='flex items-center'><input type='checkbox' name='allDay' checked={formData.allDay} onChange={handleInputChange} className='rounded' /><span className='ml-2 text-sm'>Seharian penuh</span></label></div>
+                <div className='mt-4'>
+                    <label className='flex items-center'>
+                        <input type='checkbox' name='allDay' checked={formData.allDay} onChange={handleInputChange} className='rounded' />
+                        <span className='ml-2 text-sm'>Seharian penuh</span>
+                    </label>
+                </div>
             </Section>
             
             {/* --- Recurrence --- */}
