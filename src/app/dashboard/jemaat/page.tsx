@@ -11,10 +11,26 @@ import {
   BsPersonPlus,
   BsGeoAlt,
 } from 'react-icons/bs';
-import { FiEdit2, FiSearch, FiTrash2, FiMail, FiPhone } from 'react-icons/fi';
+import { FiEdit2, FiSearch, FiTrash2, FiMail, FiPhone, FiMoreVertical } from 'react-icons/fi';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import { getToken } from '@/lib/helper';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
 
 interface Jemaat {
   id: string;
@@ -188,15 +204,6 @@ export default function DataJemaatPage() {
                         <p className='text-sm text-gray-500 truncate'>{item.church}</p>
                     </div>
                 </div>
-                <span
-                  className={`px-2.5 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ml-2 ${
-                    item.is_aktif
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
-                  }`}
-                >
-                  {item.is_aktif ? 'Aktif' : 'Nonaktif'}
-                </span>
               </div>
               
               <div className='mt-4 pt-4 border-t border-gray-100 space-y-2'>
@@ -215,28 +222,33 @@ export default function DataJemaatPage() {
               </div>
             </div>
             
-            <div className='bg-gray-50 px-6 py-3 flex justify-end space-x-2'>
-                 <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      router.push(`/dashboard/jemaat/edit/${item.id}`);
-                    }}
-                    className='p-2 text-gray-500 hover:text-blue-600 rounded-full hover:bg-blue-100 transition-colors'
-                    aria-label={`Edit ${item.nama}`}
-                  >
-                    <FiEdit2 className='w-4 h-4' />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedJemaat(item);
-                      setShowConfirmation(true);
-                    }}
-                    className='p-2 text-gray-500 hover:text-red-600 rounded-full hover:bg-red-100 transition-colors'
-                    aria-label={`Hapus ${item.nama}`}
-                  >
-                    <FiTrash2 className='w-4 h-4' />
-                  </button>
+            <div className='bg-gray-50 px-4 py-2 flex justify-end'>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <button
+                            onClick={(e) => e.stopPropagation()}
+                            className='p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100 transition-colors'
+                            aria-label="Actions"
+                        >
+                            <FiMoreVertical className='w-4 h-4' />
+                        </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent onClick={(e) => e.stopPropagation()} align="end">
+                        <DropdownMenuItem onSelect={() => router.push(`/dashboard/jemaat/edit/${item.id}`)}>
+                            <FiEdit2 className="mr-2 h-4 w-4" />
+                            <span>Edit</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                            onSelect={() => {
+                                setSelectedJemaat(item);
+                                setShowConfirmation(true);
+                            }}
+                            className="text-red-600 focus:text-red-600 focus:bg-red-50">
+                            <FiTrash2 className="mr-2 h-4 w-4" />
+                            <span>{item.is_aktif ? 'Nonaktifkan' : 'Aktifkan'}</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
           </motion.div>
         ))}
@@ -284,45 +296,25 @@ export default function DataJemaatPage() {
         {renderContent()}
       </div>
 
-      {showConfirmation && (
-        <div
-          className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
-          style={{ margin: '0px' }}
-        >
-          <div className='bg-white rounded-xl p-6 max-w-md w-full mx-4'>
-            <h3 className='text-lg font-semibold text-gray-900 mb-4'>
-              Konfirmasi {selectedJemaat?.is_aktif ? 'Nonaktifkan' : 'Aktifkan'}{' '}
-              Jemaat
-            </h3>
-            <p className='text-gray-600 mb-6'>
-              Yakin ingin{' '}
-              {selectedJemaat?.is_aktif ? 'menonaktifkan' : 'mengaktifkan'}{' '}
-              jemaat ini?
-            </p>
-            <div className='flex justify-end space-x-4'>
-              <button
-                onClick={() => {
-                  setShowConfirmation(false);
-                  setSelectedJemaat(null);
-                }}
-                className='px-4 py-2 text-gray-600 hover:text-gray-800'
-              >
-                Batal
-              </button>
-              <button
-                onClick={() => {
-                  handleToggleStatus();
-                  setShowConfirmation(false);
-                  setSelectedJemaat(null);
-                }}
-                className='px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors'
-              >
-                Yakin
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AlertDialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Konfirmasi {selectedJemaat?.is_aktif ? 'Nonaktifkan' : 'Aktifkan'}{' '} Jemaat</AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin {selectedJemaat?.is_aktif ? 'menonaktifkan' : 'mengaktifkan'} jemaat bernama {selectedJemaat?.nama}?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSelectedJemaat(null)}>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleToggleStatus}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Yakin
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
