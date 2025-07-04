@@ -86,7 +86,7 @@ export default function CreateEventPage() {
         transition={{ duration: 0.3 }}
       >
         <form onSubmit={handleSubmit} className='space-y-6'>
-          <div className='bg-white p-6 rounded-xl shadow-sm'>
+          <div className='bg-white p-6 rounded-xl shadow-sm border border-gray-200'>
             <div className='space-y-6'>
               {/* Basic Information */}
               <div>

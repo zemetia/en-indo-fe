@@ -57,42 +57,43 @@ export default function MusicDashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
           >
-            <Link href={menu.href} className='block group'>
-              <div className='bg-white rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md hover:-translate-y-1'>
-                <div className='flex items-start space-x-4'>
-                  <div className={`p-3 rounded-lg ${menu.color} text-white`}>
-                    <menu.icon className='w-6 h-6' />
-                  </div>
-                  <div className='flex-1'>
-                    <h3 className='text-lg font-semibold text-gray-900 group-hover:text-amber-600 transition-colors'>
-                      {menu.title}
-                    </h3>
-                    <p className='mt-1 text-sm text-gray-500'>
-                      {menu.description}
-                    </p>
-                  </div>
-                  <div className='text-gray-400 group-hover:text-amber-600 transition-colors'>
-                    <svg
-                      className='w-5 h-5'
-                      fill='none'
-                      stroke='currentColor'
-                      viewBox='0 0 24 24'
-                    >
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeWidth={2}
-                        d='M9 5l7 7-7 7'
-                      />
-                    </svg>
-                  </div>
+            <Link
+              href={menu.href}
+              className='group block p-6 bg-white rounded-xl shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-lg hover:border-blue-500 hover:-translate-y-1'
+            >
+              <div className='flex items-start space-x-4'>
+                <div className={`p-3 rounded-lg ${menu.color} text-white`}>
+                  <menu.icon className='w-6 h-6' />
                 </div>
-                <div className='mt-4 border-t border-gray-100 pt-4'>
-                  <div className='flex items-center text-sm text-gray-500'>
-                    <span className='group-hover:text-amber-600 transition-colors'>
-                      Buka Menu →
-                    </span>
-                  </div>
+                <div className='flex-1'>
+                  <h3 className='text-lg font-semibold text-gray-900 group-hover:text-amber-600 transition-colors'>
+                    {menu.title}
+                  </h3>
+                  <p className='mt-1 text-sm text-gray-500'>
+                    {menu.description}
+                  </p>
+                </div>
+                <div className='text-gray-400 group-hover:text-amber-600 transition-colors'>
+                  <svg
+                    className='w-5 h-5'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M9 5l7 7-7 7'
+                    />
+                  </svg>
+                </div>
+              </div>
+              <div className='mt-4 border-t border-gray-100 pt-4'>
+                <div className='flex items-center text-sm text-gray-500'>
+                  <span className='group-hover:text-amber-600 transition-colors'>
+                    Buka Menu →
+                  </span>
                 </div>
               </div>
             </Link>

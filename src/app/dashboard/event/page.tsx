@@ -127,7 +127,7 @@ export default function EventPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <div className='bg-white p-6 rounded-xl shadow-sm'>
+        <div className='bg-white p-6 rounded-xl shadow-sm border border-gray-200'>
           <div className='space-y-6'>
             {/* Calendar View Controls */}
             <div className='flex items-center justify-between'>
@@ -181,7 +181,7 @@ export default function EventPage() {
                   key={event.id}
                   whileHover={{ scale: 1.02 }}
                   onClick={() => handleEventClick(event.id)}
-                  className='p-4 rounded-lg border border-gray-200 hover:border-emerald-500 cursor-pointer'
+                  className='p-4 bg-white rounded-xl shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-lg hover:border-blue-500 hover:-translate-y-1 cursor-pointer'
                 >
                   <div className='space-y-3'>
                     <div className='flex items-start justify-between'>

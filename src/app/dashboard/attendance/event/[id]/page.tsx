@@ -137,7 +137,7 @@ export default function EventAttendancePage({
         transition={{ duration: 0.3 }}
       >
         <form onSubmit={handleSubmit} className='space-y-6'>
-          <div className='bg-white p-6 rounded-xl shadow-sm'>
+          <div className='bg-white p-6 rounded-xl shadow-sm border border-gray-200'>
             <div className='space-y-6'>
               {/* QR Code Event */}
               <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>

@@ -65,25 +65,43 @@ export default function AttendancePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: index * 0.1 }}
           >
-            <Link href={type.href} className='block group'>
-              <div className='bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1'>
-                <div className='flex items-start space-x-4'>
-                  <div
-                    className={`p-3 rounded-lg ${type.color} text-white transform group-hover:rotate-12 transition-transform duration-300`}
+            <Link href={type.href} className='group block p-6 bg-white rounded-xl shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-lg hover:border-blue-500 hover:-translate-y-1 h-full'>
+              <div className='flex items-start space-x-4'>
+                <div
+                  className={`p-3 rounded-lg ${type.color} text-white transform group-hover:rotate-12 transition-transform duration-300`}
+                >
+                  <type.icon className='w-6 h-6' />
+                </div>
+                <div className='flex-1'>
+                  <h3 className='text-lg font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors'>
+                    {type.title}
+                  </h3>
+                  <p className='mt-1 text-sm text-gray-500'>
+                    {type.description}
+                  </p>
+                </div>
+                <div className='text-gray-400 group-hover:text-emerald-600 transition-colors'>
+                  <svg
+                    className='w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
                   >
-                    <type.icon className='w-6 h-6' />
-                  </div>
-                  <div className='flex-1'>
-                    <h3 className='text-lg font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors'>
-                      {type.title}
-                    </h3>
-                    <p className='mt-1 text-sm text-gray-500'>
-                      {type.description}
-                    </p>
-                  </div>
-                  <div className='text-gray-400 group-hover:text-emerald-600 transition-colors'>
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M9 5l7 7-7 7'
+                    />
+                  </svg>
+                </div>
+              </div>
+              <div className='mt-4 border-t border-emerald-50 pt-4'>
+                <div className='flex items-center text-sm text-gray-500'>
+                  <span className='group-hover:text-emerald-600 transition-colors flex items-center'>
+                    Buka Menu
                     <svg
-                      className='w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300'
+                      className='w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform duration-300'
                       fill='none'
                       stroke='currentColor'
                       viewBox='0 0 24 24'
@@ -95,27 +113,7 @@ export default function AttendancePage() {
                         d='M9 5l7 7-7 7'
                       />
                     </svg>
-                  </div>
-                </div>
-                <div className='mt-4 border-t border-emerald-50 pt-4'>
-                  <div className='flex items-center text-sm text-gray-500'>
-                    <span className='group-hover:text-emerald-600 transition-colors flex items-center'>
-                      Buka Menu
-                      <svg
-                        className='w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform duration-300'
-                        fill='none'
-                        stroke='currentColor'
-                        viewBox='0 0 24 24'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth={2}
-                          d='M9 5l7 7-7 7'
-                        />
-                      </svg>
-                    </span>
-                  </div>
+                  </span>
                 </div>
               </div>
             </Link>

@@ -111,12 +111,12 @@ export default function DashboardPage() {
           <h2 className='text-xl font-semibold text-gray-900'>
             {category.title}
           </h2>
-          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6'>
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
             {category.items.map((card) => (
               <Link
                 key={card.href}
                 href={card.href}
-                className='group block p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1'
+                className='group block p-6 bg-white rounded-xl shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-lg hover:border-blue-500 hover:-translate-y-1'
               >
                 <div
                   className={`inline-block p-3 rounded-lg ${card.color} transition-transform group-hover:scale-110`}

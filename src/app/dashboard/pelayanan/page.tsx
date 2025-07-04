@@ -216,7 +216,7 @@ export default function DataPelayananPage() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className='bg-white rounded-xl shadow-sm p-6 border border-blue-50'
+            className='bg-white rounded-xl shadow-sm p-6 border border-gray-200'
           >
             <div className='flex flex-col items-center justify-center py-12 space-y-6'>
               <motion.div
@@ -256,7 +256,7 @@ export default function DataPelayananPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className='bg-white rounded-xl shadow-sm p-6 border border-blue-50'
+            className='bg-white rounded-xl shadow-sm p-6 border border-gray-200'
           >
             {/* Progress Indicator */}
             <div className='flex items-center justify-center mb-8'>
@@ -344,21 +344,17 @@ export default function DataPelayananPage() {
                     className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
                   >
                     {filteredPersons.map((item) => (
-                      <motion.div
+                      <div
                         key={item.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`p-4 rounded-lg border cursor-pointer transition-all ${
-                          selectedPerson?.id === item.id
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:border-blue-300'
-                        }`}
                         onClick={() => {
                           setSelectedPerson(item);
                           setActiveTab('church');
                         }}
+                        className={`p-4 rounded-lg border transition-all duration-300 ${
+                          selectedPerson?.id === item.id
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 hover:border-blue-300'
+                        } block p-4 bg-white shadow-sm hover:shadow-lg hover:-translate-y-1 group cursor-pointer`}
                       >
                         <div className='flex items-center space-x-3'>
                           <div className='p-2 rounded-lg bg-blue-600 text-white'>
@@ -376,7 +372,7 @@ export default function DataPelayananPage() {
                             <BsCheck2 className='w-5 h-5 text-blue-600' />
                           )}
                         </div>
-                      </motion.div>
+                      </div>
                     ))}
                   </motion.div>
                 )}
@@ -390,21 +386,17 @@ export default function DataPelayananPage() {
                     className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
                   >
                     {filteredChurches.map((item) => (
-                      <motion.div
+                      <div
                         key={item.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`p-4 rounded-lg border cursor-pointer transition-all ${
-                          selectedChurch?.id === item.id
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:border-blue-300'
-                        }`}
                         onClick={() => {
                           setSelectedChurch(item);
                           setActiveTab('pelayanan');
                         }}
+                        className={`p-4 rounded-lg border transition-all duration-300 ${
+                          selectedChurch?.id === item.id
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 hover:border-blue-300'
+                        } block p-4 bg-white shadow-sm hover:shadow-lg hover:-translate-y-1 group cursor-pointer`}
                       >
                         <div className='flex items-center space-x-3'>
                           <div className='p-2 rounded-lg bg-blue-600 text-white'>
@@ -419,7 +411,7 @@ export default function DataPelayananPage() {
                             <BsCheck2 className='w-5 h-5 text-blue-600' />
                           )}
                         </div>
-                      </motion.div>
+                      </div>
                     ))}
                   </motion.div>
                 )}
@@ -434,18 +426,14 @@ export default function DataPelayananPage() {
                   >
                     <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                       {filteredPelayanan.map((item) => (
-                        <motion.div
+                        <div
                           key={item.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          className={`p-4 rounded-lg border cursor-pointer transition-all ${
+                          onClick={() => setSelectedPelayanan(item)}
+                          className={`p-4 rounded-lg border transition-all duration-300 ${
                             selectedPelayanan?.id === item.id
                               ? 'border-blue-500 bg-blue-50'
                               : 'border-gray-200 hover:border-blue-300'
-                          }`}
-                          onClick={() => setSelectedPelayanan(item)}
+                          } block p-4 bg-white shadow-sm hover:shadow-lg hover:-translate-y-1 group cursor-pointer`}
                         >
                           <div className='flex items-center space-x-3'>
                             <div className='p-2 rounded-lg bg-blue-600 text-white'>
@@ -463,7 +451,7 @@ export default function DataPelayananPage() {
                               <BsCheck2 className='w-5 h-5 text-blue-600' />
                             )}
                           </div>
-                        </motion.div>
+                        </div>
                       ))}
                     </div>
 

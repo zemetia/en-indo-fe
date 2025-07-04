@@ -52,7 +52,7 @@ export default function CongregantQRPage({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <div className='bg-white p-6 rounded-xl shadow-sm'>
+        <div className='bg-white p-6 rounded-xl shadow-sm border border-gray-200'>
           <div className='space-y-6'>
             <div className='text-center'>
               <h2 className='text-xl font-semibold text-gray-900'>

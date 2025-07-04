@@ -225,7 +225,7 @@ export default function DetailJemaatPage() {
           {/* Kolom Kiri - Informasi Pribadi */}
           <div className='lg:col-span-2 space-y-6'>
             {/* Informasi Pribadi */}
-            <div className='bg-gradient-to-br from-blue-50 to-white rounded-xl p-6 border border-gray-200'>
+            <div className='bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 border border-gray-200'>
               <h3 className='text-lg font-semibold text-gray-900 mb-6 flex items-center'>
                 <span className='w-1 h-6 bg-blue-600 rounded-full mr-3'></span>
                 Informasi Pribadi
@@ -301,7 +301,7 @@ export default function DetailJemaatPage() {
             </div>
 
             {/* Informasi Keluarga */}
-            <div className='bg-gradient-to-br from-blue-50 to-white rounded-xl p-6 border border-gray-200'>
+            <div className='bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 border border-gray-200'>
               <h3 className='text-lg font-semibold text-gray-900 mb-6 flex items-center'>
                 <span className='w-1 h-6 bg-blue-600 rounded-full mr-3'></span>
                 Informasi Keluarga
@@ -355,7 +355,7 @@ export default function DetailJemaatPage() {
             </div>
 
             {/* Informasi Kontak */}
-            <div className='bg-gradient-to-br from-blue-50 to-white rounded-xl p-6 border border-gray-200'>
+            <div className='bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 border border-gray-200'>
               <h3 className='text-lg font-semibold text-gray-900 mb-6 flex items-center'>
                 <span className='w-1 h-6 bg-blue-600 rounded-full mr-3'></span>
                 Kontak
@@ -410,7 +410,7 @@ export default function DetailJemaatPage() {
           {/* Kolom Kanan - Informasi Pelayanan */}
           <div className='space-y-6'>
             {/* Gereja & Lifegroup */}
-            <div className='bg-gradient-to-br from-blue-50 to-white rounded-xl p-6 border border-gray-200'>
+            <div className='bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 border border-gray-200'>
               <h3 className='text-lg font-semibold text-gray-900 mb-6 flex items-center'>
                 <span className='w-1 h-6 bg-blue-600 rounded-full mr-3'></span>
                 Informasi Gereja
@@ -471,7 +471,7 @@ export default function DetailJemaatPage() {
             </div>
 
             {/* LifeGroups */}
-            <div className='bg-gradient-to-br from-blue-50 to-white rounded-xl p-6 border border-gray-200'>
+            <div className='bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 border border-gray-200'>
               <h3 className='text-lg font-semibold text-gray-900 mb-6 flex items-center'>
                 <span className='w-1 h-6 bg-blue-600 rounded-full mr-3'></span>
                 LifeGroups
@@ -498,7 +498,7 @@ export default function DetailJemaatPage() {
             </div>
 
             {/* Pelayanan */}
-            <div className='bg-gradient-to-br from-blue-50 to-white rounded-xl p-6 border border-gray-200'>
+            <div className='bg-gradient-to-br from-gray-50 to-white rounded-xl p-6 border border-gray-200'>
               <h3 className='text-lg font-semibold text-gray-900 mb-6 flex items-center'>
                 <span className='w-1 h-6 bg-blue-600 rounded-full mr-3'></span>
                 Pelayanan

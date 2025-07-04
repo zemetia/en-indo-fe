@@ -185,7 +185,7 @@ export default function DataJemaatPage() {
         gradientTo='to-blue-700'
       />
 
-      <div className='bg-white rounded-xl shadow-sm p-6 border border-blue-50'>
+      <div className='bg-white rounded-xl shadow-sm p-6 border border-gray-200'>
         <div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0'>
           <div>
             <h2 className='text-lg font-semibold text-gray-900'>
@@ -241,11 +241,11 @@ export default function DataJemaatPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
               >
-                <Link href={`/dashboard/jemaat/${item.id}`} className='block'>
-                  <div className='bg-white rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md border border-blue-50 cursor-pointer group'>
+                <Link
+                  href={`/dashboard/jemaat/${item.id}`}
+                  className='group block p-6 bg-white rounded-xl shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-lg hover:border-blue-500 hover:-translate-y-1'
+                >
                     <div className='flex items-start space-x-4'>
                       <div className='p-3 rounded-lg bg-blue-600 text-white transform group-hover:rotate-12 transition-transform duration-300'>
                         <BsPeople className='w-6 h-6' />
@@ -324,7 +324,6 @@ export default function DataJemaatPage() {
                         </div>
                       </div>
                     </div>
-                  </div>
                 </Link>
               </motion.div>
             ))}
