@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import {
   BsPeople,
   BsPersonPlus,
+  BsGeoAlt,
 } from 'react-icons/bs';
 import { FiEdit2, FiSearch, FiTrash2, FiMail, FiPhone } from 'react-icons/fi';
 
@@ -161,94 +162,84 @@ export default function DataJemaatPage() {
     }
 
     return (
-      <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
-        <table className='w-full text-sm text-left text-gray-500'>
-          <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
-            <tr>
-              <th scope='col' className='px-6 py-3 font-medium'>
-                Nama
-              </th>
-              <th scope='col' className='px-6 py-3 font-medium'>
-                Kontak
-              </th>
-              <th scope='col' className='px-6 py-3 font-medium'>
-                Gereja
-              </th>
-              <th scope='col' className='px-6 py-3 font-medium'>
-                Status
-              </th>
-              <th scope='col' className='px-6 py-3 font-medium text-right'>
-                Aksi
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredJemaat.map((item, index) => (
-              <motion.tr
-                key={item.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.2, delay: index * 0.05 }}
-                onClick={() => router.push(`/dashboard/jemaat/${item.id}`)}
-                className='bg-white border-b last:border-b-0 even:bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer'
-              >
-                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
-                  <div className='flex items-center space-x-3'>
-                    <div className='w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center'>
-                      <BsPeople className='w-5 h-5 text-blue-600'/>
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+        {filteredJemaat.map((item: Jemaat, index: number) => (
+          <motion.div
+            key={item.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            whileHover={{ y: -5, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' }}
+            className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col'
+          >
+            <div 
+              className='p-6 cursor-pointer flex-grow'
+              onClick={() => router.push(`/dashboard/jemaat/${item.id}`)}
+            >
+              <div className='flex items-start justify-between'>
+                <div className='flex items-center space-x-4 min-w-0'>
+                    <div className='w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0'>
+                        <BsPeople className='w-6 h-6 text-blue-600'/>
                     </div>
-                    <span>{item.nama}</span>
-                  </div>
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                  <div className='flex items-center space-x-2'>
-                    <FiMail className="w-4 h-4 text-gray-400" />
-                    <span>{item.email || '-'}</span>
-                  </div>
-                  <div className='flex items-center space-x-2 mt-1'>
-                    <FiPhone className="w-4 h-4 text-gray-400" />
-                    <span>{item.nomor_telepon || '-'}</span>
-                  </div>
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                  {item.church}
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                   <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        item.is_aktif
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}
-                    >
-                      {item.is_aktif ? 'Aktif' : 'Nonaktif'}
-                    </span>
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-right'>
-                  <div className='flex items-center justify-end space-x-2'>
-                     <Link
-                        href={`/dashboard/jemaat/edit/${item.id}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className='p-2 text-gray-400 hover:text-blue-600 rounded-full hover:bg-blue-100 transition-colors'
-                      >
-                        <FiEdit2 className='w-4 h-4' />
-                      </Link>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedJemaat(item);
-                          setShowConfirmation(true);
-                        }}
-                        className='p-2 text-gray-400 hover:text-red-600 rounded-full hover:bg-red-100 transition-colors'
-                      >
-                        <FiTrash2 className='w-4 h-4' />
-                      </button>
-                  </div>
-                </td>
-              </motion.tr>
-            ))}
-          </tbody>
-        </table>
+                    <div className='min-w-0'>
+                        <h3 className='text-lg font-semibold text-gray-900 truncate'>
+                            {item.nama}
+                        </h3>
+                        <p className='text-sm text-gray-500 truncate'>{item.church}</p>
+                    </div>
+                </div>
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ml-2 ${
+                    item.is_aktif
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                  }`}
+                >
+                  {item.is_aktif ? 'Aktif' : 'Nonaktif'}
+                </span>
+              </div>
+              
+              <div className='mt-4 pt-4 border-t border-gray-100 space-y-2'>
+                <div className='flex items-center text-sm text-gray-600'>
+                    <FiMail className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
+                    <span className='truncate'>{item.email || '-'}</span>
+                </div>
+                <div className='flex items-center text-sm text-gray-600'>
+                    <FiPhone className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
+                    <span className='truncate'>{item.nomor_telepon || '-'}</span>
+                </div>
+                <div className='flex items-center text-sm text-gray-600'>
+                    <BsGeoAlt className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
+                    <span className='truncate'>{item.alamat || '-'}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className='bg-gray-50 px-6 py-3 flex justify-end space-x-2'>
+                 <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/dashboard/jemaat/edit/${item.id}`);
+                    }}
+                    className='p-2 text-gray-500 hover:text-blue-600 rounded-full hover:bg-blue-100 transition-colors'
+                    aria-label={`Edit ${item.nama}`}
+                  >
+                    <FiEdit2 className='w-4 h-4' />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedJemaat(item);
+                      setShowConfirmation(true);
+                    }}
+                    className='p-2 text-gray-500 hover:text-red-600 rounded-full hover:bg-red-100 transition-colors'
+                    aria-label={`Hapus ${item.nama}`}
+                  >
+                    <FiTrash2 className='w-4 h-4' />
+                  </button>
+            </div>
+          </motion.div>
+        ))}
       </div>
     );
   };
