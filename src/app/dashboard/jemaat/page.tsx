@@ -5,14 +5,12 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import * as React from 'react';
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
-  BsCalendarWeek,
-  BsGeoAlt,
   BsPeople,
   BsPersonPlus,
 } from 'react-icons/bs';
-import { FiEdit2, FiSearch, FiTrash2, FiUsers } from 'react-icons/fi';
-import { MdAlternateEmail } from 'react-icons/md';
+import { FiEdit2, FiSearch, FiTrash2, FiMail, FiPhone } from 'react-icons/fi';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import { getToken } from '@/lib/helper';
@@ -38,6 +36,7 @@ export default function DataJemaatPage() {
   );
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const router = useRouter();
 
   const fetchJemaat = async () => {
     setLoading(true);
@@ -103,7 +102,6 @@ export default function DataJemaatPage() {
         }
       );
 
-      // Update status jemaat di state tanpa fetch ulang
       setJemaat(
         (prevJemaat) =>
           prevJemaat?.map((j) =>
@@ -115,7 +113,6 @@ export default function DataJemaatPage() {
       setSelectedJemaat(null);
     } catch (error) {
       setError('Gagal mengubah status jemaat. Silakan coba lagi nanti.');
-      // Jika terjadi error, fetch ulang data untuk memastikan konsistensi
       fetchJemaat();
     }
   };
@@ -126,54 +123,135 @@ export default function DataJemaatPage() {
       )
     : [];
 
-  if (loading) {
-    return (
-      <div className='space-y-6'>
-        <FeaturedCard
-          title='Data Jemaat'
-          description='Kelola data jemaat gereja'
-          actionLabel='Kembali ke Dashboard'
-          gradientFrom='from-blue-500'
-          gradientTo='to-blue-700'
-        />
-        <div className='bg-white rounded-xl shadow-sm p-6 border border-gray-200 flex justify-center items-center min-h-[400px]'>
-          <div className='flex flex-col items-center'>
-            <div className='w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4'></div>
-            <p className='text-gray-600'>Memuat data jemaat...</p>
-          </div>
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className='flex justify-center items-center py-10'>
+          <div className='w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin'></div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  if (error) {
-    return (
-      <div className='space-y-6'>
-        <FeaturedCard
-          title='Data Jemaat'
-          description='Kelola data jemaat gereja'
-          actionLabel='Kembali ke Dashboard'
-          gradientFrom='from-blue-500'
-          gradientTo='to-blue-700'
-        />
-        <div className='bg-white rounded-xl shadow-sm p-6 border border-gray-200 flex justify-center items-center min-h-[400px]'>
-          <div className='text-center'>
-            <div className='text-red-500 mb-2 text-5xl'>
-              <BsGeoAlt className='mx-auto' />
-            </div>
-            <h3 className='text-lg font-semibold text-gray-900 mb-2'>Error</h3>
-            <p className='text-gray-600 mb-4'>{error}</p>
+    if (error) {
+      return <p className='text-center text-red-500 py-10'>{error}</p>;
+    }
+
+    if (filteredJemaat.length === 0) {
+      return (
+        <div className='text-center py-10 bg-gray-50 rounded-xl'>
+          <BsPeople className='w-10 h-10 text-gray-400 mx-auto mb-4' />
+          <h3 className='text-lg font-semibold text-gray-900 mb-2'>
+            Tidak ada data jemaat
+          </h3>
+          <p className='text-gray-600 max-w-md mx-auto mb-6'>
+            {searchTerm
+              ? `Tidak ada hasil yang cocok dengan "${searchTerm}"`
+              : 'Belum ada data jemaat yang tersedia. Tambahkan data jemaat baru untuk melihatnya di sini.'}
+          </p>
+          {searchTerm && (
             <button
-              onClick={() => window.location.reload()}
-              className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'
+              onClick={() => setSearchTerm('')}
+              className='px-4 py-2 bg-gray-200 rounded-lg text-gray-800 hover:bg-gray-300 transition-colors'
             >
-              Coba Lagi
+              Hapus Pencarian
             </button>
-          </div>
+          )}
         </div>
+      );
+    }
+
+    return (
+      <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
+        <table className='w-full text-sm text-left text-gray-500'>
+          <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
+            <tr>
+              <th scope='col' className='px-6 py-3 font-medium'>
+                Nama
+              </th>
+              <th scope='col' className='px-6 py-3 font-medium'>
+                Kontak
+              </th>
+              <th scope='col' className='px-6 py-3 font-medium'>
+                Gereja
+              </th>
+              <th scope='col' className='px-6 py-3 font-medium'>
+                Status
+              </th>
+              <th scope='col' className='px-6 py-3 font-medium text-right'>
+                Aksi
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredJemaat.map((item, index) => (
+              <motion.tr
+                key={item.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2, delay: index * 0.05 }}
+                onClick={() => router.push(`/dashboard/jemaat/${item.id}`)}
+                className='bg-white border-b last:border-b-0 even:bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer'
+              >
+                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
+                  <div className='flex items-center space-x-3'>
+                    <div className='w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center'>
+                      <BsPeople className='w-5 h-5 text-blue-600'/>
+                    </div>
+                    <span>{item.nama}</span>
+                  </div>
+                </td>
+                <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                  <div className='flex items-center space-x-2'>
+                    <FiMail className="w-4 h-4 text-gray-400" />
+                    <span>{item.email || '-'}</span>
+                  </div>
+                  <div className='flex items-center space-x-2 mt-1'>
+                    <FiPhone className="w-4 h-4 text-gray-400" />
+                    <span>{item.nomor_telepon || '-'}</span>
+                  </div>
+                </td>
+                <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                  {item.church}
+                </td>
+                <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                   <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        item.is_aktif
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}
+                    >
+                      {item.is_aktif ? 'Aktif' : 'Nonaktif'}
+                    </span>
+                </td>
+                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-right'>
+                  <div className='flex items-center justify-end space-x-2'>
+                     <Link
+                        href={`/dashboard/jemaat/edit/${item.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className='p-2 text-gray-400 hover:text-blue-600 rounded-full hover:bg-blue-100 transition-colors'
+                      >
+                        <FiEdit2 className='w-4 h-4' />
+                      </Link>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedJemaat(item);
+                          setShowConfirmation(true);
+                        }}
+                        className='p-2 text-gray-400 hover:text-red-600 rounded-full hover:bg-red-100 transition-colors'
+                      >
+                        <FiTrash2 className='w-4 h-4' />
+                      </button>
+                  </div>
+                </td>
+              </motion.tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     );
-  }
+  };
 
   return (
     <div className='space-y-6'>
@@ -212,126 +290,9 @@ export default function DataJemaatPage() {
             </Link>
           </div>
         </div>
-
-        {filteredJemaat.length === 0 ? (
-          <div className='bg-gray-50 rounded-xl p-8 text-center'>
-            <BsPeople className='w-10 h-10 text-gray-400 mx-auto mb-4' />
-            <h3 className='text-lg font-semibold text-gray-900 mb-2'>
-              Tidak ada data jemaat
-            </h3>
-            <p className='text-gray-600 max-w-md mx-auto mb-6'>
-              {searchTerm
-                ? `Tidak ada hasil yang cocok dengan "${searchTerm}"`
-                : 'Belum ada data jemaat yang tersedia. Tambahkan data jemaat baru untuk melihatnya di sini.'}
-            </p>
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm('')}
-                className='px-4 py-2 bg-gray-200 rounded-lg text-gray-800 hover:bg-gray-300 transition-colors'
-              >
-                Hapus Pencarian
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-            {filteredJemaat.map((item: Jemaat, index: number) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Link
-                  href={`/dashboard/jemaat/${item.id}`}
-                  className='group block p-6 bg-white rounded-xl shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-lg hover:border-blue-500 hover:-translate-y-1'
-                >
-                    <div className='flex items-start space-x-4'>
-                      <div className='p-3 rounded-lg bg-blue-600 text-white transform group-hover:rotate-12 transition-transform duration-300'>
-                        <BsPeople className='w-6 h-6' />
-                      </div>
-                      <div className='flex-1'>
-                        <div className='flex justify-between items-start'>
-                          <h3 className='text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors'>
-                            {item.nama}
-                          </h3>
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              item.is_aktif === true
-                                ? 'bg-blue-100 text-blue-700'
-                                : 'bg-red-100 text-red-700'
-                            }`}
-                          >
-                            {item.is_aktif ? 'Aktif' : 'Nonaktif'}
-                          </span>
-                        </div>
-                        <p className='mt-1 text-sm text-gray-500'>
-                          {item.church}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className='mt-4 space-y-2'>
-                      <div className='flex items-center text-sm text-gray-500'>
-                        <FiUsers className='w-4 h-4 mr-2 text-blue-500' />
-                        <span>
-                          {item.gender === 'L' ? 'Laki-laki' : 'Perempuan'}
-                        </span>
-                      </div>
-                      <div className='flex items-center text-sm text-gray-500'>
-                        <BsCalendarWeek className='w-4 h-4 mr-2 text-blue-500' />
-                        <span>Lahir: {item.tanggal_lahir}</span>
-                      </div>
-                      <div className='flex items-center text-sm text-gray-500'>
-                        <MdAlternateEmail className='w-4 h-4 mr-2 text-blue-500' />
-                        <span>Email: {item.email || '-'}</span>
-                      </div>
-                    </div>
-
-                    <div className='mt-4 border-t border-blue-50 pt-4'>
-                      <div className='flex flex-col space-y-2'>
-                        <div className='flex items-center text-sm text-gray-500'>
-                          <BsGeoAlt className='w-4 h-4 mr-2 text-blue-500' />
-                          <span className='line-clamp-1'>{item.alamat}</span>
-                        </div>
-                        <div className='flex justify-between items-center'>
-                          <div className='flex items-center text-sm text-gray-500'>
-                            <span>{item.nomor_telepon}</span>
-                          </div>
-                          <div className='flex space-x-2'>
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                // Handler untuk edit
-                              }}
-                              className='p-2 text-gray-400 hover:text-blue-600 transition-colors'
-                            >
-                              <FiEdit2 className='w-5 h-5' />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setSelectedJemaat(item);
-                                setShowConfirmation(true);
-                              }}
-                              className='p-2 text-gray-400 hover:text-red-600 transition-colors'
-                            >
-                              <FiTrash2 className='w-5 h-5' />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        )}
+        {renderContent()}
       </div>
 
-      {/* Popup Konfirmasi */}
       {showConfirmation && (
         <div
           className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
