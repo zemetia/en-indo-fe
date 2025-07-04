@@ -6,7 +6,7 @@ import { format, parseISO } from 'date-fns';
 import { id } from 'date-fns/locale';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, MapPin, Users, Repeat, User as UserIcon, Search, Check, X, Save, Plus, Minus, Baby, QrCode, Download } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Repeat, User as UserIcon, Search, Check, X, Save, Plus, Minus, Baby, QrCode, Download, UserPlus } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
@@ -15,6 +15,17 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/context/ToastContext';
 import Skeleton from '@/components/Skeleton';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+
 
 // --- Interfaces ---
 interface PIC {
@@ -48,7 +59,7 @@ interface Event {
 interface Participant {
   id: string;
   name: string;
-  email: string;
+  email?: string;
   isPresent: boolean;
   timestamp?: string;
 }
@@ -77,6 +88,10 @@ export default function EventDetailPage() {
     youth: 0,
     kids: 0,
   });
+  
+  const [isVisitorModalOpen, setIsVisitorModalOpen] = useState(false);
+  const [visitorName, setVisitorName] = useState('');
+  const [visitorEmail, setVisitorEmail] = useState('');
 
   useEffect(() => {
     // --- Mock API Call ---
@@ -157,10 +172,11 @@ export default function EventDetailPage() {
   }, [eventId]);
 
   useEffect(() => {
+    const lowerCaseQuery = searchQuery.toLowerCase();
     const filtered = participants.filter(
       (p) =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.email.toLowerCase().includes(searchQuery.toLowerCase())
+        p.name.toLowerCase().includes(lowerCaseQuery) ||
+        (p.email && p.email.toLowerCase().includes(lowerCaseQuery))
     );
     setFilteredParticipants(filtered);
   }, [searchQuery, participants]);
@@ -198,6 +214,29 @@ export default function EventDetailPage() {
   const handleSaveSimpleAttendance = () => {
     console.log("Saving simple attendance:", { eventId: event?.id, attendance: simpleAttendance });
     showToast('Data kehadiran (jumlah) berhasil disimpan!', 'success');
+  };
+
+  const handleAddVisitor = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!visitorName.trim()) {
+      showToast('Nama pengunjung tidak boleh kosong.', 'error');
+      return;
+    }
+
+    const newVisitor: Participant = {
+      id: `visitor-${Date.now()}`,
+      name: visitorName.trim(),
+      email: visitorEmail.trim() || undefined,
+      isPresent: true,
+      timestamp: new Date().toLocaleString('id-ID'),
+    };
+
+    setParticipants(prev => [newVisitor, ...prev]);
+    showToast(`${visitorName.trim()} berhasil ditambahkan sebagai pengunjung.`, 'success');
+    
+    setVisitorName('');
+    setVisitorEmail('');
+    setIsVisitorModalOpen(false);
   };
 
   const formatTime = (datetime: string) => format(parseISO(datetime), 'HH:mm', { locale: id });
@@ -366,14 +405,42 @@ export default function EventDetailPage() {
                     <Card>
                         <CardHeader><CardTitle>Pencatatan Kehadiran</CardTitle></CardHeader>
                         <CardContent>
-                            <div className="relative mb-4">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            <Input 
-                                placeholder="Cari nama atau email peserta..." 
-                                className="pl-10"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
+                            <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                                <div className="relative flex-grow">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                    <Input 
+                                        placeholder="Cari nama atau email peserta..." 
+                                        className="pl-10"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
+                                </div>
+                                <Dialog open={isVisitorModalOpen} onOpenChange={setIsVisitorModalOpen}>
+                                    <DialogTrigger asChild>
+                                        <Button variant="outline"><UserPlus className="h-4 w-4 mr-2" />Tambah Pengunjung</Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>Tambah Pengunjung Baru</DialogTitle>
+                                            <DialogDescription>
+                                                Masukkan detail pengunjung baru. Hanya nama yang wajib diisi. Pengunjung yang ditambahkan akan otomatis ditandai hadir.
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <form onSubmit={handleAddVisitor} className="space-y-4 pt-4">
+                                            <div>
+                                                <Label htmlFor="visitorName">Nama Pengunjung</Label>
+                                                <Input id="visitorName" value={visitorName} onChange={(e) => setVisitorName(e.target.value)} placeholder="Nama lengkap" required className="mt-1" />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="visitorEmail">Email (Opsional)</Label>
+                                                <Input id="visitorEmail" type="email" value={visitorEmail} onChange={(e) => setVisitorEmail(e.target.value)} placeholder="email@contoh.com" className="mt-1"/>
+                                            </div>
+                                            <DialogFooter>
+                                                <Button type="submit">Tambah Pengunjung</Button>
+                                            </DialogFooter>
+                                        </form>
+                                    </DialogContent>
+                                </Dialog>
                             </div>
                             <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
                                 {filteredParticipants.map((p, index) => (
@@ -386,7 +453,7 @@ export default function EventDetailPage() {
                                 >
                                     <div>
                                         <p className="font-medium text-gray-800">{p.name}</p>
-                                        <p className="text-xs text-gray-500">{p.email}</p>
+                                        <p className="text-xs text-gray-500">{p.email || 'Pengunjung'}</p>
                                         {p.timestamp && <p className="text-xs text-green-600 mt-1">Hadir: {p.timestamp}</p>}
                                     </div>
                                     <Button 
