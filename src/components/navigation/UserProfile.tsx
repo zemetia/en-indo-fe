@@ -24,23 +24,20 @@ export default function UserProfile({
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Rotate pelayanan setiap 3 detik
   useEffect(() => {
     if (pelayanan.length <= 1) return;
 
     const interval = setInterval(() => {
       if (!showDropdown) {
-        // Hanya berganti jika dropdown tidak terbuka
         setCurrentPelayananIndex((prev) =>
           prev === pelayanan.length - 1 ? 0 : prev + 1
         );
       }
-    }, 2000);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, [pelayanan.length, showDropdown]);
 
-  // Tutup dropdown ketika klik di luar
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -56,7 +53,9 @@ export default function UserProfile({
   }, []);
 
   const toggleDropdown = () => {
-    setShowDropdown(!showDropdown);
+    if (pelayanan.length > 1) {
+        setShowDropdown(!showDropdown);
+    }
   };
 
   return (
@@ -79,7 +78,7 @@ export default function UserProfile({
             <div ref={dropdownRef} className='mt-1'>
               <div
                 onClick={toggleDropdown}
-                className='flex items-center space-x-1 cursor-pointer'
+                className={`flex items-center space-x-1 ${pelayanan.length > 1 ? 'cursor-pointer' : ''}`}
               >
                 <AnimatePresence mode='wait'>
                   <motion.div
@@ -91,7 +90,7 @@ export default function UserProfile({
                     className='flex items-center'
                   >
                     <span className='text-xs font-medium text-primary-600'>
-                      {pelayanan[currentPelayananIndex]?.pelayanan || ''}
+                      {pelayanan[currentPelayananIndex]?.pelayanan || 'Jemaat'}
                       {pelayanan[currentPelayananIndex]?.is_pic && (
                         <span className='ml-1 text-xs text-amber-600'>
                           (PIC)
@@ -100,24 +99,28 @@ export default function UserProfile({
                     </span>
                   </motion.div>
                 </AnimatePresence>
-                {showDropdown ? (
+                {pelayanan.length > 1 && (showDropdown ? (
                   <FiChevronUp className='w-3 h-3 text-gray-500' />
                 ) : (
                   <FiChevronDown className='w-3 h-3 text-gray-500' />
-                )}
+                ))}
               </div>
 
               <AnimatePresence>
-                {showDropdown && (
+                {showDropdown && pelayanan.length > 1 &&(
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     className='absolute z-40 mt-1 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-200'
                   >
-                    {pelayanan.map((item: Pelayanan) => (
+                    {pelayanan.map((item: Pelayanan, index: number) => (
                       <div
                         key={item.pelayanan_id}
+                        onClick={() => {
+                            setCurrentPelayananIndex(index);
+                            setShowDropdown(false);
+                        }}
                         className='px-3 py-2 text-xs hover:bg-gray-50 cursor-pointer flex justify-between items-center'
                       >
                         <span className='font-medium text-gray-800'>

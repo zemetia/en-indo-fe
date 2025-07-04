@@ -13,29 +13,30 @@ import {
   FiX,
   FiLogOut,
 } from 'react-icons/fi';
-
+import { useAuth } from '@/context/AuthContext';
 import { dashboardMenu, MenuItem, hasAccess, ADMIN_ROLE } from '@/constant/menu';
-import { getUserData, Logout } from '@/lib/helper';
-
 import UserProfile from './UserProfile';
+import Skeleton from '@/components/Skeleton';
 
 export default function Sidebar() {
+  const { user, isLoading, logout } = useAuth();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [isMobileOpen, setIsMobileOpen] = React.useState(false);
   const pathname = usePathname();
   const [expandedMenus, setExpandedMenus] = React.useState<string[]>([]);
   const [isMobile, setIsMobile] = React.useState(false);
-  const [filteredMenu, setFilteredMenu] = React.useState<MenuItem[]>([]);
-  const [userData, setUserData] = React.useState<any>(null);
 
-  React.useEffect(() => {
-    const data = getUserData();
-    if (data) {
-      setUserData(data);
-      // Temporarily disable menu filtering for development.
-      setFilteredMenu(dashboardMenu);
+  const filteredMenu = React.useMemo(() => {
+    if (!user) return [];
+
+    const userRoles = user.pelayanan.map((p: any) => p.pelayanan.toLowerCase());
+    
+    if (userRoles.includes(ADMIN_ROLE)) {
+      return dashboardMenu;
     }
-  }, []);
+    
+    return dashboardMenu.filter((menu) => hasAccess(menu, userRoles, user.pelayanan));
+  }, [user]);
 
   React.useEffect(() => {
     const handleResize = () => {
@@ -45,6 +46,8 @@ export default function Sidebar() {
         if (!isMobileOpen) {
           setIsCollapsed(true);
         }
+      } else {
+        setIsMobileOpen(false); // Close mobile menu on desktop
       }
     };
 
@@ -74,9 +77,18 @@ export default function Sidebar() {
     setIsMobileOpen(!isMobileOpen);
   };
 
+  const renderSkeleton = () => (
+    <div className='p-4 space-y-4'>
+      <Skeleton className="h-6 w-1/2" />
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-10 w-full" />
+    </div>
+  );
+
   return (
     <>
-      {/* Mobile menu toggle button */}
       <div className='md:hidden fixed top-4 left-4 z-50'>
         <button
           onClick={toggleMobileMenu}
@@ -101,7 +113,6 @@ export default function Sidebar() {
             : 'translate-x-0'
         }`}
       >
-        {/* Logo */}
         <div className='flex items-center p-4 border-b border-gray-200'>
           <Image
             src='/images/logo.png'
@@ -112,27 +123,28 @@ export default function Sidebar() {
           />
         </div>
 
-        {/* User Profile */}
-        <UserProfile
-          isCollapsed={isCollapsed}
-          name={userData?.nama || 'User'}
-          pelayanan={userData?.pelayanan || []}
-          imageUrl={userData?.image_url || '/images/avatar.jpg'}
-        />
-
-        {/* Toggle Button */}
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className='absolute -right-3 top-24 bg-white border border-gray-200 rounded-full p-1.5 hover:bg-gray-50 hidden md:block'
-        >
-          <FiChevronLeft
-            className={`w-4 h-4 transition-transform ${
-              isCollapsed ? 'rotate-180' : ''
-            }`}
+        {user && (
+          <UserProfile
+            isCollapsed={isCollapsed}
+            name={user.nama}
+            pelayanan={user.pelayanan}
+            imageUrl={user.image_url || '/images/avatar.jpg'}
           />
-        </button>
+        )}
 
-        {/* Menu Section */}
+        {!isMobile && (
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className='absolute -right-3 top-24 bg-white border border-gray-200 rounded-full p-1.5 hover:bg-gray-50'
+          >
+            <FiChevronLeft
+              className={`w-4 h-4 transition-transform ${
+                isCollapsed ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
+        )}
+
         <div className='py-4 flex-1 flex flex-col h-[calc(100vh-185px)]'>
           <p
             className={`px-4 text-xs font-medium text-gray-400 mb-2 ${
@@ -142,7 +154,7 @@ export default function Sidebar() {
             Menu
           </p>
           <nav className='space-y-1 overflow-y-auto flex-grow pb-16'>
-            {filteredMenu.map((item) => (
+            {isLoading ? renderSkeleton() : filteredMenu.map((item) => (
               <div key={item.title}>
                 {item.submenu && item.submenu.length > 0 ? (
                   <div>
@@ -236,17 +248,16 @@ export default function Sidebar() {
           </nav>
         </div>
 
-        {/* Settings Section */}
-        <div className='absolute bottom-0 w-full border-t border-gray-200 bg-white flex justify-between'>
+        <div className='absolute bottom-0 w-full border-t border-gray-200 bg-white flex'>
           <Link
             href='/dashboard/pengaturan'
-            className={`flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 relative transition-colors duration-200 ${
+            className={`flex-1 flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 relative transition-colors duration-200 ${
               isCollapsed ? 'justify-center' : ''
             }`}
             onClick={() => isMobile && setIsMobileOpen(false)}
           >
             <FiSettings
-              className={`w-5 h-5 ${isCollapsed ? 'mx-auto' : 'mr-3'}`}
+              className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'}`}
             />
             {!isCollapsed && <span>Pengaturan</span>}
             {isActive('/dashboard/pengaturan') && (
@@ -254,17 +265,17 @@ export default function Sidebar() {
             )}
           </Link>
           <button
-            className={`border-l-[1px] border-gray-200 pl-3`}
-            onClick={Logout}
+            className={`flex items-center p-3 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-red-600 border-l border-gray-200 transition-colors duration-200 ${isCollapsed ? 'justify-center flex-1' : ''}`}
+            onClick={logout}
           >
             <FiLogOut
-              className={`w-5 h-5 ${isCollapsed ? 'mx-auto' : 'mr-3'}`}
-            ></FiLogOut>
+              className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'}`}
+            />
+            {!isCollapsed && <span>Keluar</span>}
           </button>
         </div>
       </div>
 
-      {/* Overlay for mobile */}
       {isMobile && isMobileOpen && (
         <div
           className='fixed inset-0 bg-black bg-opacity-50 z-20'

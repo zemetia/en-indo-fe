@@ -59,11 +59,11 @@ export default function RootLayout({
       </head>
       <body>
         <ToastProvider>
-          {!isDashboard && !isLogin && <Navbar />}
-          <main>
-            {children}
-          </main>
-          {!isDashboard && !isLogin && <Footer />}
+            {!isDashboard && !isLogin && <Navbar />}
+            <main>
+                {children}
+            </main>
+            {!isDashboard && !isLogin && <Footer />}
         </ToastProvider>
       </body>
     </html>
