@@ -2,12 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, Plus, Clock, MapPin, Users, Music, Repeat } from 'lucide-react';
+import { Calendar, Plus, Clock, MapPin, Users, Music, Repeat, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
 import { id } from 'date-fns/locale';
+import Image from 'next/image';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
+
+interface PIC {
+  id: string;
+  name: string;
+  imageUrl: string;
+}
 
 interface Event {
   id: string;
@@ -24,12 +31,13 @@ interface Event {
   timezone: string;
   recurrenceRule?: {
     frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
-    interval: number;
+    endDate?: string;
     byWeekday?: string[];
   };
   isPublic: boolean;
   discipleshipJourneyId?: string;
   lagu?: { id:string; title: string }[];
+  pics?: PIC[];
 }
 
 export default function EventPage() {
@@ -46,6 +54,7 @@ export default function EventPage() {
     {
       id: '1',
       title: 'Ibadah Minggu',
+      bannerImage: 'https://placehold.co/800x400.png',
       description: 'Ibadah Minggu bersama jemaat',
       capacity: 500,
       type: 'ibadah',
@@ -57,14 +66,18 @@ export default function EventPage() {
       timezone: 'Asia/Jakarta',
       recurrenceRule: {
         frequency: 'WEEKLY',
-        interval: 1,
         byWeekday: ['SU'],
+        endDate: '2024-12-31'
       },
       isPublic: true,
       lagu: [
         { id: '1', title: 'Great is Thy Faithfulness' },
         { id: '2', title: 'Amazing Grace' },
       ],
+      pics: [
+        { id: 'user1', name: 'Pdt. Budi', imageUrl: 'https://placehold.co/100x100.png' },
+        { id: 'user2', name: 'Ev. Rina', imageUrl: 'https://placehold.co/100x100.png' },
+      ]
     },
     {
       id: '2',
@@ -79,6 +92,9 @@ export default function EventPage() {
       allDay: false,
       timezone: 'Asia/Jakarta',
       isPublic: false,
+      pics: [
+        { id: 'user3', name: 'Michael Tan', imageUrl: 'https://placehold.co/100x100.png' },
+      ]
     },
   ];
 
@@ -87,19 +103,14 @@ export default function EventPage() {
   };
 
   const handleEventClick = (eventId: string) => {
-    // This will require a detail page to be created later
-    // router.push(`/dashboard/event/${eventId}`);
     console.log(`Navigating to event detail page for ID: ${eventId}`);
   };
 
   const getEventTypeColor = (type: Event['type']) => {
     switch (type) {
-      case 'ibadah':
-        return 'bg-blue-100 text-blue-800';
-      case 'spiritual_journey':
-        return 'bg-purple-100 text-purple-800';
-      default:
-        return 'bg-emerald-100 text-emerald-800';
+      case 'ibadah': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'spiritual_journey': return 'bg-purple-100 text-purple-800 border-purple-200';
+      default: return 'bg-emerald-100 text-emerald-800 border-emerald-200';
     }
   };
 
@@ -109,19 +120,21 @@ export default function EventPage() {
 
   const formatRecurrence = (rule: Event['recurrenceRule']) => {
     if (!rule) return '';
-    const intervalText = rule.interval > 1 ? `Setiap ${rule.interval}` : 'Setiap';
+    let text = '';
     switch (rule.frequency) {
-        case 'DAILY': return `${intervalText} hari`;
-        case 'WEEKLY': return `${intervalText} minggu`;
-        case 'MONTHLY': return `${intervalText} bulan`;
-        case 'YEARLY': return `${intervalText} tahun`;
-        default: return 'Berulang';
+        case 'DAILY': text = 'Setiap hari'; break;
+        case 'WEEKLY': text = 'Setiap minggu'; break;
+        case 'MONTHLY': text = 'Setiap bulan'; break;
+        case 'YEARLY': text = 'Setiap tahun'; break;
     }
+    if (rule.endDate) {
+        text += ` hingga ${format(parseISO(rule.endDate), 'd MMM yyyy', { locale: id })}`;
+    }
+    return text;
   };
 
   return (
     <div className='space-y-6'>
-      {/* Featured Card */}
       <FeaturedCard
         title='Kalender Event'
         description='Kelola event dan jadwal kegiatan gereja'
@@ -131,135 +144,57 @@ export default function EventPage() {
         onAction={handleCreateEvent}
       />
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-      >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
         <div className='bg-white p-6 rounded-xl shadow-sm border border-gray-200'>
-          <div className='space-y-6'>
-            {/* Calendar View Controls */}
-            <div className='flex items-center justify-between'>
-              <div className='flex items-center space-x-4'>
-                <button
-                  onClick={() => setView('month')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium ${
-                    view === 'month'
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  Bulan
-                </button>
-                <button
-                  onClick={() => setView('week')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium ${
-                    view === 'week'
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  Minggu
-                </button>
-                <button
-                  onClick={() => setView('day')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium ${
-                    view === 'day'
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  Hari
-                </button>
-              </div>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleCreateEvent}
-                className='inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500'
-              >
-                <Plus className='h-4 w-4 mr-2' />
-                Buat Event
-              </motion.button>
-            </div>
+          <div className='flex items-center justify-between mb-6'>
+            <h2 className="text-xl font-semibold">Daftar Event</h2>
+            <Button onClick={handleCreateEvent}><Plus className='h-4 w-4 mr-2' />Buat Event</Button>
+          </div>
 
-            {/* Calendar Grid */}
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-              {events.map((event) => (
-                <motion.div
-                  key={event.id}
-                  whileHover={{ scale: 1.02 }}
-                  onClick={() => handleEventClick(event.id)}
-                  className='p-4 bg-white rounded-xl shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-lg hover:border-blue-500 hover:-translate-y-1 cursor-pointer'
-                >
-                  <div className='space-y-3'>
-                    <div className='flex items-start justify-between'>
-                      <h3 className='text-lg font-medium text-gray-900'>
-                        {event.title}
-                      </h3>
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getEventTypeColor(
-                          event.type
-                        )}`}
-                      >
-                        {event.type === 'ibadah'
-                          ? 'Ibadah'
-                          : event.type === 'spiritual_journey'
-                          ? 'Spiritual Journey'
-                          : 'Event'}
-                      </span>
-                    </div>
-
-                    <div className='space-y-2'>
-                      <div className='flex items-center text-sm text-gray-500'>
-                        <Calendar className='h-4 w-4 mr-2' />
-                        {format(
-                          parseISO(event.eventDate),
-                          'EEEE, d MMMM yyyy',
-                          {
-                            locale: id,
-                          }
-                        )}
-                      </div>
-                      <div className='flex items-center text-sm text-gray-500'>
-                        <Clock className='h-4 w-4 mr-2' />
-                        {isClient ? (
-                          <>
-                            {formatTime(event.startDatetime)} -{' '}
-                            {formatTime(event.endDatetime)}
-                          </>
-                        ) : (
-                          <span className="w-20 h-4 bg-gray-200 rounded animate-pulse inline-block" />
-                        )}
-                      </div>
-                      <div className='flex items-center text-sm text-gray-500'>
-                        <MapPin className='h-4 w-4 mr-2' />
-                        {event.eventLocation}
-                      </div>
-                      <div className='flex items-center text-sm text-gray-500'>
-                        <Users className='h-4 w-4 mr-2' />
-                        Kapasitas: {event.capacity} orang
-                      </div>
-                      {event.lagu && event.lagu.length > 0 && (
-                        <div className='flex items-center text-sm text-gray-500'>
-                          <Music className='h-4 w-4 mr-2' />
-                          {event.lagu.length} lagu
-                        </div>
-                      )}
-                    </div>
-
-                    {event.recurrenceRule && (
-                      <div className='mt-2 pt-2 border-t border-gray-100'>
-                        <div className="flex items-center text-xs text-emerald-600 font-medium">
-                          <Repeat className='h-3 w-3 mr-1.5'/>
-                          {formatRecurrence(event.recurrenceRule)}
-                        </div>
-                      </div>
-                    )}
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+            {events.map((event) => (
+              <motion.div key={event.id} whileHover={{ scale: 1.02 }} onClick={() => handleEventClick(event.id)} className='bg-white rounded-xl shadow-md border border-gray-200 transition-all duration-300 hover:shadow-lg hover:border-blue-500 cursor-pointer flex flex-col overflow-hidden'>
+                {event.bannerImage && (
+                  <div className="relative h-40 w-full">
+                    <Image src={event.bannerImage} alt={event.title} layout="fill" objectFit="cover" data-ai-hint="event banner" />
                   </div>
-                </motion.div>
-              ))}
-            </div>
+                )}
+                <div className="p-4 flex-grow flex flex-col">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className='text-lg font-bold text-gray-900'>{event.title}</h3>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getEventTypeColor(event.type)}`}>
+                      {event.type.replace('_', ' ')}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-2 text-sm text-gray-600 mb-4">
+                    <div className='flex items-center'><Calendar className='h-4 w-4 mr-2 text-gray-400' />{format(parseISO(event.eventDate), 'EEEE, d MMMM yyyy', { locale: id })}</div>
+                    <div className='flex items-center'><Clock className='h-4 w-4 mr-2 text-gray-400' />{isClient ? <>{formatTime(event.startDatetime)} - {formatTime(event.endDatetime)}</> : <span className="w-20 h-4 bg-gray-200 rounded animate-pulse inline-block" />}</div>
+                    <div className='flex items-center'><MapPin className='h-4 w-4 mr-2 text-gray-400' />{event.eventLocation}</div>
+                  </div>
+
+                  {event.recurrenceRule && (
+                    <div className="flex items-center text-xs text-emerald-600 font-medium bg-emerald-50 rounded-md p-2 mb-4">
+                      <Repeat className='h-4 w-4 mr-1.5'/>
+                      <span>{formatRecurrence(event.recurrenceRule)}</span>
+                    </div>
+                  )}
+
+                  <div className="mt-auto pt-4 border-t border-gray-100 flex justify-between items-center">
+                    <div className="flex items-center -space-x-2">
+                      {event.pics?.map(pic => (
+                        <Image key={pic.id} src={pic.imageUrl} alt={pic.name} width={28} height={28} className="rounded-full border-2 border-white" data-ai-hint="person portrait" />
+                      ))}
+                      {event.pics && event.pics.length > 0 && <span className="text-xs text-gray-500 pl-3">({event.pics.length} PIC)</span>}
+                    </div>
+                    <div className='flex items-center text-sm text-gray-500'>
+                      <Users className='h-4 w-4 mr-2' />
+                      {event.capacity}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </motion.div>
