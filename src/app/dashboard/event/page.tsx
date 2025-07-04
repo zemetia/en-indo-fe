@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
 import { id } from 'date-fns/locale';
 import Image from 'next/image';
+import Link from 'next/link';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import { Button } from '@/components/ui/button';
@@ -43,7 +44,6 @@ interface Event {
 
 export default function EventPage() {
   const router = useRouter();
-  const [view, setView] = useState<'month' | 'week' | 'day'>('month');
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -103,10 +103,6 @@ export default function EventPage() {
     router.push('/dashboard/event/create');
   };
 
-  const handleEventClick = (eventId: string) => {
-    console.log(`Navigating to event detail page for ID: ${eventId}`);
-  };
-
   const getEventTypeColor = (type: Event['type']) => {
     switch (type) {
       case 'ibadah': return 'bg-blue-100 text-blue-800 border-blue-200';
@@ -154,47 +150,49 @@ export default function EventPage() {
 
           <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
             {events.map((event) => (
-              <motion.div key={event.id} whileHover={{ scale: 1.02 }} onClick={() => handleEventClick(event.id)} className='bg-white rounded-xl shadow-md border border-gray-200 transition-all duration-300 hover:shadow-lg hover:border-blue-500 cursor-pointer flex flex-col overflow-hidden'>
-                {event.bannerImage && (
-                  <div className="relative h-40 w-full">
-                    <Image src={event.bannerImage} alt={event.title} layout="fill" objectFit="cover" data-ai-hint="event banner" />
-                  </div>
-                )}
-                <div className="p-4 flex-grow flex flex-col">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className='text-lg font-bold text-gray-900'>{event.title}</h3>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getEventTypeColor(event.type)}`}>
-                      {event.type.replace('_', ' ')}
-                    </span>
-                  </div>
-                  
-                  <div className="space-y-2 text-sm text-gray-600 mb-4">
-                    <div className='flex items-center'><Calendar className='h-4 w-4 mr-2 text-gray-400' />{format(parseISO(event.eventDate), 'EEEE, d MMMM yyyy', { locale: id })}</div>
-                    <div className='flex items-center'><Clock className='h-4 w-4 mr-2 text-gray-400' />{isClient ? <>{formatTime(event.startDatetime)} - {formatTime(event.endDatetime)}</> : <span className="w-20 h-4 bg-gray-200 rounded animate-pulse inline-block" />}</div>
-                    <div className='flex items-center'><MapPin className='h-4 w-4 mr-2 text-gray-400' />{event.eventLocation}</div>
-                  </div>
-
-                  {event.recurrenceRule && (
-                    <div className="flex items-center text-xs text-emerald-600 font-medium bg-emerald-50 rounded-md p-2 mb-4">
-                      <Repeat className='h-4 w-4 mr-1.5'/>
-                      <span>{formatRecurrence(event.recurrenceRule)}</span>
+              <Link key={event.id} href={`/dashboard/event/${event.id}`} passHref>
+                <motion.div whileHover={{ scale: 1.02 }} className='bg-white rounded-xl shadow-md border border-gray-200 transition-all duration-300 hover:shadow-lg hover:border-blue-500 cursor-pointer flex flex-col overflow-hidden h-full'>
+                  {event.bannerImage && (
+                    <div className="relative h-40 w-full">
+                      <Image src={event.bannerImage} alt={event.title} layout="fill" objectFit="cover" data-ai-hint="event banner" />
                     </div>
                   )}
-
-                  <div className="mt-auto pt-4 border-t border-gray-100 flex justify-between items-center">
-                    <div className="flex items-center -space-x-2">
-                      {event.pics?.map(pic => (
-                        <Image key={pic.id} src={pic.imageUrl} alt={pic.name} width={28} height={28} className="rounded-full border-2 border-white" data-ai-hint="person portrait" />
-                      ))}
-                      {event.pics && event.pics.length > 0 && <span className="text-xs text-gray-500 pl-3">({event.pics.length} PIC)</span>}
+                  <div className="p-4 flex-grow flex flex-col">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className='text-lg font-bold text-gray-900'>{event.title}</h3>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getEventTypeColor(event.type)}`}>
+                        {event.type.replace('_', ' ')}
+                      </span>
                     </div>
-                    <div className='flex items-center text-sm text-gray-500'>
-                      <Users className='h-4 w-4 mr-2' />
-                      {event.capacity}
+                    
+                    <div className="space-y-2 text-sm text-gray-600 mb-4">
+                      <div className='flex items-center'><Calendar className='h-4 w-4 mr-2 text-gray-400' />{format(parseISO(event.eventDate), 'EEEE, d MMMM yyyy', { locale: id })}</div>
+                      <div className='flex items-center'><Clock className='h-4 w-4 mr-2 text-gray-400' />{isClient ? <>{formatTime(event.startDatetime)} - {formatTime(event.endDatetime)}</> : <span className="w-20 h-4 bg-gray-200 rounded animate-pulse inline-block" />}</div>
+                      <div className='flex items-center'><MapPin className='h-4 w-4 mr-2 text-gray-400' />{event.eventLocation}</div>
+                    </div>
+
+                    {event.recurrenceRule && (
+                      <div className="flex items-center text-xs text-emerald-600 font-medium bg-emerald-50 rounded-md p-2 mb-4">
+                        <Repeat className='h-4 w-4 mr-1.5'/>
+                        <span>{formatRecurrence(event.recurrenceRule)}</span>
+                      </div>
+                    )}
+
+                    <div className="mt-auto pt-4 border-t border-gray-100 flex justify-between items-center">
+                      <div className="flex items-center -space-x-2">
+                        {event.pics?.map(pic => (
+                          <Image key={pic.id} src={pic.imageUrl} alt={pic.name} width={28} height={28} className="rounded-full border-2 border-white" data-ai-hint="person portrait" />
+                        ))}
+                        {event.pics && event.pics.length > 0 && <span className="text-xs text-gray-500 pl-3">({event.pics.length} PIC)</span>}
+                      </div>
+                      <div className='flex items-center text-sm text-gray-500'>
+                        <Users className='h-4 w-4 mr-2' />
+                        {event.capacity}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
+                </motion.div>
+              </Link>
             ))}
           </div>
         </div>
