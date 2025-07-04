@@ -32,23 +32,8 @@ export default function Sidebar() {
     const data = getUserData();
     if (data) {
       setUserData(data);
-      const userRoles = data.pelayanan.map((p: any) => p.pelayanan.toLowerCase());
-      const userPelayanan = data.pelayanan;
-
-      // Filter the menu based on user permissions
-      const filterMenu = (menu: MenuItem[]): MenuItem[] => {
-        return menu
-          .filter(item => hasAccess(item, userRoles, userPelayanan))
-          .map(item => {
-            if (item.submenu) {
-              return { ...item, submenu: filterMenu(item.submenu) };
-            }
-            return item;
-          })
-          .filter(item => item.submenu ? item.submenu.length > 0 : true); // Also remove parent if all children are filtered out
-      };
-      
-      setFilteredMenu(filterMenu(dashboardMenu));
+      // Temporarily disable menu filtering for development.
+      setFilteredMenu(dashboardMenu);
     }
   }, []);
 
