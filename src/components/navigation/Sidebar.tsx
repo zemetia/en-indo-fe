@@ -28,14 +28,17 @@ export default function Sidebar() {
 
   const filteredMenu = React.useMemo(() => {
     if (!user) return [];
+    
+    // As per user request, disabling permission checks for development
+    return dashboardMenu;
 
-    const userRoles = user.pelayanan.map((p: any) => p.pelayanan.toLowerCase());
+    // const userRoles = user.pelayanan.map((p: any) => p.pelayanan.toLowerCase());
     
-    if (userRoles.includes(ADMIN_ROLE)) {
-      return dashboardMenu;
-    }
+    // if (userRoles.includes(ADMIN_ROLE)) {
+    //   return dashboardMenu;
+    // }
     
-    return dashboardMenu.filter((menu) => hasAccess(menu, userRoles, user.pelayanan));
+    // return dashboardMenu.filter((menu) => hasAccess(menu, userRoles, user.pelayanan));
   }, [user]);
 
   React.useEffect(() => {
@@ -269,8 +272,8 @@ export default function Sidebar() {
         <div className='absolute bottom-0 w-full border-t border-gray-200 bg-white flex'>
           <Link
             href='/dashboard/pengaturan'
-            className={`flex-1 flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 relative transition-colors duration-200 ${
-              isCollapsed ? 'justify-center' : ''
+            className={`flex-1 flex items-center py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 relative transition-colors duration-200 ${
+              isCollapsed ? 'justify-center px-2' : 'px-4'
             }`}
             onClick={() => isMobile && setIsMobileOpen(false)}
           >
@@ -283,7 +286,9 @@ export default function Sidebar() {
             )}
           </Link>
           <button
-            className={`flex items-center p-3 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-red-600 border-l border-gray-200 transition-colors duration-200 ${isCollapsed ? 'justify-center flex-1' : ''}`}
+            className={`flex-1 flex items-center py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-red-600 border-l border-gray-200 transition-colors duration-200 ${
+              isCollapsed ? 'justify-center px-2' : 'px-4'
+            }`}
             onClick={logout}
           >
             <FiLogOut
