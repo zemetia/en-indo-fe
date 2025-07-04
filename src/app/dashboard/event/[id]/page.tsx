@@ -25,6 +25,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 
 // --- Interfaces ---
@@ -73,6 +74,22 @@ const MOCK_PARTICIPANTS: Participant[] = [
   { id: 'p6', name: 'Fitri Handayani', email: 'fitri@example.com', isPresent: false },
 ];
 
+const MOCK_ALL_JEMAAT = [
+    { id: 'j1', name: 'Gede Pramana', email: 'gede@example.com' },
+    { id: 'j2', name: 'Hesti Wulandari', email: 'hesti@example.com' },
+    { id: 'j3', name: 'Indra Permana', email: 'indra@example.com' },
+    { id: 'j4', name: 'Joko Susilo', email: 'joko@example.com' },
+    { id: 'j5', name: 'Kartika Sari', email: 'kartika@example.com' },
+    // Add people from MOCK_PARTICIPANTS to simulate a larger member pool
+    { id: 'p1', name: 'Andi Suryo', email: 'andi@example.com' },
+    { id: 'p2', name: 'Budi Santoso', email: 'budi@example.com' },
+    { id: 'p3', name: 'Citra Lestari', email: 'citra@example.com' },
+    { id: 'p4', name: 'Dewi Anggraini', email: 'dewi@example.com' },
+    { id: 'p5', name: 'Eko Prasetyo', email: 'eko@example.com' },
+    { id: 'p6', name: 'Fitri Handayani', email: 'fitri@example.com' },
+];
+
+
 export default function EventDetailPage() {
   const params = useParams();
   const { showToast } = useToast();
@@ -89,9 +106,15 @@ export default function EventDetailPage() {
     kids: 0,
   });
   
-  const [isVisitorModalOpen, setIsVisitorModalOpen] = useState(false);
+  const [isAddParticipantModalOpen, setIsAddParticipantModalOpen] = useState(false);
   const [visitorName, setVisitorName] = useState('');
   const [visitorEmail, setVisitorEmail] = useState('');
+  const [registeredJemaatSearch, setRegisteredJemaatSearch] = useState('');
+
+  const filteredRegisteredJemaat = MOCK_ALL_JEMAAT.filter(jemaat => 
+    !participants.some(p => p.id === jemaat.id) &&
+    jemaat.name.toLowerCase().includes(registeredJemaatSearch.toLowerCase())
+  );
 
   useEffect(() => {
     // --- Mock API Call ---
@@ -236,7 +259,19 @@ export default function EventDetailPage() {
     
     setVisitorName('');
     setVisitorEmail('');
-    setIsVisitorModalOpen(false);
+    setIsAddParticipantModalOpen(false);
+  };
+
+  const handleAddRegisteredJemaat = (jemaatToAdd: {id: string, name: string, email: string}) => {
+    const newParticipant: Participant = {
+        ...jemaatToAdd,
+        isPresent: true,
+        timestamp: new Date().toLocaleString('id-ID'),
+    };
+    setParticipants(prev => [newParticipant, ...prev]);
+    showToast(`${jemaatToAdd.name} berhasil ditambahkan sebagai peserta.`, 'success');
+    setIsAddParticipantModalOpen(false);
+    setRegisteredJemaatSearch('');
   };
 
   const formatTime = (datetime: string) => format(parseISO(datetime), 'HH:mm', { locale: id });
@@ -415,30 +450,66 @@ export default function EventDetailPage() {
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                     />
                                 </div>
-                                <Dialog open={isVisitorModalOpen} onOpenChange={setIsVisitorModalOpen}>
+                                <Dialog open={isAddParticipantModalOpen} onOpenChange={setIsAddParticipantModalOpen}>
                                     <DialogTrigger asChild>
-                                        <Button variant="outline"><UserPlus className="h-4 w-4 mr-2" />Tambah Pengunjung</Button>
+                                        <Button variant="outline"><UserPlus className="h-4 w-4 mr-2" />Tambah Peserta</Button>
                                     </DialogTrigger>
-                                    <DialogContent>
+                                    <DialogContent className="sm:max-w-2xl">
                                         <DialogHeader>
-                                            <DialogTitle>Tambah Pengunjung Baru</DialogTitle>
+                                            <DialogTitle>Tambah Peserta</DialogTitle>
                                             <DialogDescription>
-                                                Masukkan detail pengunjung baru. Hanya nama yang wajib diisi. Pengunjung yang ditambahkan akan otomatis ditandai hadir.
+                                                Tambah pengunjung baru atau tambahkan jemaat yang sudah terdaftar ke dalam acara ini.
                                             </DialogDescription>
                                         </DialogHeader>
-                                        <form onSubmit={handleAddVisitor} className="space-y-4 pt-4">
-                                            <div>
-                                                <Label htmlFor="visitorName">Nama Pengunjung</Label>
-                                                <Input id="visitorName" value={visitorName} onChange={(e) => setVisitorName(e.target.value)} placeholder="Nama lengkap" required className="mt-1" />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="visitorEmail">Email (Opsional)</Label>
-                                                <Input id="visitorEmail" type="email" value={visitorEmail} onChange={(e) => setVisitorEmail(e.target.value)} placeholder="email@contoh.com" className="mt-1"/>
-                                            </div>
-                                            <DialogFooter>
-                                                <Button type="submit">Tambah Pengunjung</Button>
-                                            </DialogFooter>
-                                        </form>
+                                        <Tabs defaultValue="new-visitor" className="w-full pt-2">
+                                            <TabsList className="grid w-full grid-cols-2">
+                                                <TabsTrigger value="new-visitor">Pengunjung Baru</TabsTrigger>
+                                                <TabsTrigger value="registered-jemaat">Jemaat Terdaftar</TabsTrigger>
+                                            </TabsList>
+                                            <TabsContent value="new-visitor">
+                                                <form onSubmit={handleAddVisitor} className="space-y-4 pt-4">
+                                                    <div>
+                                                        <Label htmlFor="visitorName">Nama Pengunjung</Label>
+                                                        <Input id="visitorName" value={visitorName} onChange={(e) => setVisitorName(e.target.value)} placeholder="Nama lengkap" required className="mt-1" />
+                                                    </div>
+                                                    <div>
+                                                        <Label htmlFor="visitorEmail">Email (Opsional)</Label>
+                                                        <Input id="visitorEmail" type="email" value={visitorEmail} onChange={(e) => setVisitorEmail(e.target.value)} placeholder="email@contoh.com" className="mt-1"/>
+                                                    </div>
+                                                    <DialogFooter>
+                                                        <Button type="submit">Tambah Pengunjung</Button>
+                                                    </DialogFooter>
+                                                </form>
+                                            </TabsContent>
+                                            <TabsContent value="registered-jemaat">
+                                                <div className="pt-4 space-y-4">
+                                                    <div className="relative">
+                                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                                        <Input 
+                                                            placeholder="Cari nama jemaat..." 
+                                                            className="pl-10"
+                                                            value={registeredJemaatSearch}
+                                                            onChange={(e) => setRegisteredJemaatSearch(e.target.value)}
+                                                        />
+                                                    </div>
+                                                    <div className="mt-4 max-h-60 overflow-y-auto space-y-2 pr-2">
+                                                        {filteredRegisteredJemaat.length > 0 ? filteredRegisteredJemaat.map(jemaat => (
+                                                            <div key={jemaat.id} className="flex items-center justify-between p-2 rounded-md bg-gray-50">
+                                                                <div>
+                                                                    <p className="text-sm font-medium">{jemaat.name}</p>
+                                                                    <p className="text-xs text-gray-500">{jemaat.email}</p>
+                                                                </div>
+                                                                <Button size="sm" variant="ghost" onClick={() => handleAddRegisteredJemaat(jemaat)}>
+                                                                    <Plus className="h-4 w-4 mr-1"/> Tambah
+                                                                </Button>
+                                                            </div>
+                                                        )) : (
+                                                            <p className="text-center text-sm text-gray-500 py-4">Tidak ada jemaat ditemukan atau sudah menjadi peserta.</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </TabsContent>
+                                        </Tabs>
                                     </DialogContent>
                                 </Dialog>
                             </div>
