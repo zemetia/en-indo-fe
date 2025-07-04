@@ -10,7 +10,7 @@ import Skeleton from '@/components/Skeleton';
 
 export default function DashboardPage() {
   const { user, isLoading } = useAuth();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = React.useState('');
 
   const filteredMenu = React.useMemo(() => {
     if (!user) return [];
