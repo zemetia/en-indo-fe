@@ -25,6 +25,7 @@ import {
   BookUser,
   Group,
   HandHelping,
+  Fingerprint,
 } from 'lucide-react';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
@@ -72,7 +73,7 @@ const InfoItem = ({
   label: string;
   value: string | React.ReactNode;
 }) => {
-  if (!value) return null;
+  const displayValue = value || '-';
   return (
     <div className='flex items-start space-x-4'>
       <div className='p-2 bg-blue-50 rounded-lg'>
@@ -80,7 +81,7 @@ const InfoItem = ({
       </div>
       <div>
         <p className='text-sm text-gray-500'>{label}</p>
-        <p className='font-medium text-gray-800 break-words'>{value}</p>
+        <p className='font-medium text-gray-800 break-words'>{displayValue}</p>
       </div>
     </div>
   );
@@ -328,6 +329,7 @@ export default function DetailJemaatPage() {
               </h3>
               <div className='space-y-6'>
                 <InfoItem icon={Building} label='Gereja' value={jemaat.church} />
+                <InfoItem icon={Fingerprint} label='Kode Jemaat' value={jemaat.kode_jemaat} />
                 <InfoItem
                   icon={BadgeInfo}
                   label='Status Keanggotaan'
