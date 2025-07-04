@@ -62,12 +62,24 @@ export default function LoginForm() {
     } catch (error) {
       setIsLoading(false);
       if (axios.isAxiosError(error)) {
-        if (error.response?.status === 401) {
-          showToast('Email atau kata sandi salah.', 'error');
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          if (error.response.status === 401) {
+            showToast('Email atau kata sandi salah.', 'error');
+          } else {
+            showToast(error.response.data?.message || 'Terjadi kesalahan server.', 'error');
+          }
+          console.error('Login error:', error.response.data);
+        } else if (error.request) {
+          // The request was made but no response was received
+          showToast('Tidak dapat terhubung ke server. Periksa koneksi Anda.', 'error');
+          console.error('Network error:', error.message);
         } else {
-          showToast(error.response?.data?.message || 'Terjadi kesalahan server.', 'error');
+          // Something happened in setting up the request that triggered an Error
+          showToast('Terjadi kesalahan saat menyiapkan permintaan.', 'error');
+          console.error('Request setup error:', error.message);
         }
-        console.error('Login error:', error.response?.data);
       } else {
         showToast('Terjadi kesalahan yang tidak terduga.', 'error');
         console.error('Unexpected error:', error);
