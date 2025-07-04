@@ -206,10 +206,10 @@ export default function DataJemaatPage() {
                 className='pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full md:w-64'
               />
             </div>
-            <button className='bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 whitespace-nowrap'>
+            <Link href='/dashboard/jemaat/tambah' className='bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 whitespace-nowrap'>
               <BsPersonPlus className='w-5 h-5' />
               <span>Tambah Jemaat</span>
-            </button>
+            </Link>
           </div>
         </div>
 
