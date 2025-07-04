@@ -43,33 +43,36 @@ export default function LoginForm() {
     e.preventDefault();
     setIsLoading(true);
 
-    axios
-      .post<LoginResponse>(
+    try {
+      const response = await axios.post<LoginResponse>(
         `${process.env.NEXT_PUBLIC_API_URL}/api/user/login`,
         formData
-      )
-      .then(function (response) {
-        setIsLoading(false);
-        showToast('Login berhasil! Mengalihkan ke dashboard...', 'success');
-        setUserData(response.data.data);
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 500);
-      })
-      .catch(function (error) {
-        setIsLoading(false);
-        if (axios.isAxiosError(error)) {
-          if (error.response?.status === 401) {
-            showToast('Email atau kata sandi salah', 'error');
-          } else {
-            showToast('Terjadi kesalahan server. Silakan coba lagi.', 'error');
-          }
-          console.error('Login error:', error.response?.data);
+      );
+
+      setIsLoading(false);
+      showToast('Login berhasil! Mengalihkan ke dashboard...', 'success');
+      setUserData(response.data.data);
+      
+      // Redirect after a short delay to allow toast to be seen
+      setTimeout(() => {
+        router.push('/dashboard');
+        router.refresh(); // Refresh to ensure server components get the new cookie
+      }, 500);
+
+    } catch (error) {
+      setIsLoading(false);
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          showToast('Email atau kata sandi salah.', 'error');
         } else {
-          showToast('Terjadi kesalahan tak terduga', 'error');
-          console.error('Unexpected error:', error);
+          showToast(error.response?.data?.message || 'Terjadi kesalahan server.', 'error');
         }
-      });
+        console.error('Login error:', error.response?.data);
+      } else {
+        showToast('Terjadi kesalahan yang tidak terduga.', 'error');
+        console.error('Unexpected error:', error);
+      }
+    }
   };
 
   const formVariants = {
@@ -137,6 +140,7 @@ export default function LoginForm() {
                 placeholder='anda@email.com'
                 required
                 className="bg-sky-50"
+                disabled={isLoading}
               />
             </motion.div>
 
@@ -156,6 +160,7 @@ export default function LoginForm() {
                 placeholder='••••••••'
                 required
                 className="bg-sky-50"
+                disabled={isLoading}
               />
             </motion.div>
 
@@ -165,6 +170,7 @@ export default function LoginForm() {
                   id='remember-me'
                   type='checkbox'
                   className='h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
+                  disabled={isLoading}
                 />
                 <label
                   htmlFor='remember-me'
