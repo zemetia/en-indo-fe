@@ -6,7 +6,7 @@ import { format, parseISO } from 'date-fns';
 import { id } from 'date-fns/locale';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, MapPin, Users, Repeat, User as UserIcon, Search, Check, X, Save } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Repeat, User as UserIcon, Search, Check, X, Save, Plus, Minus, Baby } from 'lucide-react';
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -70,6 +70,11 @@ export default function EventDetailPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [filteredParticipants, setFilteredParticipants] = useState<Participant[]>([]);
+  const [simpleAttendance, setSimpleAttendance] = useState({
+    dewasa: 0,
+    youth: 0,
+    kids: 0,
+  });
 
   useEffect(() => {
     // --- Mock API Call ---
@@ -135,6 +140,21 @@ export default function EventDetailPage() {
       // TODO: Implement API call to save attendance data
       console.log("Saving attendance:", participants.filter(p => p.isPresent));
       showToast('Data kehadiran berhasil disimpan!', 'success');
+  };
+  
+  const handleSimpleCountChange = (
+    category: keyof typeof simpleAttendance,
+    value: number
+  ) => {
+    setSimpleAttendance((prev) => ({
+      ...prev,
+      [category]: Math.max(0, value),
+    }));
+  };
+
+  const handleSaveSimpleAttendance = () => {
+    console.log("Saving simple attendance:", { eventId: event?.id, attendance: simpleAttendance });
+    showToast('Data kehadiran (jumlah) berhasil disimpan!', 'success');
   };
 
   const formatTime = (datetime: string) => format(parseISO(datetime), 'HH:mm', { locale: id });
@@ -205,49 +225,121 @@ export default function EventDetailPage() {
                 </CardContent>
             </Card>
 
-            <Card>
-                <CardHeader><CardTitle>Pencatatan Kehadiran</CardTitle></CardHeader>
+            {event.type === 'ibadah' ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Pencatatan Kehadiran (Jumlah)</CardTitle>
+                </CardHeader>
                 <CardContent>
-                    <div className="relative mb-4">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input 
-                        placeholder="Cari nama atau email peserta..." 
-                        className="pl-10"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                      />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Dewasa */}
+                    <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100 flex flex-col justify-between">
+                      <div className="flex items-center space-x-3 mb-4">
+                        <div className="p-3 bg-emerald-100 rounded-lg">
+                          <Users className="h-6 w-6 text-emerald-600" />
+                        </div>
+                        <h4 className="text-lg font-medium text-emerald-800">Dewasa</h4>
+                      </div>
+                      <div className="flex items-center justify-between bg-white rounded-full p-2 shadow-sm">
+                        <Button type="button" size="icon" variant="ghost" onClick={() => handleSimpleCountChange('dewasa', simpleAttendance.dewasa - 1)} className="w-10 h-10 text-emerald-700 rounded-full hover:bg-emerald-100">
+                          <Minus className="h-5 w-5" />
+                        </Button>
+                        <p className="text-4xl font-bold text-emerald-900 mx-4">{simpleAttendance.dewasa}</p>
+                        <Button type="button" size="icon" variant="ghost" onClick={() => handleSimpleCountChange('dewasa', simpleAttendance.dewasa + 1)} className="w-10 h-10 text-emerald-700 rounded-full hover:bg-emerald-100">
+                          <Plus className="h-5 w-5" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
-                        {filteredParticipants.map((p, index) => (
-                           <motion.div 
-                            key={p.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                            className={`flex items-center justify-between p-3 rounded-lg ${p.isPresent ? 'bg-green-50' : 'bg-gray-50'}`}
-                           >
-                            <div>
-                                <p className="font-medium text-gray-800">{p.name}</p>
-                                <p className="text-xs text-gray-500">{p.email}</p>
-                                {p.timestamp && <p className="text-xs text-green-600 mt-1">Hadir: {p.timestamp}</p>}
-                            </div>
-                            <Button 
-                              size="sm" 
-                              variant={p.isPresent ? 'outline' : 'default'}
-                              onClick={() => toggleAttendance(p.id)}
-                              className={p.isPresent ? 'border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700' : 'bg-green-600 hover:bg-green-700'}
-                            >
-                                {p.isPresent ? <X className="h-4 w-4 mr-2" /> : <Check className="h-4 w-4 mr-2" />}
-                                {p.isPresent ? 'Batalkan' : 'Hadir'}
-                            </Button>
-                           </motion.div>
-                        ))}
+                    {/* Youth */}
+                    <div className="bg-sky-50 p-4 rounded-xl border border-sky-100 flex flex-col justify-between">
+                      <div className="flex items-center space-x-3 mb-4">
+                        <div className="p-3 bg-sky-100 rounded-lg">
+                          <UserIcon className="h-6 w-6 text-sky-600" />
+                        </div>
+                        <h4 className="text-lg font-medium text-sky-800">Youth</h4>
+                      </div>
+                      <div className="flex items-center justify-between bg-white rounded-full p-2 shadow-sm">
+                        <Button type="button" size="icon" variant="ghost" onClick={() => handleSimpleCountChange('youth', simpleAttendance.youth - 1)} className="w-10 h-10 text-sky-700 rounded-full hover:bg-sky-100">
+                          <Minus className="h-5 w-5" />
+                        </Button>
+                        <p className="text-4xl font-bold text-sky-900 mx-4">{simpleAttendance.youth}</p>
+                        <Button type="button" size="icon" variant="ghost" onClick={() => handleSimpleCountChange('youth', simpleAttendance.youth + 1)} className="w-10 h-10 text-sky-700 rounded-full hover:bg-sky-100">
+                          <Plus className="h-5 w-5" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="mt-6 flex justify-end">
-                        <Button onClick={handleSaveAttendance}><Save className="h-4 w-4 mr-2" />Simpan Kehadiran</Button>
+                    {/* Kids */}
+                    <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 flex flex-col justify-between">
+                      <div className="flex items-center space-x-3 mb-4">
+                        <div className="p-3 bg-amber-100 rounded-lg">
+                          <Baby className="h-6 w-6 text-amber-600" />
+                        </div>
+                        <h4 className="text-lg font-medium text-amber-800">Kids</h4>
+                      </div>
+                      <div className="flex items-center justify-between bg-white rounded-full p-2 shadow-sm">
+                        <Button type="button" size="icon" variant="ghost" onClick={() => handleSimpleCountChange('kids', simpleAttendance.kids - 1)} className="w-10 h-10 text-amber-700 rounded-full hover:bg-amber-100">
+                          <Minus className="h-5 w-5" />
+                        </Button>
+                        <p className="text-4xl font-bold text-amber-900 mx-4">{simpleAttendance.kids}</p>
+                        <Button type="button" size="icon" variant="ghost" onClick={() => handleSimpleCountChange('kids', simpleAttendance.kids + 1)} className="w-10 h-10 text-amber-700 rounded-full hover:bg-amber-100">
+                          <Plus className="h-5 w-5" />
+                        </Button>
+                      </div>
                     </div>
+                  </div>
+                  <div className="mt-6 flex justify-end">
+                    <Button onClick={handleSaveSimpleAttendance}>
+                      <Save className="h-4 w-4 mr-2" />
+                      Simpan Kehadiran
+                    </Button>
+                  </div>
                 </CardContent>
-            </Card>
+              </Card>
+            ) : (
+              <Card>
+                  <CardHeader><CardTitle>Pencatatan Kehadiran</CardTitle></CardHeader>
+                  <CardContent>
+                      <div className="relative mb-4">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Input 
+                          placeholder="Cari nama atau email peserta..." 
+                          className="pl-10"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                          {filteredParticipants.map((p, index) => (
+                            <motion.div 
+                              key={p.id}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: index * 0.05 }}
+                              className={`flex items-center justify-between p-3 rounded-lg ${p.isPresent ? 'bg-green-50' : 'bg-gray-50'}`}
+                            >
+                              <div>
+                                  <p className="font-medium text-gray-800">{p.name}</p>
+                                  <p className="text-xs text-gray-500">{p.email}</p>
+                                  {p.timestamp && <p className="text-xs text-green-600 mt-1">Hadir: {p.timestamp}</p>}
+                              </div>
+                              <Button 
+                                size="sm" 
+                                variant={p.isPresent ? 'outline' : 'default'}
+                                onClick={() => toggleAttendance(p.id)}
+                                className={p.isPresent ? 'border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700' : 'bg-green-600 hover:bg-green-700'}
+                              >
+                                  {p.isPresent ? <X className="h-4 w-4 mr-2" /> : <Check className="h-4 w-4 mr-2" />}
+                                  {p.isPresent ? 'Batalkan' : 'Hadir'}
+                              </Button>
+                            </motion.div>
+                          ))}
+                      </div>
+                      <div className="mt-6 flex justify-end">
+                          <Button onClick={handleSaveAttendance}><Save className="h-4 w-4 mr-2" />Simpan Kehadiran</Button>
+                      </div>
+                  </CardContent>
+              </Card>
+            )}
         </div>
 
         {/* Right Column */}
