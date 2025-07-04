@@ -6,7 +6,9 @@ import { format, parseISO } from 'date-fns';
 import { id } from 'date-fns/locale';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, MapPin, Users, Repeat, User as UserIcon, Search, Check, X, Save, Plus, Minus, Baby } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Repeat, User as UserIcon, Search, Check, X, Save, Plus, Minus, Baby, QrCode, Download } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
+
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -86,7 +88,7 @@ export default function EventDetailPage() {
         bannerImage: 'https://placehold.co/1200x400.png',
         description: 'Ibadah rutin mingguan untuk seluruh jemaat Every Nation Jakarta. Mari datang dan bersekutu bersama dalam hadirat Tuhan.',
         capacity: 500,
-        type: 'ibadah',
+        type: eventId === '1' ? 'ibadah' : 'event', // Make it dynamic for testing
         eventDate: '2024-05-12',
         eventLocation: 'Gedung Gereja Utama',
         startDatetime: '2024-05-12T08:00:00+07:00',
@@ -296,49 +298,74 @@ export default function EventDetailPage() {
                 </CardContent>
               </Card>
             ) : (
-              <Card>
-                  <CardHeader><CardTitle>Pencatatan Kehadiran</CardTitle></CardHeader>
-                  <CardContent>
-                      <div className="relative mb-4">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input 
-                          placeholder="Cari nama atau email peserta..." 
-                          className="pl-10"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
-                          {filteredParticipants.map((p, index) => (
-                            <motion.div 
-                              key={p.id}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: index * 0.05 }}
-                              className={`flex items-center justify-between p-3 rounded-lg ${p.isPresent ? 'bg-green-50' : 'bg-gray-50'}`}
-                            >
-                              <div>
-                                  <p className="font-medium text-gray-800">{p.name}</p>
-                                  <p className="text-xs text-gray-500">{p.email}</p>
-                                  {p.timestamp && <p className="text-xs text-green-600 mt-1">Hadir: {p.timestamp}</p>}
-                              </div>
-                              <Button 
-                                size="sm" 
-                                variant={p.isPresent ? 'outline' : 'default'}
-                                onClick={() => toggleAttendance(p.id)}
-                                className={p.isPresent ? 'border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700' : 'bg-green-600 hover:bg-green-700'}
-                              >
-                                  {p.isPresent ? <X className="h-4 w-4 mr-2" /> : <Check className="h-4 w-4 mr-2" />}
-                                  {p.isPresent ? 'Batalkan' : 'Hadir'}
-                              </Button>
-                            </motion.div>
-                          ))}
-                      </div>
-                      <div className="mt-6 flex justify-end">
-                          <Button onClick={handleSaveAttendance}><Save className="h-4 w-4 mr-2" />Simpan Kehadiran</Button>
-                      </div>
-                  </CardContent>
-              </Card>
+                <>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center">
+                                <QrCode className="w-5 h-5 mr-3 text-emerald-600" />
+                                QR Code Absensi Mandiri
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col items-center gap-4 text-center">
+                            <p className="text-sm text-gray-600 max-w-md">
+                                Jemaat dapat melakukan absensi mandiri dengan memindai QR Code ini menggunakan aplikasi atau kamera HP.
+                            </p>
+                            <div className="p-4 bg-white border-2 border-emerald-500 rounded-lg inline-block">
+                                <QRCodeSVG 
+                                    value={JSON.stringify({ eventId: event.id, title: event.title, date: event.eventDate })} 
+                                    size={200}
+                                    level="H"
+                                    includeMargin
+                                />
+                            </div>
+                            <Button variant="outline"><Download className="w-4 h-4 mr-2" /> Unduh QR Code</Button>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader><CardTitle>Pencatatan Kehadiran</CardTitle></CardHeader>
+                        <CardContent>
+                            <div className="relative mb-4">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <Input 
+                                placeholder="Cari nama atau email peserta..." 
+                                className="pl-10"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                            </div>
+                            <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                                {filteredParticipants.map((p, index) => (
+                                <motion.div 
+                                    key={p.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.05 }}
+                                    className={`flex items-center justify-between p-3 rounded-lg ${p.isPresent ? 'bg-green-50' : 'bg-gray-50'}`}
+                                >
+                                    <div>
+                                        <p className="font-medium text-gray-800">{p.name}</p>
+                                        <p className="text-xs text-gray-500">{p.email}</p>
+                                        {p.timestamp && <p className="text-xs text-green-600 mt-1">Hadir: {p.timestamp}</p>}
+                                    </div>
+                                    <Button 
+                                    size="sm" 
+                                    variant={p.isPresent ? 'outline' : 'default'}
+                                    onClick={() => toggleAttendance(p.id)}
+                                    className={p.isPresent ? 'border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700' : 'bg-green-600 hover:bg-green-700'}
+                                    >
+                                        {p.isPresent ? <X className="h-4 w-4 mr-2" /> : <Check className="h-4 w-4 mr-2" />}
+                                        {p.isPresent ? 'Batalkan' : 'Hadir'}
+                                    </Button>
+                                    </motion.div>
+                                ))}
+                            </div>
+                            <div className="mt-6 flex justify-end">
+                                <Button onClick={handleSaveAttendance}><Save className="h-4 w-4 mr-2" />Simpan Kehadiran</Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </>
             )}
         </div>
 
