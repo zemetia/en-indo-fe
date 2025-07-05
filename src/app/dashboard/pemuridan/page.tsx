@@ -1,297 +1,190 @@
 'use client';
 
-import axios from 'axios';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import * as React from 'react';
-import { useEffect } from 'react';
-import {
-  BsCalendarWeek,
-  BsGeoAlt,
-  BsPeople,
-  BsPersonPlus,
-} from 'react-icons/bs';
-import { FiEdit2, FiSearch, FiTrash2, FiUsers } from 'react-icons/fi';
-import { MdAlternateEmail } from 'react-icons/md';
+import Image from 'next/image';
+import { User, Search, UserPlus, Users, Trash2, ShieldCheck, UserCheck } from 'lucide-react';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
-interface Jemaat {
+// Mock Data
+interface Murid {
   id: string;
   nama: string;
-  gender: string;
-  alamat: string;
-  church: string;
-  tanggal_lahir: string;
-  email: string;
-  nomor_telepon: string;
-  is_aktif: boolean;
+  tipe: 'Jemaat' | 'Visitor';
 }
 
+interface PemuridanRelation {
+  pemuridId: string;
+  pemuridNama: string;
+  pemuridAvatar: string;
+  murid: Murid[];
+}
+
+const mockPemuridanData: PemuridanRelation[] = [
+  {
+    pemuridId: 'pdt1',
+    pemuridNama: 'Pdt. Budi Santoso',
+    pemuridAvatar: 'https://placehold.co/100x100.png',
+    murid: [
+      { id: 'm1', nama: 'Andi Wijaya', tipe: 'Jemaat' },
+      { id: 'm2', nama: 'Michael Tan', tipe: 'Jemaat' },
+      { id: 'v1', nama: 'Sarah (Visitor)', tipe: 'Visitor' },
+    ],
+  },
+  {
+    pemuridId: 'ev1',
+    pemuridNama: 'Ev. Rina Wijaya',
+    pemuridAvatar: 'https://placehold.co/100x100.png',
+    murid: [
+      { id: 'm3', nama: 'Citra Lestari', tipe: 'Jemaat' },
+      { id: 'm4', nama: 'Dewi Anggraini', tipe: 'Jemaat' },
+    ],
+  },
+  {
+    pemuridId: 'ldr1',
+    pemuridNama: 'Andi Wijaya',
+    pemuridAvatar: 'https://placehold.co/100x100.png',
+    murid: [
+      { id: 'v2', nama: 'David (Visitor)', tipe: 'Visitor' },
+    ],
+  },
+];
+
+
 export default function PemuridanPage() {
-  const [jemaat, setJemaat] = React.useState<Array<Jemaat> | null>(null);
-  const [searchTerm, setSearchTerm] = React.useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [relations, setRelations] = useState(mockPemuridanData);
 
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
+    const filteredRelations = relations.filter(relation => 
+        relation.pemuridNama.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        relation.murid.some(murid => murid.nama.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
 
-  useEffect(() => {
-    const fetchJemaat = async () => {
-      setLoading(true);
-      try {
-        // Ambil token dari local storage
-        const token = localStorage.getItem('token');
-
-        if (!token) {
-          setError('Token autentikasi tidak ditemukan. Silakan login kembali.');
-          setLoading(false);
-          return;
-        }
-
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/person`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+    const handleRemoveMurid = (pemuridId: string, muridId: string) => {
+        setRelations(prev => 
+            prev.map(rel => {
+                if (rel.pemuridId === pemuridId) {
+                    return {
+                        ...rel,
+                        murid: rel.murid.filter(m => m.id !== muridId)
+                    };
+                }
+                return rel;
+            }).filter(rel => rel.murid.length > 0) // Optional: remove pemurid if they have no murid left
         );
-
-        // Pastikan data tersedia dalam format yang diharapkan
-        if (response.data && Array.isArray(response.data)) {
-          setJemaat(response.data);
-        } else if (
-          response.data &&
-          typeof response.data === 'object' &&
-          Array.isArray(response.data.data)
-        ) {
-          // Handle jika data berada dalam nested object (response.data.data)
-          setJemaat(response.data.data);
-        } else {
-          throw new Error('Format data tidak valid');
-        }
-
-        setError(null);
-      } catch (error) {
-        setError('Gagal mengambil data jemaat. Silakan coba lagi nanti.');
-      } finally {
-        setLoading(false);
-      }
     };
 
-    fetchJemaat();
-  }, []);
-
-  const filteredJemaat = jemaat
-    ? jemaat.filter((item: Jemaat) =>
-        item.nama.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : [];
-
-  if (loading) {
     return (
-      <div className='space-y-6'>
-        <FeaturedCard
-          title='Pemuridan'
-          description='Kelola pemuridan gereja'
-          actionLabel='Kembali ke Dashboard'
-          gradientFrom='from-blue-500'
-          gradientTo='to-blue-700'
-        />
-        <div className='bg-white rounded-xl shadow-sm p-6 border border-gray-200 flex justify-center items-center min-h-[400px]'>
-          <div className='flex flex-col items-center'>
-            <div className='w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4'></div>
-            <p className='text-gray-600'>Memuat data jemaat...</p>
-          </div>
+        <div className="space-y-6">
+            <FeaturedCard
+                title="Manajemen Pemuridan"
+                description="Pantau dan kelola hubungan pemuridan di dalam gereja untuk memastikan setiap orang bertumbuh."
+                actionLabel="Tambah Relasi Baru"
+                gradientFrom="from-cyan-500"
+                gradientTo="to-blue-500"
+                onAction={() => { /* router.push('/dashboard/pemuridan/tambah') */ }}
+            />
+
+            <Card>
+                <CardHeader>
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <CardTitle>Relasi Pemuridan</CardTitle>
+                            <CardDescription>Daftar pemurid dan orang yang mereka muridkan.</CardDescription>
+                        </div>
+                         <div className='flex w-full md:w-auto space-x-4'>
+                            <div className='relative flex-grow'>
+                                <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400' />
+                                <Input
+                                    placeholder='Cari pemurid atau murid...'
+                                    className='pl-10 w-full md:w-64'
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            <Button asChild>
+                                <Link href="#">
+                                    <UserPlus className='mr-2 h-4 w-4'/>
+                                    Tambah Relasi
+                                </Link>
+                            </Button>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    {filteredRelations.length > 0 ? (
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                            {filteredRelations.map((relation, index) => (
+                                <motion.div 
+                                    key={relation.pemuridId}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.05 }}
+                                >
+                                    <Card className="h-full flex flex-col bg-gray-50/50">
+                                        <CardHeader>
+                                             <div className="flex items-center space-x-4">
+                                                <Image src={relation.pemuridAvatar} alt={relation.pemuridNama} width={48} height={48} className="rounded-full" data-ai-hint="person portrait" />
+                                                <div>
+                                                    <p className="text-xs text-cyan-600 font-semibold">PEMURID</p>
+                                                    <CardTitle className="text-base">{relation.pemuridNama}</CardTitle>
+                                                </div>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent className="flex-grow">
+                                            <p className="text-sm font-medium text-gray-500 mb-3 ml-1">Memuridkan ({relation.murid.length}):</p>
+                                            <div className="space-y-3">
+                                                {relation.murid.map(murid => (
+                                                    <div key={murid.id} className="flex justify-between items-center p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+                                                        <div className="flex items-center space-x-3 min-w-0">
+                                                            <div className="p-2 bg-blue-100 rounded-full">
+                                                                <User className="h-4 w-4 text-blue-600" />
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <p className="font-medium text-gray-800 truncate">{murid.nama}</p>
+                                                                {murid.tipe === 'Jemaat' ? (
+                                                                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                                        <ShieldCheck className="h-3 w-3 mr-1"/>
+                                                                        Jemaat
+                                                                    </span>
+                                                                ) : (
+                                                                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                                        <UserCheck className="h-3 w-3 mr-1"/>
+                                                                        Visitor
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className='text-gray-400 hover:text-red-500 hover:bg-red-50 ml-2 flex-shrink-0 h-8 w-8'
+                                                            onClick={() => handleRemoveMurid(relation.pemuridId, murid.id)}
+                                                        >
+                                                            <Trash2 className='h-4 w-4'/>
+                                                        </Button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </motion.div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className='text-center py-16 text-gray-500 bg-gray-50 rounded-lg'>
+                            <Users className='mx-auto h-12 w-12 text-gray-400 mb-4' />
+                            <h3 className="text-lg font-semibold text-gray-800">Tidak Ada Hasil</h3>
+                            <p>Tidak ada data pemuridan yang cocok dengan pencarian Anda.</p>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
         </div>
-      </div>
     );
-  }
-
-  if (error) {
-    return (
-      <div className='space-y-6'>
-        <FeaturedCard
-          title='Data Jemaat'
-          description='Kelola data jemaat gereja'
-          actionLabel='Kembali ke Dashboard'
-          gradientFrom='from-blue-500'
-          gradientTo='to-blue-700'
-        />
-        <div className='bg-white rounded-xl shadow-sm p-6 border border-gray-200 flex justify-center items-center min-h-[400px]'>
-          <div className='text-center'>
-            <div className='text-red-500 mb-2 text-5xl'>
-              <BsGeoAlt className='mx-auto' />
-            </div>
-            <h3 className='text-lg font-semibold text-gray-900 mb-2'>Error</h3>
-            <p className='text-gray-600 mb-4'>{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'
-            >
-              Coba Lagi
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className='space-y-6'>
-      <FeaturedCard
-        title='Data Jemaat'
-        description='Kelola data jemaat gereja'
-        actionLabel='Kembali ke Dashboard'
-        gradientFrom='from-blue-500'
-        gradientTo='to-blue-700'
-      />
-
-      <div className='bg-white rounded-xl shadow-sm p-6 border border-blue-50'>
-        <div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0'>
-          <div>
-            <h2 className='text-lg font-semibold text-gray-900'>
-              Daftar yang Dimuridkan
-            </h2>
-            <p className='text-sm text-gray-500 mt-1'>
-              Kelola dan lihat data jemaat gereja
-            </p>
-          </div>
-          <div className='flex space-x-4 w-full md:w-auto'>
-            <div className='relative flex-1 md:flex-none'>
-              <FiSearch className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5' />
-              <input
-                type='text'
-                placeholder='Cari jemaat...'
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className='pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full md:w-64'
-              />
-            </div>
-            <button className='bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 whitespace-nowrap'>
-              <BsPersonPlus className='w-5 h-5' />
-              <span>Tambah Jemaat</span>
-            </button>
-          </div>
-        </div>
-
-        {filteredJemaat.length === 0 ? (
-          <div className='bg-gray-50 rounded-xl p-8 text-center'>
-            <BsPeople className='w-10 h-10 text-gray-400 mx-auto mb-4' />
-            <h3 className='text-lg font-semibold text-gray-900 mb-2'>
-              Tidak ada data jemaat
-            </h3>
-            <p className='text-gray-600 max-w-md mx-auto mb-6'>
-              {searchTerm
-                ? `Tidak ada hasil yang cocok dengan "${searchTerm}"`
-                : 'Belum ada data jemaat yang tersedia. Tambahkan data jemaat baru untuk melihatnya di sini.'}
-            </p>
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm('')}
-                className='px-4 py-2 bg-gray-200 rounded-lg text-gray-800 hover:bg-gray-300 transition-colors'
-              >
-                Hapus Pencarian
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-            {filteredJemaat.map((item: Jemaat, index: number) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Link href={`/dashboard/jemaat/${item.id}`} className='block'>
-                  <div className='bg-white rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md border border-blue-50 cursor-pointer group'>
-                    <div className='flex items-start space-x-4'>
-                      <div className='p-3 rounded-lg bg-blue-600 text-white transform group-hover:rotate-12 transition-transform duration-300'>
-                        <BsPeople className='w-6 h-6' />
-                      </div>
-                      <div className='flex-1'>
-                        <div className='flex justify-between items-start'>
-                          <h3 className='text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors'>
-                            {item.nama}
-                          </h3>
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              item.is_aktif === true
-                                ? 'bg-blue-100 text-blue-700'
-                                : 'bg-red-100 text-red-700'
-                            }`}
-                          >
-                            {item.is_aktif ? 'Aktif' : 'Nonaktif'}
-                          </span>
-                        </div>
-                        <p className='mt-1 text-sm text-gray-500'>
-                          {item.church}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className='mt-4 space-y-2'>
-                      <div className='flex items-center text-sm text-gray-500'>
-                        <FiUsers className='w-4 h-4 mr-2 text-blue-500' />
-                        <span>
-                          {item.gender === 'L' ? 'Laki-laki' : 'Perempuan'}
-                        </span>
-                      </div>
-                      <div className='flex items-center text-sm text-gray-500'>
-                        <BsCalendarWeek className='w-4 h-4 mr-2 text-blue-500' />
-                        <span>Lahir: {item.tanggal_lahir}</span>
-                      </div>
-                      <div className='flex items-center text-sm text-gray-500'>
-                        <MdAlternateEmail className='w-4 h-4 mr-2 text-blue-500' />
-                        <span>Email: {item.email || '-'}</span>
-                      </div>
-                    </div>
-
-                    <div className='mt-4 border-t border-blue-50 pt-4'>
-                      <div className='flex flex-col space-y-2'>
-                        <div className='flex items-center text-sm text-gray-500'>
-                          <BsGeoAlt className='w-4 h-4 mr-2 text-blue-500' />
-                          <span className='line-clamp-1'>{item.alamat}</span>
-                        </div>
-                        <div className='flex justify-between items-center'>
-                          <div className='flex items-center text-sm text-gray-500'>
-                            <span>{item.nomor_telepon}</span>
-                          </div>
-                          <div className='flex space-x-2'>
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                // Handler untuk edit
-                              }}
-                              className='p-2 text-gray-400 hover:text-blue-600 transition-colors'
-                            >
-                              <FiEdit2 className='w-5 h-5' />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                // Handler untuk delete
-                              }}
-                              className='p-2 text-gray-400 hover:text-red-600 transition-colors'
-                            >
-                              <FiTrash2 className='w-5 h-5' />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
 }
