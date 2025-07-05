@@ -14,7 +14,7 @@ import {
   FiLogOut,
 } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext';
-import { dashboardMenu, MenuItem, hasAccess, ADMIN_ROLE } from '@/constant/menu';
+import { dashboardMenu, MenuItem } from '@/constant/menu';
 import UserProfile from './UserProfile';
 import Skeleton from '@/components/Skeleton';
 
@@ -25,37 +25,28 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [expandedMenus, setExpandedMenus] = React.useState<string[]>([]);
   const [isMobile, setIsMobile] = React.useState(false);
-
-  const filteredMenu = React.useMemo(() => {
-    if (!user) return [];
-    
-    // As per user request, disabling permission checks for development
-    return dashboardMenu;
-
-    // const userRoles = user.pelayanan.map((p: any) => p.pelayanan.toLowerCase());
-    
-    // if (userRoles.includes(ADMIN_ROLE)) {
-    //   return dashboardMenu;
-    // }
-    
-    // return dashboardMenu.filter((menu) => hasAccess(menu, userRoles, user.pelayanan));
-  }, [user]);
+  const [hasMounted, setHasMounted] = React.useState(false);
 
   React.useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      if (mobile) {
-        setIsCollapsed(true);
-      } else {
-        setIsMobileOpen(false);
-      }
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    setHasMounted(true);
   }, []);
+
+  React.useEffect(() => {
+    if (hasMounted) {
+      const handleResize = () => {
+        const mobile = window.innerWidth < 768;
+        setIsMobile(mobile);
+        if (mobile) {
+          setIsCollapsed(true);
+        } else {
+          setIsMobileOpen(false);
+        }
+      };
+      handleResize();
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, [hasMounted]);
 
   React.useEffect(() => {
     // Open the parent menu of the active submenu item on initial load or path change
@@ -81,8 +72,10 @@ export default function Sidebar() {
   };
 
   const toggleMobileMenu = () => {
-    if (!isMobileOpen && isMobile) {
-      setIsCollapsed(false);
+    if (isMobile) {
+      // When opening (isMobileOpen is false), set collapsed to false.
+      // When closing (isMobileOpen is true), set collapsed to true.
+      setIsCollapsed(isMobileOpen);
     }
     setIsMobileOpen(!isMobileOpen);
   };
@@ -119,7 +112,7 @@ export default function Sidebar() {
       </div>
 
       <aside
-        className={`relative h-screen bg-white transition-all duration-300 ease-in-out ${
+        className={`fixed md:relative h-screen bg-white transition-all duration-300 ease-in-out ${
           isCollapsed ? 'w-20' : 'w-64'
         } border-r border-gray-200 z-30 flex flex-col ${
           isMobile
@@ -184,7 +177,7 @@ export default function Sidebar() {
             Menu
           </p>
           <nav className='flex-1 space-y-1 px-2'>
-            {isLoading ? renderSkeleton() : filteredMenu.map((item) => (
+            {isLoading ? renderSkeleton() : dashboardMenu.map((item) => (
               <div key={item.title}>
                 {item.submenu && item.submenu.length > 0 ? (
                   <div>
