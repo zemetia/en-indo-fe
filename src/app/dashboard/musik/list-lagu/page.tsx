@@ -18,7 +18,6 @@ interface Song {
   penyanyi: string;
   genre: string;
   durasi: string;
-  status: 'active' | 'inactive';
   youtubeLink?: string;
   lirik: string;
   tags?: string;
@@ -27,12 +26,12 @@ interface Song {
 }
 
 const MOCK_SONGS: Song[] = [
-    { id: 's1', judul: 'Amazing Grace', penyanyi: 'John Newton', genre: 'Hymn', durasi: '04:30', status: 'active', lirik: 'Amazing grace, how sweet the sound...\nThat saved a wretch like me.\nI once was lost, but now am found,\nWas blind, but now I see.', nadaDasar: 'G', tahunRilis: 1779, tags: 'hymn, classic' },
-    { id: 's2', judul: 'How Great Thou Art', penyanyi: 'Carl Boberg', genre: 'Hymn', durasi: '05:15', status: 'active', lirik: 'O Lord my God, when I in awesome wonder...\nConsider all the worlds Thy Hands have made.\nI see the stars, I hear the rolling thunder,\nThy power throughout the universe displayed.', nadaDasar: 'Bb', tahunRilis: 1885, tags: 'hymn, worship' },
-    { id: 's3', judul: '10,000 Reasons (Bless the Lord)', penyanyi: 'Matt Redman', genre: 'Penyembahan', durasi: '05:45', status: 'active', lirik: 'Bless the Lord, O my soul...\nO my soul, worship His holy name.\nSing like never before, O my soul.\nI\'ll worship Your holy name.', nadaDasar: 'G', tahunRilis: 2011, tags: 'worship, modern' },
-    { id: 's4', judul: 'What A Beautiful Name', penyanyi: 'Hillsong Worship', genre: 'Penyembahan', durasi: '05:20', status: 'active', lirik: 'You were the Word at the beginning...\nOne with God the Lord Most High.\nYour hidden glory in creation,\nNow revealed in You our Christ.', nadaDasar: 'D', tahunRilis: 2016, tags: 'worship, hillsong' },
-    { id: 's5', judul: 'This is Amazing Grace', penyanyi: 'Phil Wickham', genre: 'Pujian', durasi: '04:50', status: 'active', lirik: 'Who breaks the power of sin and darkness...\nWhose love is mighty and so much stronger?\nThe King of Glory, the King above all kings.', nadaDasar: 'B', tahunRilis: 2013, tags: 'praise, upbeat' },
-    { id: 's6', judul: 'Goodness of God', penyanyi: 'Bethel Music', genre: 'Penyembahan', durasi: '04:55', status: 'inactive', lirik: 'I love you, Lord...\nFor your mercy never fails me.\nAll my days, I\'ve been held in your hands.\nFrom the moment that I wake up\nUntil I lay my head\nOh, I will sing of the goodness of God.', nadaDasar: 'Ab', tahunRilis: 2019, tags: 'worship, bethel' },
+    { id: 's1', judul: 'Amazing Grace', penyanyi: 'John Newton', genre: 'Hymn', durasi: '04:30', lirik: 'Amazing grace, how sweet the sound...\nThat saved a wretch like me.\nI once was lost, but now am found,\nWas blind, but now I see.', nadaDasar: 'G', tahunRilis: 1779, tags: 'hymn, classic' },
+    { id: 's2', judul: 'How Great Thou Art', penyanyi: 'Carl Boberg', genre: 'Hymn', durasi: '05:15', lirik: 'O Lord my God, when I in awesome wonder...\nConsider all the worlds Thy Hands have made.\nI see the stars, I hear the rolling thunder,\nThy power throughout the universe displayed.', nadaDasar: 'Bb', tahunRilis: 1885, tags: 'hymn, worship' },
+    { id: 's3', judul: '10,000 Reasons (Bless the Lord)', penyanyi: 'Matt Redman', genre: 'Penyembahan', durasi: '05:45', lirik: 'Bless the Lord, O my soul...\nO my soul, worship His holy name.\nSing like never before, O my soul.\nI\'ll worship Your holy name.', nadaDasar: 'G', tahunRilis: 2011, tags: 'worship, modern' },
+    { id: 's4', judul: 'What A Beautiful Name', penyanyi: 'Hillsong Worship', genre: 'Penyembahan', durasi: '05:20', lirik: 'You were the Word at the beginning...\nOne with God the Lord Most High.\nYour hidden glory in creation,\nNow revealed in You our Christ.', nadaDasar: 'D', tahunRilis: 2016, tags: 'worship, hillsong' },
+    { id: 's5', judul: 'This is Amazing Grace', penyanyi: 'Phil Wickham', genre: 'Pujian', durasi: '04:50', lirik: 'Who breaks the power of sin and darkness...\nWhose love is mighty and so much stronger?\nThe King of Glory, the King above all kings.', nadaDasar: 'B', tahunRilis: 2013, tags: 'praise, upbeat' },
+    { id: 's6', judul: 'Goodness of God', penyanyi: 'Bethel Music', genre: 'Penyembahan', durasi: '04:55', lirik: 'I love you, Lord...\nFor your mercy never fails me.\nAll my days, I\'ve been held in your hands.\nFrom the moment that I wake up\nUntil I lay my head\nOh, I will sing of the goodness of God.', nadaDasar: 'Ab', tahunRilis: 2019, tags: 'worship, bethel' },
 ];
 
 export default function ListLaguPage() {
@@ -97,7 +96,6 @@ export default function ListLaguPage() {
             nadaDasar: data.nadaDasar,
             tahunRilis: Number(data.tahunRilis),
             durasi: '00:00',
-            status: 'active',
         };
         setSongs(prev => [newSong, ...prev]);
         showToast('Lagu baru berhasil ditambahkan!', 'success');
@@ -168,19 +166,12 @@ export default function ListLaguPage() {
                         <h3 className='font-bold text-lg text-gray-900 truncate'>{song.judul}</h3>
                         <p className='text-sm text-gray-500 truncate'>Oleh {song.penyanyi}</p>
                     </div>
-                    <span className={`px-2 py-0.5 text-xs font-semibold rounded-full flex-shrink-0 ${
-                        song.status === 'active'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                        {song.status === 'active' ? 'Aktif' : 'Tidak Aktif'}
-                    </span>
                 </div>
 
                 <div className='mt-4 pt-4 border-t border-gray-100 space-y-2 text-sm'>
                     <div className='flex items-center text-gray-600'>
                         <FiKey className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
-                        <span>Nada Dasar: {song.nadaDasar || '-'}</span>
+                        <span>Chord Asli: {song.nadaDasar || '-'}</span>
                     </div>
                      <div className='flex items-center text-gray-600'>
                         <FiCalendar className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />

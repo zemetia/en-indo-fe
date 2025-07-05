@@ -50,7 +50,7 @@ export default function SongDetailDialog({ open, onOpenChange, song }: SongDetai
 
         <div className="flex-grow overflow-y-auto pr-4 -mr-2 space-y-6 py-4">
             <div className="flex flex-wrap gap-3">
-                {song.nadaDasar && <InfoPill icon={FiKey} text={`Nada: ${song.nadaDasar}`} />}
+                {song.nadaDasar && <InfoPill icon={FiKey} text={`Chord Asli: ${song.nadaDasar}`} />}
                 {song.tahunRilis && <InfoPill icon={FiCalendar} text={`Rilis: ${song.tahunRilis}`} />}
                 {song.genre && <InfoPill icon={FiMusic} text={`Genre: ${song.genre}`} />}
             </div>

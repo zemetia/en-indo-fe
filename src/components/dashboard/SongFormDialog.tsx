@@ -125,10 +125,10 @@ export default function SongFormDialog({ open, onOpenChange, onSubmit, initialDa
               <Input id="genre" name="genre" value={formData.genre} onChange={handleChange} />
             </div>
              <div>
-                <Label htmlFor="nadaDasar">Nada Dasar</Label>
+                <Label htmlFor="nadaDasar">Chord Asli</Label>
                 <Select value={formData.nadaDasar} onValueChange={(value) => handleSelectChange('nadaDasar', value)}>
                     <SelectTrigger id="nadaDasar">
-                        <SelectValue placeholder="Pilih nada dasar" />
+                        <SelectValue placeholder="Pilih chord asli" />
                     </SelectTrigger>
                     <SelectContent>
                         {NADA_DASAR_OPTIONS.map(key => <SelectItem key={key} value={key}>{key}</SelectItem>)}
