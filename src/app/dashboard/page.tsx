@@ -4,10 +4,10 @@ import Link from 'next/link';
 import * as React from 'react';
 import { Search, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { dashboardMenu, MenuItem, hasAccess, ADMIN_ROLE } from '@/constant/menu';
+import { dashboardMenu, MenuItem } from '@/constant/menu';
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import Skeleton from '@/components/Skeleton';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { motion } from 'framer-motion';
 
 export default function DashboardPage() {
   const { user, isLoading } = useAuth();
@@ -15,16 +15,8 @@ export default function DashboardPage() {
 
   const filteredMenu = React.useMemo(() => {
     if (!user) return [];
-    
-    const userRoles = user.pelayanan.map((p: any) => p.pelayanan.toLowerCase());
-    
-    // Admin gets all menus
-    if (userRoles.includes(ADMIN_ROLE)) {
-      return dashboardMenu;
-    }
-    
-    // Filter based on permissions
-    return dashboardMenu.filter((menu) => hasAccess(menu, userRoles, user.pelayanan));
+    // For development, show all menus. In production, permission checks should be enabled.
+    return dashboardMenu;
   }, [user]);
 
   const searchFilteredMenu = filteredMenu.filter(
@@ -63,18 +55,17 @@ export default function DashboardPage() {
     },
     {} as Record<string, { title: string; items: MenuItem[] }>
   );
-  
 
   if (isLoading) {
     return (
-      <div className="space-y-8">
-        <Skeleton className="h-40 w-full rounded-xl" />
-        <div className="space-y-6">
-          <Skeleton className="h-8 w-1/4 rounded-lg" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Skeleton className="h-48 w-full rounded-xl" />
-            <Skeleton className="h-48 w-full rounded-xl" />
-            <Skeleton className="h-48 w-full rounded-xl" />
+      <div className='space-y-8'>
+        <Skeleton className='h-40 w-full rounded-xl' />
+        <div className='space-y-6'>
+          <Skeleton className='h-8 w-1/4 rounded-lg' />
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+            <Skeleton className='h-48 w-full rounded-xl' />
+            <Skeleton className='h-48 w-full rounded-xl' />
+            <Skeleton className='h-48 w-full rounded-xl' />
           </div>
         </div>
       </div>
@@ -110,23 +101,33 @@ export default function DashboardPage() {
             {category.title}
           </h2>
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-            {category.items.map((card) => (
-              <Link key={card.href} href={card.href} className="group block h-full">
-                <Card className="h-full transition-all duration-300 hover:shadow-lg hover:border-primary/50 hover:-translate-y-1 flex flex-col border-gray-200">
-                    <CardHeader className="flex-grow">
-                        <div className={`mb-4 inline-block p-3 rounded-lg ${card.color} transition-transform group-hover:scale-110`}>
-                            <card.icon className='w-6 h-6 text-white' />
-                        </div>
-                        <CardTitle>{card.title}</CardTitle>
-                        <CardDescription>{card.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="flex justify-end items-center text-sm font-medium text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            Akses Menu <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
-                        </div>
-                    </CardContent>
-                </Card>
-              </Link>
+            {category.items.map((card, index) => (
+              <motion.div
+                key={card.href}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <Link href={card.href} className='group block h-full'>
+                  <div className='h-full bg-white rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-lg hover:border-primary/30 border-2 border-transparent hover:-translate-y-1 flex flex-col'>
+                    <div
+                      className={`mb-4 inline-block p-3 rounded-lg ${card.color} transition-transform group-hover:rotate-6 group-hover:scale-110`}
+                    >
+                      <card.icon className='w-6 h-6 text-white' />
+                    </div>
+                    <h3 className='text-lg font-bold text-gray-800'>
+                      {card.title}
+                    </h3>
+                    <p className='text-sm text-gray-500 mt-1 flex-grow'>
+                      {card.description}
+                    </p>
+                    <div className='flex justify-end items-center text-sm font-medium text-blue-600 mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
+                      Akses Menu{' '}
+                      <ArrowRight className='w-4 h-4 ml-1 transition-transform group-hover:translate-x-1' />
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
             ))}
           </div>
         </div>
