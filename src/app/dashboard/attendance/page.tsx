@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import QrScanner from 'react-qr-scanner';
 import { useToast } from '@/context/ToastContext';
@@ -12,36 +12,24 @@ import FeaturedCard from '@/components/dashboard/FeaturedCard';
 
 export default function AttendancePage() {
   const { showToast } = useToast();
-  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const [cameraError, setCameraError] = useState(false);
   const [scannedData, setScannedData] = useState<string | null>(null);
-  const scannerRef = useRef<QrScanner>(null);
-
-  useEffect(() => {
-    const getCameraPermission = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        // Stop the stream immediately, as QrScanner will request it again.
-        // This is just to check for permission.
-        stream.getTracks().forEach(track => track.stop());
-        setHasCameraPermission(true);
-      } catch (error) {
-        console.error('Error accessing camera:', error);
-        setHasCameraPermission(false);
-      }
-    };
-    getCameraPermission();
-  }, []);
+  const lastScannedRef = useRef<string | null>(null);
 
   const handleScan = (data: { text: string } | null) => {
     if (data && data.text) {
+      // Prevent spamming the toast and re-rendering for the same scan
+      if (data.text === lastScannedRef.current) {
+        return;
+      }
+      lastScannedRef.current = data.text;
+
       let content = data.text;
       try {
-        // Attempt to parse the data as JSON and prettify it
-        const parsedJson = JSON.parse(data.text);
+        const parsedJson = JSON.parse(content);
         content = JSON.stringify(parsedJson, null, 2);
         showToast('QR Code JSON berhasil dipindai!', 'success');
       } catch (e) {
-        // If it's not valid JSON, just show the raw text
         showToast('QR Code berhasil dipindai!', 'info');
       }
       setScannedData(content);
@@ -49,8 +37,8 @@ export default function AttendancePage() {
   };
 
   const handleError = (err: any) => {
-    console.error(err);
-    setHasCameraPermission(false);
+    console.error("QR Scanner Error:", err);
+    setCameraError(true);
     showToast('Kamera tidak dapat diakses. Mohon izinkan akses kamera di browser Anda.', 'error');
   };
   
@@ -91,17 +79,15 @@ export default function AttendancePage() {
             </CardHeader>
             <CardContent>
               <div className="aspect-video w-full max-w-2xl mx-auto bg-gray-900 rounded-lg overflow-hidden shadow-inner relative">
-                {hasCameraPermission === true && (
+                {!cameraError ? (
                     <QrScanner
-                        ref={scannerRef}
                         delay={300}
                         onError={handleError}
                         onScan={handleScan}
                         style={{ width: '100%', height: '100%' }}
                         constraints={{ video: { facingMode: 'environment' } }}
                     />
-                )}
-                {hasCameraPermission === false && (
+                ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
                      <Alert variant="destructive" className="max-w-md">
                         <CameraOff className="h-4 w-4" />
@@ -110,12 +96,6 @@ export default function AttendancePage() {
                             Aplikasi ini memerlukan izin untuk menggunakan kamera. Mohon aktifkan izin kamera pada pengaturan browser Anda dan segarkan halaman ini.
                         </AlertDescription>
                     </Alert>
-                  </div>
-                )}
-                 {hasCameraPermission === null && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-white">
-                    <Camera className="w-10 h-10 animate-pulse mb-2" />
-                    <p>Meminta izin kamera...</p>
                   </div>
                 )}
               </div>
