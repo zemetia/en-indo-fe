@@ -8,6 +8,7 @@ import {
   FiMusic,
   FiUsers,
   FiCheckSquare,
+  FiUserPlus,
 } from 'react-icons/fi';
 import { HiOutlineUserGroup } from 'react-icons/hi2';
 import { IoMusicalNotesOutline } from 'react-icons/io5';
@@ -180,6 +181,25 @@ export const dashboardMenu: MenuItem[] = [
     href: '/dashboard/pelayanan',
     color: 'bg-yellow-500',
     permissions: ['admin', 'pelayanan'],
+    submenu: [
+        {
+          title: 'Daftar Pelayanan',
+          description: 'Lihat semua penugasan pelayanan',
+          icon: FiList,
+          href: '/dashboard/pelayanan',
+          color: 'bg-yellow-600',
+          permissions: ['admin', 'pelayanan'],
+        },
+        {
+          title: 'Assign Pelayanan',
+          description: 'Tugaskan jemaat ke pelayanan',
+          icon: FiUserPlus,
+          href: '/dashboard/pelayanan/assign',
+          color: 'bg-yellow-700',
+          permissions: ['admin', 'pelayanan'],
+          requirePIC: true,
+        },
+    ]
   },
   {
     title: 'Departemen',
