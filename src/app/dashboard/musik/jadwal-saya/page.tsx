@@ -1,13 +1,11 @@
 'use client';
 
-import axios from 'axios';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import * as React from 'react';
-import { FiCalendar, FiClock, FiMapPin, FiMusic } from 'react-icons/fi';
+import { FiCalendar, FiClock, FiMapPin, FiMusic, FiAward } from 'react-icons/fi';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
-import { getToken } from '@/lib/helper';
 
 interface Schedule {
   id: string;
@@ -15,6 +13,7 @@ interface Schedule {
   waktu: string;
   event: string;
   lokasi: string;
+  peran: string;
   lagu: string[];
   status: 'confirmed' | 'pending';
 }
@@ -25,27 +24,48 @@ export default function JadwalSayaPage() {
   const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    const fetchSchedules = async () => {
+    const fetchSchedules = () => {
       setLoading(true);
-      try {
-        const token = getToken();
-        if (!token) {
-          setError('Akses ditolak. Silakan login kembali.');
-          return;
-        }
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/schedule/me`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        setSchedules(response.data.data);
-      } catch (err) {
-        setError('Gagal memuat jadwal pelayanan.');
-        console.error(err);
-      } finally {
+      setError(null);
+      
+      const mockSchedules: Schedule[] = [
+        {
+          id: '1',
+          tanggal: '2025-05-12',
+          waktu: '09:00',
+          event: 'Ibadah Minggu Pagi',
+          lokasi: 'Gedung Utama',
+          peran: 'Pianist',
+          lagu: ['Amazing Grace', 'How Great Thou Art', '10,000 Reasons'],
+          status: 'confirmed',
+        },
+        {
+          id: '2',
+          tanggal: '2025-05-17',
+          waktu: '18:30',
+          event: 'Youth Service',
+          lokasi: 'Youth Hall',
+          peran: 'Gitaris & Singer',
+          lagu: ['This is Amazing Grace', 'What A Beautiful Name', 'Oceans'],
+          status: 'confirmed',
+        },
+        {
+          id: '3',
+          tanggal: '2025-05-19',
+          waktu: '09:00',
+          event: 'Ibadah Minggu Pagi',
+          lokasi: 'Gedung Utama',
+          peran: 'Worship Leader',
+          lagu: ['Glorious Day', 'King of My Heart', 'Goodness of God'],
+          status: 'pending',
+        },
+      ];
+
+      // Simulate API delay
+      setTimeout(() => {
+        setSchedules(mockSchedules);
         setLoading(false);
-      }
+      }, 1000);
     };
     fetchSchedules();
   }, []);
@@ -53,8 +73,18 @@ export default function JadwalSayaPage() {
   const renderContent = () => {
     if (loading) {
       return (
-        <div className='flex justify-center items-center py-10'>
-          <div className='w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin'></div>
+        <div className='space-y-4'>
+            {[...Array(3)].map((_, i) => (
+                <div key={i} className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                    <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse"></div>
+                        <div className="flex-1 space-y-2">
+                            <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div>
+                            <div className="h-3 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+                        </div>
+                    </div>
+                </div>
+            ))}
         </div>
       );
     }
@@ -107,13 +137,17 @@ export default function JadwalSayaPage() {
                       <h3 className='text-lg font-medium text-gray-900 group-hover:text-amber-600 transition-colors'>
                         {schedule.event}
                       </h3>
-                      <div className='mt-1 flex items-center space-x-4 text-sm text-gray-500'>
+                      <div className='mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500'>
+                         <div className='flex items-center'>
+                          <FiAward className='w-4 h-4 mr-1.5 text-amber-500' />
+                          <span className='font-medium text-gray-700'>{schedule.peran}</span>
+                        </div>
                         <div className='flex items-center'>
-                          <FiClock className='w-4 h-4 mr-1 text-amber-500' />
+                          <FiClock className='w-4 h-4 mr-1.5 text-amber-500' />
                           {schedule.waktu}
                         </div>
                         <div className='flex items-center'>
-                          <FiMapPin className='w-4 h-4 mr-1 text-amber-500' />
+                          <FiMapPin className='w-4 h-4 mr-1.5 text-amber-500' />
                           {schedule.lokasi}
                         </div>
                       </div>
