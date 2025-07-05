@@ -8,7 +8,7 @@
 
 import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
-import { nextjs } from '@genkit-ai/next';
+import nextjs from '@genkit-ai/next';
 
 // This constant must be exported and used by all other Genkit files.
 export const ai = genkit({
