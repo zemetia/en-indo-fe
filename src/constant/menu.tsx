@@ -80,9 +80,17 @@ export const dashboardMenu: MenuItem[] = [
     permissions: ['*'],
   },
   {
+    title: 'Ketersediaan',
+    description: 'Tandai ketersediaan pelayanan Anda',
+    icon: FiCheckSquare,
+    href: '/dashboard/ketersediaan',
+    color: 'bg-purple-500',
+    permissions: ['*'],
+  },
+  {
     title: 'Kehadiran',
     description: 'Pindai QR Code untuk kehadiran',
-    icon: FiCheckSquare,
+    icon: QrCode,
     href: '/dashboard/attendance',
     color: 'bg-emerald-500',
     permissions: ['admin', 'event'],

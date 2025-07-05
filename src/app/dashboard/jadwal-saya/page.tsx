@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import { FiCalendar, FiClock, FiMapPin, FiAward, FiUsers, FiMusic, FiCamera, FiHelpCircle } from 'react-icons/fi';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
@@ -28,6 +29,7 @@ const getPelayananIcon = (pelayanan: string) => {
 }
 
 export default function JadwalSayaPage() {
+  const router = useRouter();
   const [schedules, setSchedules] = React.useState<Schedule[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -122,7 +124,7 @@ export default function JadwalSayaPage() {
             Anda belum memiliki jadwal pelayanan yang akan datang.
           </p>
           <Link
-            href='/dashboard/musik/ketersediaan'
+            href='/dashboard/ketersediaan'
             className='px-4 py-2 bg-teal-200 rounded-lg text-teal-800 hover:bg-teal-300 transition-colors'
           >
             Tandai Ketersediaan Anda
@@ -218,7 +220,7 @@ export default function JadwalSayaPage() {
         title='Jadwal Pelayanan Saya'
         description='Lihat dan kelola semua jadwal pelayanan Anda di berbagai bidang.'
         actionLabel='Tandai Ketersediaan'
-        onAction={() => window.location.href = '/dashboard/musik/ketersediaan'}
+        onAction={() => router.push('/dashboard/ketersediaan')}
         gradientFrom='from-teal-500'
         gradientTo='to-cyan-500'
       />
