@@ -11,7 +11,8 @@ import {
   BsArrowRight,
   BsCheckCircle,
 } from 'react-icons/bs';
-import { FiSearch, FiUsers, FiCheck, FiHome, FiAward } from 'react-icons/fi';
+import { FiSearch, FiUsers, FiCheck, FiHome, FiAward, FiList } from 'react-icons/fi';
+import Link from 'next/link';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import { getToken } from '@/lib/helper';
@@ -249,6 +250,13 @@ export default function AssignPelayananPage() {
                   <BsPeople className='w-5 h-5' />
                   <span>Assign Lagi</span>
                 </button>
+                <Link
+                  href='/dashboard/pelayanan'
+                  className='px-6 py-3 rounded-lg flex items-center space-x-2 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors'
+                >
+                  <FiList className='w-5 h-5' />
+                  <span>Lihat Daftar Pelayanan</span>
+                </Link>
               </div>
             </div>
           </motion.div>
