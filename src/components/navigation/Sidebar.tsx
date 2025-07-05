@@ -25,7 +25,6 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [expandedMenus, setExpandedMenus] = React.useState<string[]>([]);
   const [isMobile, setIsMobile] = React.useState(false);
-  const [hasMounted, setHasMounted] = React.useState(false);
 
   const filteredMenu = React.useMemo(() => {
     if (!user) return [];
@@ -43,28 +42,20 @@ export default function Sidebar() {
   }, [user]);
 
   React.useEffect(() => {
-    setHasMounted(true);
-  }, []);
-
-  React.useEffect(() => {
-    if (!hasMounted) return;
-    
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
       if (mobile) {
-        if (!isMobileOpen) {
-          setIsCollapsed(true);
-        }
+        setIsCollapsed(true);
       } else {
-        setIsMobileOpen(false); // Close mobile menu on desktop
+        setIsMobileOpen(false);
       }
     };
 
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [hasMounted, isMobileOpen]);
+  }, []);
 
   React.useEffect(() => {
     // Open the parent menu of the active submenu item on initial load or path change
