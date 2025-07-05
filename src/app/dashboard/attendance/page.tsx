@@ -2,13 +2,22 @@
 
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import QrScanner from 'react-qr-scanner';
+import dynamic from 'next/dynamic';
 import { useToast } from '@/context/ToastContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Camera, CameraOff, QrCode, ClipboardCopy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
+
+const QrScanner = dynamic(() => import('react-qr-scanner'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-gray-800">
+      <p className="text-white animate-pulse">Memuat kamera...</p>
+    </div>
+  ),
+});
 
 export default function AttendancePage() {
   const { showToast } = useToast();
@@ -26,10 +35,12 @@ export default function AttendancePage() {
 
       let content = data.text;
       try {
+        // Try to parse it as JSON for pretty printing
         const parsedJson = JSON.parse(content);
         content = JSON.stringify(parsedJson, null, 2);
         showToast('QR Code JSON berhasil dipindai!', 'success');
       } catch (e) {
+        // If it's not JSON, just show the raw text
         showToast('QR Code berhasil dipindai!', 'info');
       }
       setScannedData(content);
