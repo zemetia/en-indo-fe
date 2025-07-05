@@ -72,6 +72,14 @@ export const dashboardMenu: MenuItem[] = [
     permissions: ['*'],
   },
   {
+    title: 'Jadwal Saya',
+    description: 'Lihat semua jadwal pelayanan Anda',
+    icon: FiCalendar,
+    href: '/dashboard/jadwal-saya',
+    color: 'bg-teal-500',
+    permissions: ['*'],
+  },
+  {
     title: 'Kehadiran',
     description: 'Pindai QR Code untuk kehadiran',
     icon: FiCheckSquare,
@@ -138,14 +146,6 @@ export const dashboardMenu: MenuItem[] = [
     color: 'bg-pink-500',
     permissions: ['admin', 'musik', 'Pemusik', 'Singer', 'WL'],
     submenu: [
-      {
-        title: 'Jadwal Saya',
-        description: 'Lihat jadwal pelayanan musik',
-        icon: FiCalendar,
-        href: '/dashboard/musik/jadwal-saya',
-        color: 'bg-blue-500',
-        permissions: ['admin', 'musik', 'Pemusik', 'Singer', 'WL'],
-      },
       {
         title: 'Penjadwalan',
         description: 'Jadwalkan pelayanan musik',

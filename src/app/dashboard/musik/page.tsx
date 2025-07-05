@@ -9,13 +9,6 @@ import FeaturedCard from '@/components/dashboard/FeaturedCard';
 
 const musicMenus = [
   {
-    title: 'Jadwal Saya',
-    description: 'Lihat jadwal pelayanan musik',
-    icon: FiCalendar,
-    href: '/dashboard/musik/jadwal-saya',
-    color: 'bg-amber-600',
-  },
-  {
     title: 'Penjadwalan',
     description: 'Jadwalkan pelayanan musik',
     icon: FiCalendar,
