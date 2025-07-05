@@ -14,14 +14,21 @@ import { useToast } from '@/context/ToastContext';
 import Skeleton from '@/components/Skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // MOCK DATA - Replace with actual data fetching
-const MOCK_MUSICIANS: {id: string, name: string, avatar: string}[] = [
-    { id: 'm1', name: 'Andi Suryo', avatar: 'https://placehold.co/100x100.png' },
-    { id: 'm2', name: 'Budi Santoso', avatar: 'https://placehold.co/100x100.png' },
-    { id: 'm3', name: 'Citra Lestari', avatar: 'https://placehold.co/100x100.png' },
-    { id: 'm4', name: 'Dewi Anggraini', avatar: 'https://placehold.co/100x100.png' },
-    { id: 'm5', name: 'Eko Prasetyo', avatar: 'https://placehold.co/100x100.png' },
+interface MockMusician {
+  id: string;
+  name: string;
+  avatar: string;
+  instruments: string[];
+}
+const MOCK_MUSICIANS: MockMusician[] = [
+    { id: 'm1', name: 'Andi Suryo', avatar: 'https://placehold.co/100x100.png', instruments: ['Gitar Akustik', 'Vokal'] },
+    { id: 'm2', name: 'Budi Santoso', avatar: 'https://placehold.co/100x100.png', instruments: ['Keyboard', 'Piano'] },
+    { id: 'm3', name: 'Citra Lestari', avatar: 'https://placehold.co/100x100.png', instruments: ['Vokal', 'Worship Leader'] },
+    { id: 'm4', name: 'Dewi Anggraini', avatar: 'https://placehold.co/100x100.png', instruments: ['Bass'] },
+    { id: 'm5', name: 'Eko Prasetyo', avatar: 'https://placehold.co/100x100.png', instruments: ['Drum'] },
 ];
 
 const MOCK_SONGS: {id: string, judul: string, penyanyi: string}[] = [
@@ -67,7 +74,7 @@ export default function DetailPenjadwalanMusikPage() {
   // States for modals
   const [isMusicianModalOpen, setIsMusicianModalOpen] = useState(false);
   const [musicianSearch, setMusicianSearch] = useState('');
-  const [musicianRole, setMusicianRole] = useState('');
+  const [musicianRoles, setMusicianRoles] = useState<Record<string, string>>({});
   
   const [isSongModalOpen, setIsSongModalOpen] = useState(false);
   const [songSearch, setSongSearch] = useState('');
@@ -96,20 +103,19 @@ export default function DetailPenjadwalanMusikPage() {
     }, 1000);
   }, [eventId]);
 
-  const handleAddMusician = (musician: { id: string; name: string; avatar: string }) => {
-    if (!musicianRole.trim()) {
-        showToast('Peran/instrumen harus diisi.', 'error');
+  const handleAddMusician = (musician: MockMusician, role: string) => {
+    if (!role || !role.trim()) {
+        showToast('Peran/instrumen harus dipilih.', 'error');
         return;
     }
-    if (team.some(m => m.id === musician.id)) {
-        showToast(`${musician.name} sudah ada di dalam tim.`, 'warning');
-        return;
-    }
-    setTeam(prev => [...prev, { ...musician, role: musicianRole }]);
-    setMusicianRole('');
-    setMusicianSearch('');
+    setTeam(prev => [...prev, { ...musician, role: role }]);
+    setMusicianRoles(prev => {
+        const newRoles = {...prev};
+        delete newRoles[musician.id];
+        return newRoles;
+    });
     setIsMusicianModalOpen(false);
-    showToast(`${musician.name} ditambahkan sebagai ${musicianRole}.`, 'success');
+    showToast(`${musician.name} ditambahkan sebagai ${role}.`, 'success');
   };
 
   const handleRemoveMusician = (musicianId: string) => {
@@ -142,7 +148,10 @@ export default function DetailPenjadwalanMusikPage() {
     showToast('Jadwal pelayanan musik berhasil disimpan!', 'success');
   };
 
-  const filteredMusicians = MOCK_MUSICIANS.filter(m => m.name.toLowerCase().includes(musicianSearch.toLowerCase()));
+  const filteredMusicians = MOCK_MUSICIANS.filter(
+      m => !team.some(teamMember => teamMember.id === m.id) &&
+      m.name.toLowerCase().includes(musicianSearch.toLowerCase())
+  );
   const filteredSongs = MOCK_SONGS.filter(s => s.judul.toLowerCase().includes(songSearch.toLowerCase()) || s.penyanyi.toLowerCase().includes(songSearch.toLowerCase()));
 
   if (loading || !event) {
@@ -175,7 +184,7 @@ export default function DetailPenjadwalanMusikPage() {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle className="flex items-center"><FiUsers className="w-5 h-5 mr-3 text-amber-600"/>Tim Pelayanan</CardTitle>
-                <Dialog open={isMusicianModalOpen} onOpenChange={setIsMusicianModalOpen}>
+                <Dialog open={isMusicianModalOpen} onOpenChange={(isOpen) => { setIsMusicianModalOpen(isOpen); if(!isOpen) setMusicianRoles({}); }}>
                     <DialogTrigger asChild>
                         <Button variant="outline" size="sm"><FiPlus className="w-4 h-4 mr-2"/>Tambah Pelayan</Button>
                     </DialogTrigger>
@@ -190,18 +199,27 @@ export default function DetailPenjadwalanMusikPage() {
                                <Input placeholder="Cari nama pelayan..." className="pl-10" value={musicianSearch} onChange={e => setMusicianSearch(e.target.value)} />
                             </div>
                             <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
-                               {filteredMusicians.map(m => (
+                               {filteredMusicians.length > 0 ? filteredMusicians.map(m => (
                                    <div key={m.id} className="flex items-center justify-between p-2 rounded-md bg-gray-50">
                                        <div className="flex items-center space-x-3">
                                            <Image src={m.avatar} alt={m.name} width={32} height={32} className="rounded-full" data-ai-hint="person portrait"/>
                                            <p className="text-sm font-medium">{m.name}</p>
                                        </div>
                                        <div className="flex items-center gap-2">
-                                            <Input placeholder="Peran/Instrumen" className="h-8 text-xs" value={musicianRole} onChange={e => setMusicianRole(e.target.value)} />
-                                            <Button size="sm" onClick={() => handleAddMusician(m)}>Tambah</Button>
+                                            <Select value={musicianRoles[m.id] || ''} onValueChange={(value) => setMusicianRoles(prev => ({...prev, [m.id]: value}))}>
+                                                <SelectTrigger className="h-8 text-xs w-[140px]">
+                                                    <SelectValue placeholder="Pilih Peran" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {m.instruments.map(instrument => (
+                                                        <SelectItem key={instrument} value={instrument}>{instrument}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <Button size="sm" onClick={() => handleAddMusician(m, musicianRoles[m.id])} disabled={!musicianRoles[m.id]}>Tambah</Button>
                                        </div>
                                    </div>
-                               ))}
+                               )) : <p className="text-sm text-center text-gray-500 py-4">Semua pelayan sudah ditambahkan atau tidak ada hasil.</p>}
                             </div>
                         </div>
                     </DialogContent>
