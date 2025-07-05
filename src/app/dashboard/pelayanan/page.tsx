@@ -1,3 +1,4 @@
+
 'use client';
 
 import axios from 'axios';
@@ -11,7 +12,7 @@ import {
   BsArrowRight,
   BsCheckCircle,
 } from 'react-icons/bs';
-import { FiSearch, FiUsers, FiCheck } from 'react-icons/fi';
+import { FiSearch, FiUsers, FiCheck, FiHome, FiAward } from 'react-icons/fi';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import { getToken } from '@/lib/helper';
@@ -38,11 +39,26 @@ interface Church {
 }
 
 export default function DataPelayananPage() {
-  const [pelayanan, setPelayanan] = useState<Array<Pelayanan> | null>(null);
-  const [persons, setPersons] = useState<Array<Person> | null>(null);
-  const [churches, setChurches] = useState<Array<Church> | null>(null);
+  const [pelayanan, setPelayanan] = useState<Array<Pelayanan>>([
+      { id: 'p1', nama: 'Pemusik', gereja: 'EN Jakarta', jumlah_person: 10, is_aktif: true },
+      { id: 'p2', nama: 'Singer', gereja: 'EN Jakarta', jumlah_person: 15, is_aktif: true },
+      { id: 'p3', nama: 'Usher', gereja: 'EN Jakarta', jumlah_person: 20, is_aktif: true },
+      { id: 'p4', nama: 'Media', gereja: 'EN Bandung', jumlah_person: 8, is_aktif: true },
+      { id: 'p5', nama: 'Kids', gereja: 'EN Surabaya', jumlah_person: 12, is_aktif: false },
+  ]);
+  const [persons, setPersons] = useState<Array<Person>>([
+      { id: 'u1', nama: 'Andi Suryo', gender: 'L', church: 'EN Jakarta', is_aktif: true },
+      { id: 'u2', nama: 'Budi Santoso', gender: 'L', church: 'EN Jakarta', is_aktif: true },
+      { id: 'u3', nama: 'Citra Lestari', gender: 'P', church: 'EN Bandung', is_aktif: true },
+      { id: 'u4', nama: 'Dewi Anggraini', gender: 'P', church: 'EN Surabaya', is_aktif: false },
+  ]);
+  const [churches, setChurches] = useState<Array<Church>>([
+      { id: 'c1', nama: 'EN Jakarta' },
+      { id: 'c2', nama: 'EN Bandung' },
+      { id: 'c3', nama: 'EN Surabaya' },
+  ]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Set to false since we use mock data
   const [error, setError] = useState<string | null>(null);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [selectedChurch, setSelectedChurch] = useState<Church | null>(null);
@@ -55,68 +71,55 @@ export default function DataPelayananPage() {
   );
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const token = getToken();
-      if (!token) {
-        setError('Token autentikasi tidak ditemukan. Silakan login kembali.');
-        setLoading(false);
-        return;
-      }
+  // Since we are using mock data, we can comment out the API fetching logic for now.
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     setLoading(true);
+  //     try {
+  //       const token = getToken();
+  //       if (!token) {
+  //         setError('Token autentikasi tidak ditemukan. Silakan login kembali.');
+  //         setLoading(false);
+  //         return;
+  //       }
 
-      const [pelayananResponse, personsResponse, churchesResponse] =
-        await Promise.all([
-          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/pelayanan`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/person`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/church`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
+  //       const [pelayananResponse, personsResponse, churchesResponse] =
+  //         await Promise.all([
+  //           axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/pelayanan`, {
+  //             headers: { Authorization: `Bearer ${token}` },
+  //           }),
+  //           axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/person`, {
+  //             headers: { Authorization: `Bearer ${token}` },
+  //           }),
+  //           axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/church`, {
+  //             headers: { Authorization: `Bearer ${token}` },
+  //           }),
+  //         ]);
 
-      setPelayanan(pelayananResponse.data.data);
-      setPersons(personsResponse.data.data);
-      setChurches(churchesResponse.data.data);
-      setError(null);
-    } catch (error) {
-      setError('Gagal mengambil data. Silakan coba lagi nanti.');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //       setPelayanan(pelayananResponse.data.data);
+  //       setPersons(personsResponse.data.data);
+  //       setChurches(churchesResponse.data.data);
+  //       setError(null);
+  //     } catch (error) {
+  //       setError('Gagal mengambil data. Silakan coba lagi nanti.');
+  //       console.error(error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  //   fetchData();
+  // }, []);
 
   const handleAssignPelayanan = async () => {
-    try {
-      if (!selectedPerson || !selectedChurch || !selectedPelayanan) return;
-
-      const token = getToken();
-      if (!token) return;
-
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/person/${selectedPerson.id}/pelayanan`,
-        {
-          pelayanan_id: selectedPelayanan.id,
-          church_id: selectedChurch.id,
-          is_pic: isPIC,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      setShowSuccess(true);
-      fetchData(); // Refresh data setelah assign
-    } catch (error) {
-      console.error('Gagal mengassign pelayanan:', error);
-      setError('Gagal mengassign pelayanan. Silakan coba lagi.');
-    }
+    // Mock assignment logic
+    console.log({
+        person: selectedPerson,
+        church: selectedChurch,
+        pelayanan: selectedPelayanan,
+        isPIC,
+    });
+    setShowSuccess(true);
   };
 
   const handleAssignAgain = () => {
@@ -149,7 +152,7 @@ export default function DataPelayananPage() {
         item.nama.toLowerCase().includes(searchTerm.toLowerCase())
       )
     : [];
-
+    
   if (loading) {
     return (
       <div className='space-y-6'>
@@ -203,10 +206,10 @@ export default function DataPelayananPage() {
     <div className='space-y-6'>
       <FeaturedCard
         title='Assign Pelayanan'
-        description='Assign pelayanan kepada person'
+        description='Tugaskan peran pelayanan kepada jemaat dalam tiga langkah mudah.'
         actionLabel='Kembali ke Dashboard'
-        gradientFrom='from-blue-500'
-        gradientTo='to-blue-700'
+        gradientFrom='from-indigo-500'
+        gradientTo='to-purple-500'
       />
 
       <AnimatePresence mode='wait'>
@@ -242,7 +245,7 @@ export default function DataPelayananPage() {
               <div className='flex space-x-4 pt-4'>
                 <button
                   onClick={handleAssignAgain}
-                  className='px-6 py-3 rounded-lg flex items-center space-x-2 bg-blue-600 text-white hover:bg-blue-700 transition-colors'
+                  className='px-6 py-3 rounded-lg flex items-center space-x-2 bg-indigo-600 text-white hover:bg-indigo-700 transition-colors'
                 >
                   <BsPeople className='w-5 h-5' />
                   <span>Assign Lagi</span>
@@ -260,219 +263,90 @@ export default function DataPelayananPage() {
           >
             {/* Progress Indicator */}
             <div className='flex items-center justify-center mb-8'>
-              <div className='flex items-center space-x-4'>
-                <div className='flex flex-col items-center'>
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                      selectedPerson
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-200 text-gray-600'
-                    }`}
-                  >
-                    <BsPeople className='w-5 h-5' />
+              <div className='flex items-center space-x-2 md:space-x-4'>
+                <div className='flex flex-col items-center text-center'>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors border-2 ${selectedPerson ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-indigo-600 border-indigo-200'}`}>
+                    1
                   </div>
-                  <span className='text-sm mt-2 text-gray-600'>Person</span>
+                  <span className='text-xs md:text-sm mt-2 text-gray-600'>Pilih Person</span>
                 </div>
-                <div className='w-16 h-1 bg-gray-200'>
-                  <div
-                    className={`h-full bg-blue-600 transition-all duration-300 ${
-                      selectedPerson ? 'w-full' : 'w-0'
-                    }`}
-                  />
-                </div>
-                <div className='flex flex-col items-center'>
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                      selectedChurch
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-200 text-gray-600'
-                    }`}
-                  >
-                    <FiUsers className='w-5 h-5' />
+                <div className='w-12 md:w-16 h-1 bg-gray-200 rounded-full'><div className={`h-full bg-indigo-600 rounded-full transition-all duration-300 ${selectedPerson ? 'w-full' : 'w-0'}`} /></div>
+                <div className='flex flex-col items-center text-center'>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors border-2 ${selectedChurch ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-indigo-600 border-indigo-200'}`}>
+                    2
                   </div>
-                  <span className='text-sm mt-2 text-gray-600'>Gereja</span>
+                  <span className='text-xs md:text-sm mt-2 text-gray-600'>Pilih Gereja</span>
                 </div>
-                <div className='w-16 h-1 bg-gray-200'>
-                  <div
-                    className={`h-full bg-blue-600 transition-all duration-300 ${
-                      selectedChurch ? 'w-full' : 'w-0'
-                    }`}
-                  />
-                </div>
-                <div className='flex flex-col items-center'>
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                      selectedPelayanan
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-200 text-gray-600'
-                    }`}
-                  >
-                    <FiUsers className='w-5 h-5' />
+                <div className='w-12 md:w-16 h-1 bg-gray-200 rounded-full'><div className={`h-full bg-indigo-600 rounded-full transition-all duration-300 ${selectedChurch ? 'w-full' : 'w-0'}`} /></div>
+                <div className='flex flex-col items-center text-center'>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors border-2 ${selectedPelayanan ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-indigo-600 border-indigo-200'}`}>
+                    3
                   </div>
-                  <span className='text-sm mt-2 text-gray-600'>Pelayanan</span>
+                  <span className='text-xs md:text-sm mt-2 text-gray-600'>Pilih Pelayanan</span>
                 </div>
               </div>
             </div>
-
-            {/* Search Bar */}
+            
             <div className='relative mb-6'>
-              <FiSearch className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5' />
+              <FiSearch className='absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5' />
               <input
                 type='text'
-                placeholder={`Cari ${
-                  activeTab === 'person'
-                    ? 'person'
-                    : activeTab === 'church'
-                    ? 'gereja'
-                    : 'pelayanan'
-                }...`}
+                placeholder={`Cari ${activeTab === 'person' ? 'nama jemaat' : activeTab === 'church' ? 'nama gereja' : 'nama pelayanan'}...`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className='pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full'
+                className='pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full bg-gray-50'
               />
             </div>
 
-            {/* Content */}
-            <div className='space-y-6'>
+            <div className='min-h-[300px]'>
               <AnimatePresence mode='wait'>
                 {activeTab === 'person' && (
-                  <motion.div
-                    key='person'
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
-                  >
+                  <motion.div key='person' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                     {filteredPersons.map((item) => (
-                      <div
-                        key={item.id}
-                        onClick={() => {
-                          setSelectedPerson(item);
-                          setActiveTab('church');
-                        }}
-                        className={`p-4 rounded-lg border transition-all duration-300 ${
-                          selectedPerson?.id === item.id
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:border-blue-300'
-                        } block p-4 bg-white shadow-sm hover:shadow-lg hover:-translate-y-1 group cursor-pointer`}
-                      >
+                      <motion.div key={item.id} whileHover={{y: -3}} onClick={() => { setSelectedPerson(item); setActiveTab('church'); }} className={`p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${selectedPerson?.id === item.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300 bg-white'}`}>
                         <div className='flex items-center space-x-3'>
-                          <div className='p-2 rounded-lg bg-blue-600 text-white'>
-                            <BsPeople className='w-5 h-5' />
-                          </div>
-                          <div className='flex-1'>
-                            <h4 className='font-medium text-gray-900'>
-                              {item.nama}
-                            </h4>
-                            <p className='text-sm text-gray-500'>
-                              {item.church}
-                            </p>
-                          </div>
-                          {selectedPerson?.id === item.id && (
-                            <BsCheck2 className='w-5 h-5 text-blue-600' />
-                          )}
+                          <div className='p-2 rounded-full bg-indigo-100 text-indigo-600'><BsPeople className='w-5 h-5' /></div>
+                          <div className='flex-1'><h4 className='font-semibold text-gray-900'>{item.nama}</h4><p className='text-xs text-gray-500'>{item.church}</p></div>
+                          {selectedPerson?.id === item.id && <FiCheck className='w-5 h-5 text-indigo-600' />}
                         </div>
-                      </div>
+                      </motion.div>
                     ))}
                   </motion.div>
                 )}
 
                 {activeTab === 'church' && (
-                  <motion.div
-                    key='church'
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
-                  >
+                   <motion.div key='church' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                     {filteredChurches.map((item) => (
-                      <div
-                        key={item.id}
-                        onClick={() => {
-                          setSelectedChurch(item);
-                          setActiveTab('pelayanan');
-                        }}
-                        className={`p-4 rounded-lg border transition-all duration-300 ${
-                          selectedChurch?.id === item.id
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:border-blue-300'
-                        } block p-4 bg-white shadow-sm hover:shadow-lg hover:-translate-y-1 group cursor-pointer`}
-                      >
+                      <motion.div key={item.id} whileHover={{y: -3}} onClick={() => { setSelectedChurch(item); setActiveTab('pelayanan'); }} className={`p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${selectedChurch?.id === item.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300 bg-white'}`}>
                         <div className='flex items-center space-x-3'>
-                          <div className='p-2 rounded-lg bg-blue-600 text-white'>
-                            <FiUsers className='w-5 h-5' />
-                          </div>
-                          <div className='flex-1'>
-                            <h4 className='font-medium text-gray-900'>
-                              {item.nama}
-                            </h4>
-                          </div>
-                          {selectedChurch?.id === item.id && (
-                            <BsCheck2 className='w-5 h-5 text-blue-600' />
-                          )}
+                          <div className='p-2 rounded-full bg-indigo-100 text-indigo-600'><FiHome className='w-5 h-5' /></div>
+                          <div className='flex-1'><h4 className='font-semibold text-gray-900'>{item.nama}</h4></div>
+                          {selectedChurch?.id === item.id && <FiCheck className='w-5 h-5 text-indigo-600' />}
                         </div>
-                      </div>
+                      </motion.div>
                     ))}
                   </motion.div>
                 )}
 
                 {activeTab === 'pelayanan' && (
-                  <motion.div
-                    key='pelayanan'
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    className='space-y-6'
-                  >
+                  <motion.div key='pelayanan' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='space-y-6'>
                     <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                       {filteredPelayanan.map((item) => (
-                        <div
-                          key={item.id}
-                          onClick={() => setSelectedPelayanan(item)}
-                          className={`p-4 rounded-lg border transition-all duration-300 ${
-                            selectedPelayanan?.id === item.id
-                              ? 'border-blue-500 bg-blue-50'
-                              : 'border-gray-200 hover:border-blue-300'
-                          } block p-4 bg-white shadow-sm hover:shadow-lg hover:-translate-y-1 group cursor-pointer`}
-                        >
+                        <motion.div key={item.id} whileHover={{y: -3}} onClick={() => setSelectedPelayanan(item)} className={`p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${selectedPelayanan?.id === item.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300 bg-white'}`}>
                           <div className='flex items-center space-x-3'>
-                            <div className='p-2 rounded-lg bg-blue-600 text-white'>
-                              <FiUsers className='w-5 h-5' />
-                            </div>
-                            <div className='flex-1'>
-                              <h4 className='font-medium text-gray-900'>
-                                {item.nama}
-                              </h4>
-                              <p className='text-sm text-gray-500'>
-                                {item.gereja}
-                              </p>
-                            </div>
-                            {selectedPelayanan?.id === item.id && (
-                              <BsCheck2 className='w-5 h-5 text-blue-600' />
-                            )}
+                            <div className='p-2 rounded-full bg-indigo-100 text-indigo-600'><FiAward className='w-5 h-5' /></div>
+                            <div className='flex-1'><h4 className='font-semibold text-gray-900'>{item.nama}</h4></div>
+                            {selectedPelayanan?.id === item.id && <FiCheck className='w-5 h-5 text-indigo-600' />}
                           </div>
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
 
                     {selectedPelayanan && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className='bg-gray-50 rounded-lg p-4'
-                      >
+                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='bg-indigo-50 rounded-lg p-4 mt-6'>
                         <div className='flex items-center space-x-3'>
-                          <input
-                            type='checkbox'
-                            id='isPIC'
-                            checked={isPIC}
-                            onChange={(e) => setIsPIC(e.target.checked)}
-                            className='w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500'
-                          />
-                          <label htmlFor='isPIC' className='text-gray-700'>
-                            Jadikan sebagai PIC (Person in Charge) untuk
-                            pelayanan ini
-                          </label>
+                          <input type='checkbox' id='isPIC' checked={isPIC} onChange={(e) => setIsPIC(e.target.checked)} className='w-5 h-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500' />
+                          <label htmlFor='isPIC' className='text-gray-700 font-medium'>Jadikan sebagai PIC (Person in Charge)</label>
                         </div>
                       </motion.div>
                     )}
@@ -481,39 +355,19 @@ export default function DataPelayananPage() {
               </AnimatePresence>
             </div>
 
-            {/* Action Buttons */}
-            <div className='mt-8 flex justify-between items-center'>
-              <button
-                onClick={() => {
-                  if (activeTab === 'church') setActiveTab('person');
-                  if (activeTab === 'pelayanan') setActiveTab('church');
-                }}
-                className='px-4 py-2 rounded-lg flex items-center space-x-2 bg-gray-200 text-gray-700 hover:bg-gray-300'
-              >
+            <div className='mt-8 flex justify-between items-center pt-6 border-t border-gray-200'>
+              <button onClick={() => { if (activeTab === 'church') setActiveTab('person'); if (activeTab === 'pelayanan') setActiveTab('church'); }} className={`px-4 py-2 rounded-lg flex items-center space-x-2 bg-gray-200 text-gray-700 hover:bg-gray-300 transition-opacity ${activeTab === 'person' ? 'opacity-50 cursor-not-allowed' : 'opacity-100'}`} disabled={activeTab === 'person'}>
                 <BsArrowRight className='w-5 h-5 transform rotate-180' />
                 <span>Kembali</span>
               </button>
               <div className='flex items-center space-x-4'>
-                <button
-                  onClick={resetSelection}
-                  className='px-4 py-2 rounded-lg flex items-center space-x-2 bg-gray-200 text-gray-700 hover:bg-gray-300'
-                >
+                <button onClick={resetSelection} className='px-4 py-2 rounded-lg flex items-center space-x-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100'>
                   <BsX className='w-5 h-5' />
                   <span>Reset</span>
                 </button>
-                <button
-                  onClick={handleAssignPelayanan}
-                  disabled={
-                    !selectedPerson || !selectedChurch || !selectedPelayanan
-                  }
-                  className={`px-4 py-2 rounded-lg flex items-center space-x-2 ${
-                    selectedPerson && selectedChurch && selectedPelayanan
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                  }`}
-                >
+                <button onClick={handleAssignPelayanan} disabled={!selectedPerson || !selectedChurch || !selectedPelayanan} className={`px-6 py-3 rounded-lg flex items-center space-x-2 transition-colors ${selectedPerson && selectedChurch && selectedPelayanan ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg hover:shadow-indigo-300' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}>
                   <FiCheck className='w-5 h-5' />
-                  <span>Assign Pelayanan</span>
+                  <span className='font-semibold'>Assign Pelayanan</span>
                 </button>
               </div>
             </div>
@@ -523,3 +377,4 @@ export default function DataPelayananPage() {
     </div>
   );
 }
+
