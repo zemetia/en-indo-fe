@@ -10,6 +10,7 @@ import { useToast } from '@/context/ToastContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import SongFormDialog, { SongFormData } from '@/components/dashboard/SongFormDialog';
+import SongDetailDialog from '@/components/dashboard/SongDetailDialog';
 
 interface Song {
   id: string;
@@ -19,19 +20,19 @@ interface Song {
   durasi: string;
   status: 'active' | 'inactive';
   youtubeLink?: string;
-  lirik?: string;
+  lirik: string;
   tags?: string;
   nadaDasar?: string;
   tahunRilis?: number;
 }
 
 const MOCK_SONGS: Song[] = [
-    { id: 's1', judul: 'Amazing Grace', penyanyi: 'John Newton', genre: 'Hymn', durasi: '04:30', status: 'active', lirik: 'Amazing grace, how sweet the sound...', nadaDasar: 'G', tahunRilis: 1779, tags: 'hymn, classic' },
-    { id: 's2', judul: 'How Great Thou Art', penyanyi: 'Carl Boberg', genre: 'Hymn', durasi: '05:15', status: 'active', lirik: 'O Lord my God, when I in awesome wonder...', nadaDasar: 'Bb', tahunRilis: 1885, tags: 'hymn, worship' },
-    { id: 's3', judul: '10,000 Reasons (Bless the Lord)', penyanyi: 'Matt Redman', genre: 'Penyembahan', durasi: '05:45', status: 'active', lirik: 'Bless the Lord, O my soul...', nadaDasar: 'G', tahunRilis: 2011, tags: 'worship, modern' },
-    { id: 's4', judul: 'What A Beautiful Name', penyanyi: 'Hillsong Worship', genre: 'Penyembahan', durasi: '05:20', status: 'active', lirik: 'You were the Word at the beginning...', nadaDasar: 'D', tahunRilis: 2016, tags: 'worship, hillsong' },
-    { id: 's5', judul: 'This is Amazing Grace', penyanyi: 'Phil Wickham', genre: 'Pujian', durasi: '04:50', status: 'active', lirik: 'Who breaks the power of sin and darkness...', nadaDasar: 'B', tahunRilis: 2013, tags: 'praise, upbeat' },
-    { id: 's6', judul: 'Goodness of God', penyanyi: 'Bethel Music', genre: 'Penyembahan', durasi: '04:55', status: 'inactive', lirik: 'I love you, Lord...', nadaDasar: 'Ab', tahunRilis: 2019, tags: 'worship, bethel' },
+    { id: 's1', judul: 'Amazing Grace', penyanyi: 'John Newton', genre: 'Hymn', durasi: '04:30', status: 'active', lirik: 'Amazing grace, how sweet the sound...\nThat saved a wretch like me.\nI once was lost, but now am found,\nWas blind, but now I see.', nadaDasar: 'G', tahunRilis: 1779, tags: 'hymn, classic' },
+    { id: 's2', judul: 'How Great Thou Art', penyanyi: 'Carl Boberg', genre: 'Hymn', durasi: '05:15', status: 'active', lirik: 'O Lord my God, when I in awesome wonder...\nConsider all the worlds Thy Hands have made.\nI see the stars, I hear the rolling thunder,\nThy power throughout the universe displayed.', nadaDasar: 'Bb', tahunRilis: 1885, tags: 'hymn, worship' },
+    { id: 's3', judul: '10,000 Reasons (Bless the Lord)', penyanyi: 'Matt Redman', genre: 'Penyembahan', durasi: '05:45', status: 'active', lirik: 'Bless the Lord, O my soul...\nO my soul, worship His holy name.\nSing like never before, O my soul.\nI\'ll worship Your holy name.', nadaDasar: 'G', tahunRilis: 2011, tags: 'worship, modern' },
+    { id: 's4', judul: 'What A Beautiful Name', penyanyi: 'Hillsong Worship', genre: 'Penyembahan', durasi: '05:20', status: 'active', lirik: 'You were the Word at the beginning...\nOne with God the Lord Most High.\nYour hidden glory in creation,\nNow revealed in You our Christ.', nadaDasar: 'D', tahunRilis: 2016, tags: 'worship, hillsong' },
+    { id: 's5', judul: 'This is Amazing Grace', penyanyi: 'Phil Wickham', genre: 'Pujian', durasi: '04:50', status: 'active', lirik: 'Who breaks the power of sin and darkness...\nWhose love is mighty and so much stronger?\nThe King of Glory, the King above all kings.', nadaDasar: 'B', tahunRilis: 2013, tags: 'praise, upbeat' },
+    { id: 's6', judul: 'Goodness of God', penyanyi: 'Bethel Music', genre: 'Penyembahan', durasi: '04:55', status: 'inactive', lirik: 'I love you, Lord...\nFor your mercy never fails me.\nAll my days, I\'ve been held in your hands.\nFrom the moment that I wake up\nUntil I lay my head\nOh, I will sing of the goodness of God.', nadaDasar: 'Ab', tahunRilis: 2019, tags: 'worship, bethel' },
 ];
 
 export default function ListLaguPage() {
@@ -42,7 +43,11 @@ export default function ListLaguPage() {
   const [searchTerm, setSearchTerm] = React.useState('');
 
   const [isFormOpen, setIsFormOpen] = React.useState(false);
-  const [selectedSong, setSelectedSong] = React.useState<Partial<SongFormData> | null>(null);
+  const [selectedSongForEdit, setSelectedSongForEdit] = React.useState<Partial<SongFormData> | null>(null);
+
+  const [isDetailOpen, setIsDetailOpen] = React.useState(false);
+  const [viewingSong, setViewingSong] = React.useState<Song | null>(null);
+
 
    const filteredSongs = songs.filter(song =>
     song.judul.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -50,8 +55,13 @@ export default function ListLaguPage() {
     (song.tags && song.tags.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  const handleViewSong = (song: Song) => {
+    setViewingSong(song);
+    setIsDetailOpen(true);
+  };
+
   const handleEditSong = (song: Song) => {
-    setSelectedSong({
+    setSelectedSongForEdit({
       id: song.id,
       judul: song.judul,
       artis: song.penyanyi,
@@ -66,7 +76,7 @@ export default function ListLaguPage() {
   };
   
   const handleAddSong = () => {
-    setSelectedSong(null);
+    setSelectedSongForEdit(null);
     setIsFormOpen(true);
   };
 
@@ -145,11 +155,12 @@ export default function ListLaguPage() {
         {filteredSongs.map((song, index) => (
           <motion.div
             key={song.id}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden group"
+            className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden group cursor-pointer"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
             whileHover={{ y: -5, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' }}
+            onClick={() => handleViewSong(song)}
           >
             <div className='p-6 flex-grow'>
                 <div className='flex justify-between items-start'>
@@ -198,10 +209,10 @@ export default function ListLaguPage() {
                     </a>
                 ) : <div />}
                 <div className='flex items-center space-x-1'>
-                    <button onClick={() => handleEditSong(song)} className='p-2 text-gray-500 hover:text-blue-600 rounded-md hover:bg-blue-50 transition-colors'>
+                    <button onClick={(e) => { e.stopPropagation(); handleEditSong(song); }} className='p-2 text-gray-500 hover:text-blue-600 rounded-md hover:bg-blue-50 transition-colors'>
                         <FiEdit2 className='w-4 h-4' />
                     </button>
-                    <button className='p-2 text-gray-500 hover:text-red-600 rounded-md hover:bg-red-50 transition-colors'>
+                    <button onClick={(e) => e.stopPropagation()} className='p-2 text-gray-500 hover:text-red-600 rounded-md hover:bg-red-50 transition-colors'>
                         <FiTrash2 className='w-4 h-4' />
                     </button>
                 </div>
@@ -254,7 +265,12 @@ export default function ListLaguPage() {
         open={isFormOpen}
         onOpenChange={setIsFormOpen}
         onSubmit={handleFormSubmit}
-        initialData={selectedSong}
+        initialData={selectedSongForEdit}
+      />
+      <SongDetailDialog
+        open={isDetailOpen}
+        onOpenChange={setIsDetailOpen}
+        song={viewingSong}
       />
     </>
   );
