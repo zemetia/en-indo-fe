@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { QrCode, Check } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { QrCode, Check, CameraOff } from 'lucide-react';
 import { motion } from 'framer-motion';
-import QrScanner from 'react-qr-scanner';
+import QrScanner from 'qr-scanner';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import { useToast } from '@/context/ToastContext';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
 
 interface Event {
   id: string;
@@ -20,11 +22,14 @@ export default function ScanAttendancePage() {
   const [isScanning, setIsScanning] = useState(false);
   const [scannedEvent, setScannedEvent] = useState<Event | null>(null);
   const [scanSuccess, setScanSuccess] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const scannerRef = useRef<QrScanner | null>(null);
+  const [cameraError, setCameraError] = useState<string | null>(null);
 
-  const handleScan = (data: { text: string } | null) => {
-    if (data && data.text) {
+  const handleScan = (result: QrScanner.ScanResult) => {
+    if (result && result.data) {
       try {
-        const event = JSON.parse(data.text);
+        const event = JSON.parse(result.data);
         if (event && event.id) {
           setScannedEvent(event);
           setScanSuccess(true);
@@ -38,10 +43,45 @@ export default function ScanAttendancePage() {
     }
   };
 
-  const handleError = (error: any) => {
-    console.error('QR Scanner error:', error);
-    showToast('Gagal mengakses kamera. Mohon izinkan akses kamera.', 'error');
+  const startScanner = () => {
+    if (videoRef.current && !scannerRef.current) {
+        const scanner = new QrScanner(
+            videoRef.current,
+            handleScan,
+            { highlightScanRegion: true, highlightCodeOutline: true }
+        );
+        scanner.start().then(() => {
+            scannerRef.current = scanner;
+            setCameraError(null);
+        }).catch(err => {
+            console.error(err);
+            setCameraError(err.message || 'Gagal mengakses kamera. Mohon izinkan akses kamera.');
+            setIsScanning(false); // Turn off scanning on error
+        });
+    }
   };
+
+  const stopScanner = () => {
+    if (scannerRef.current) {
+        scannerRef.current.stop();
+        scannerRef.current.destroy();
+        scannerRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    if (isScanning) {
+        startScanner();
+    } else {
+        stopScanner();
+    }
+
+    return () => {
+        stopScanner();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isScanning]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,14 +148,20 @@ export default function ScanAttendancePage() {
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.2 }}
-                      className='relative aspect-square max-w-md mx-auto overflow-hidden rounded-lg border-2 border-emerald-500'
+                      className='relative aspect-square max-w-md mx-auto overflow-hidden rounded-lg border-2 border-emerald-500 bg-gray-900'
                     >
-                      <QrScanner
-                        delay={300}
-                        onError={handleError}
-                        onScan={handleScan}
-                        style={{ width: '100%', height: '100%' }}
-                      />
+                      <video ref={videoRef} className="w-full h-full object-cover" />
+                      {cameraError && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center p-4 bg-black/50">
+                           <Alert variant="destructive" className="max-w-md">
+                              <CameraOff className="h-4 w-4" />
+                              <AlertTitle>Gagal Mengakses Kamera</AlertTitle>
+                              <AlertDescription>
+                                  {cameraError}
+                              </AlertDescription>
+                          </Alert>
+                        </div>
+                      )}
                     </motion.div>
                   )}
                 </div>

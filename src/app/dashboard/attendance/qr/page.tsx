@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Calendar, QrCode, Save, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Calendar, QrCode, Save, X, CameraOff } from 'lucide-react';
 import { motion } from 'framer-motion';
-import QrScanner from 'react-qr-scanner';
+import QrScanner from 'qr-scanner';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/context/ToastContext';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface ScannedParticipant {
   id: string;
@@ -30,6 +31,9 @@ export default function QrAttendancePage() {
   const [scannedParticipants, setScannedParticipants] = useState<
     ScannedParticipant[]
   >([]);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const scannerRef = useRef<QrScanner | null>(null);
+  const [cameraError, setCameraError] = useState<string | null>(null);
 
   // Mock data events - nantinya akan diambil dari API
   const events = [
@@ -38,10 +42,10 @@ export default function QrAttendancePage() {
     { id: '3', name: 'Ibadah Kids' },
   ];
 
-  const handleScan = (data: { text: string } | null) => {
-    if (data && data.text) {
+  const handleScan = (result: QrScanner.ScanResult) => {
+    if (result && result.data) {
       try {
-        const participant = JSON.parse(data.text);
+        const participant = JSON.parse(result.data);
         if (participant && participant.id) {
           const timestamp = new Date().toLocaleString('id-ID');
 
@@ -69,10 +73,47 @@ export default function QrAttendancePage() {
     }
   };
 
-  const handleError = (error: any) => {
-    console.error('QR Scanner error:', error);
-    showToast('Gagal mengakses kamera. Mohon izinkan akses kamera.', 'error');
+  const startScanner = () => {
+    if (videoRef.current && !scannerRef.current) {
+        const scanner = new QrScanner(
+            videoRef.current,
+            handleScan,
+            { highlightScanRegion: true, highlightCodeOutline: true }
+        );
+        scanner.start().then(() => {
+            scannerRef.current = scanner;
+            setIsScanning(true);
+            setCameraError(null);
+        }).catch(err => {
+            console.error(err);
+            setCameraError(err.message || 'Gagal mengakses kamera. Mohon izinkan akses kamera.');
+            setIsScanning(false);
+        });
+    }
   };
+
+  const stopScanner = () => {
+    if (scannerRef.current) {
+        scannerRef.current.stop();
+        scannerRef.current.destroy();
+        scannerRef.current = null;
+        setIsScanning(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isScanning) {
+        startScanner();
+    } else {
+        stopScanner();
+    }
+
+    return () => {
+        stopScanner();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isScanning]);
+
 
   const removeParticipant = (participantId: string) => {
     setScannedParticipants((prev) =>
@@ -166,14 +207,20 @@ export default function QrAttendancePage() {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.2 }}
-                  className='relative aspect-square max-w-md mx-auto overflow-hidden rounded-lg border-2 border-emerald-500'
+                  className='relative aspect-square max-w-md mx-auto overflow-hidden rounded-lg border-2 border-emerald-500 bg-gray-900'
                 >
-                  <QrScanner
-                    delay={300}
-                    onError={handleError}
-                    onScan={handleScan}
-                    style={{ width: '100%', height: '100%' }}
-                  />
+                  <video ref={videoRef} className="w-full h-full object-cover" />
+                  {cameraError && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 bg-black/50">
+                       <Alert variant="destructive" className="max-w-md">
+                          <CameraOff className="h-4 w-4" />
+                          <AlertTitle>Gagal Mengakses Kamera</AlertTitle>
+                          <AlertDescription>
+                              {cameraError}
+                          </AlertDescription>
+                      </Alert>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </div>
