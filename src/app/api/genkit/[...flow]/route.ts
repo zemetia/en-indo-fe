@@ -12,6 +12,7 @@ import { nextJs } from '@genkit-ai/next';
 
 // Import all flows so they are registered with the Genkit runtime.
 import '@/ai/flows/hello';
+import '@/ai/flows/songRecommendation';
 
 // Initialize Genkit with the required plugins.
 genkit({
