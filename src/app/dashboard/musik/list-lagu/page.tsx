@@ -1,9 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Link from 'next/link';
 import * as React from 'react';
-import { FiEdit2, FiMusic, FiPlus, FiSearch, FiTrash2 } from 'react-icons/fi';
+import { FiEdit2, FiMusic, FiPlus, FiTrash2 } from 'react-icons/fi';
 import { Loader2, Sparkles } from 'lucide-react';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
@@ -21,6 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import SongFormDialog, { SongFormData } from '@/components/dashboard/SongFormDialog';
 
 interface Song {
   id: string;
@@ -29,20 +29,25 @@ interface Song {
   genre: string;
   durasi: string;
   status: 'active' | 'inactive';
+  youtubeLink?: string;
+  lirik?: string;
+  tags?: string;
+  nadaDasar?: string;
+  tahunRilis?: number;
 }
 
 const MOCK_SONGS: Song[] = [
-    { id: 's1', judul: 'Amazing Grace', penyanyi: 'John Newton', genre: 'Hymn', durasi: '04:30', status: 'active' },
-    { id: 's2', judul: 'How Great Thou Art', penyanyi: 'Carl Boberg', genre: 'Hymn', durasi: '05:15', status: 'active' },
-    { id: 's3', judul: '10,000 Reasons (Bless the Lord)', penyanyi: 'Matt Redman', genre: 'Penyembahan', durasi: '05:45', status: 'active' },
-    { id: 's4', judul: 'What A Beautiful Name', penyanyi: 'Hillsong Worship', genre: 'Penyembahan', durasi: '05:20', status: 'active' },
-    { id: 's5', judul: 'This is Amazing Grace', penyanyi: 'Phil Wickham', genre: 'Pujian', durasi: '04:50', status: 'active' },
-    { id: 's6', judul: 'Goodness of God', penyanyi: 'Bethel Music', genre: 'Penyembahan', durasi: '04:55', status: 'inactive' },
+    { id: 's1', judul: 'Amazing Grace', penyanyi: 'John Newton', genre: 'Hymn', durasi: '04:30', status: 'active', lirik: 'Amazing grace, how sweet the sound...', nadaDasar: 'G', tahunRilis: 1779, tags: 'hymn, classic' },
+    { id: 's2', judul: 'How Great Thou Art', penyanyi: 'Carl Boberg', genre: 'Hymn', durasi: '05:15', status: 'active', lirik: 'O Lord my God, when I in awesome wonder...', nadaDasar: 'Bb', tahunRilis: 1885, tags: 'hymn, worship' },
+    { id: 's3', judul: '10,000 Reasons (Bless the Lord)', penyanyi: 'Matt Redman', genre: 'Penyembahan', durasi: '05:45', status: 'active', lirik: 'Bless the Lord, O my soul...', nadaDasar: 'G', tahunRilis: 2011, tags: 'worship, modern' },
+    { id: 's4', judul: 'What A Beautiful Name', penyanyi: 'Hillsong Worship', genre: 'Penyembahan', durasi: '05:20', status: 'active', lirik: 'You were the Word at the beginning...', nadaDasar: 'D', tahunRilis: 2016, tags: 'worship, hillsong' },
+    { id: 's5', judul: 'This is Amazing Grace', penyanyi: 'Phil Wickham', genre: 'Pujian', durasi: '04:50', status: 'active', lirik: 'Who breaks the power of sin and darkness...', nadaDasar: 'B', tahunRilis: 2013, tags: 'praise, upbeat' },
+    { id: 's6', judul: 'Goodness of God', penyanyi: 'Bethel Music', genre: 'Penyembahan', durasi: '04:55', status: 'inactive', lirik: 'I love you, Lord...', nadaDasar: 'Ab', tahunRilis: 2019, tags: 'worship, bethel' },
 ];
 
 export default function ListLaguPage() {
   const { showToast } = useToast();
-  const [songs] = React.useState<Song[]>(MOCK_SONGS);
+  const [songs, setSongs] = React.useState<Song[]>(MOCK_SONGS);
   const [loading] = React.useState(false);
   const [error] = React.useState<string | null>(null);
 
@@ -50,6 +55,9 @@ export default function ListLaguPage() {
   const [recommendationOccasion, setRecommendationOccasion] = React.useState('');
   const [recommendations, setRecommendations] = React.useState<SongRecommendationOutput['recommendations']>([]);
   const [dialogOpen, setDialogOpen] = React.useState(false);
+
+  const [isFormOpen, setIsFormOpen] = React.useState(false);
+  const [selectedSong, setSelectedSong] = React.useState<Partial<SongFormData> | null>(null);
 
   const handleGetRecommendations = async () => {
     if (!recommendationOccasion.trim() || songs.length === 0) {
@@ -85,6 +93,50 @@ export default function ListLaguPage() {
     }
   }
 
+  const handleEditSong = (song: Song) => {
+    setSelectedSong({
+      id: song.id,
+      judul: song.judul,
+      artis: song.penyanyi,
+      youtubeLink: song.youtubeLink,
+      genre: song.genre,
+      lirik: song.lirik,
+      tags: song.tags,
+      nadaDasar: song.nadaDasar,
+      tahunRilis: song.tahunRilis,
+    });
+    setIsFormOpen(true);
+  };
+  
+  const handleAddSong = () => {
+    setSelectedSong(null);
+    setIsFormOpen(true);
+  };
+
+  const handleFormSubmit = async (data: SongFormData) => {
+    console.log("Submitting song data:", data);
+    if (data.id) {
+        setSongs(prev => prev.map(s => s.id === data.id ? { ...s, judul: data.judul, penyanyi: data.artis, genre: data.genre, youtubeLink: data.youtubeLink, lirik: data.lirik, tags: data.tags, nadaDasar: data.nadaDasar, tahunRilis: Number(data.tahunRilis) } : s));
+        showToast('Lagu berhasil diperbarui!', 'success');
+    } else {
+        const newSong: Song = {
+            id: `s${Date.now()}`,
+            judul: data.judul,
+            penyanyi: data.artis,
+            genre: data.genre,
+            youtubeLink: data.youtubeLink,
+            lirik: data.lirik,
+            tags: data.tags,
+            nadaDasar: data.nadaDasar,
+            tahunRilis: Number(data.tahunRilis),
+            durasi: '00:00',
+            status: 'active',
+        };
+        setSongs(prev => [newSong, ...prev]);
+        showToast('Lagu baru berhasil ditambahkan!', 'success');
+    }
+    setIsFormOpen(false);
+  };
 
   const renderContent = () => {
     if (loading) {
@@ -109,12 +161,10 @@ export default function ListLaguPage() {
           <p className='text-gray-600 max-w-md mx-auto mb-6'>
             Belum ada lagu yang tersedia. Silakan tambahkan lagu baru.
           </p>
-          <Link
-            href='/dashboard/musik/list-lagu/tambah'
-            className='px-4 py-2 bg-amber-600 rounded-lg text-white hover:bg-amber-700 transition-colors'
-          >
-            Tambah Lagu Baru
-          </Link>
+           <Button onClick={handleAddSong} className="bg-amber-600 text-white hover:bg-amber-700">
+              <FiPlus className='w-5 h-5 mr-2' />
+              Tambah Lagu Baru
+          </Button>
         </div>
       );
     }
@@ -179,12 +229,12 @@ export default function ListLaguPage() {
                 </td>
                 <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
                   <div className='flex space-x-2 justify-end'>
-                    <Link
-                      href={`/dashboard/musik/list-lagu/${song.id}/edit`}
+                    <button
+                      onClick={() => handleEditSong(song)}
                       className='text-blue-600 hover:text-blue-900'
                     >
                       <FiEdit2 className='w-5 h-5' />
-                    </Link>
+                    </button>
                     <button className='text-red-600 hover:text-red-900'>
                       <FiTrash2 className='w-5 h-5' />
                     </button>
@@ -199,89 +249,94 @@ export default function ListLaguPage() {
   };
 
   return (
-    <div className='space-y-6'>
-      <FeaturedCard
-        title='Daftar Lagu'
-        description='Kelola daftar lagu untuk pelayanan musik'
-        actionLabel='Kembali ke Dashboard Musik'
-        gradientFrom='from-amber-500'
-        gradientTo='to-amber-700'
-      />
+    <>
+      <div className='space-y-6'>
+        <FeaturedCard
+          title='Daftar Lagu'
+          description='Kelola daftar lagu untuk pelayanan musik'
+          actionLabel='Kembali ke Dashboard Musik'
+          gradientFrom='from-amber-500'
+          gradientTo='to-amber-700'
+        />
 
-      <div className='bg-white rounded-xl shadow-sm p-6 border border-gray-200'>
-        <div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0'>
-          <div>
-            <h2 className='text-lg font-semibold text-gray-900'>Kelola Lagu</h2>
-            <p className='text-sm text-gray-500 mt-1'>
-              Tambah, edit, dan kelola lagu untuk pelayanan musik
-            </p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 hover:text-amber-800">
-                    <Sparkles className="mr-2 h-4 w-4" /> Rekomendasi AI
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>Rekomendasi Lagu Berbasis AI</DialogTitle>
-                  <DialogDescription>
-                    Jelaskan suasana atau tema acara (misalnya: "Ibadah pembuka yang semangat", "Momen perenungan", "Pernikahan outdoor sore hari"), dan AI akan merekomendasikan lagu dari daftar Anda.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                    <Label htmlFor="occasion">Tema / Suasana Acara</Label>
-                    <Textarea 
-                        id="occasion" 
-                        value={recommendationOccasion} 
-                        onChange={(e) => setRecommendationOccasion(e.target.value)}
-                        placeholder="Contoh: Ibadah penyembahan yang khusyuk dan intim"
-                        className="min-h-[100px]"
-                    />
-                </div>
-                <DialogFooter>
-                    <Button onClick={handleGetRecommendations} disabled={isGenerating} className="bg-amber-600 hover:bg-amber-700">
-                        {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                        {isGenerating ? 'Mencari...' : 'Dapatkan Rekomendasi'}
-                    </Button>
-                </DialogFooter>
+        <div className='bg-white rounded-xl shadow-sm p-6 border border-gray-200'>
+          <div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0'>
+            <div>
+              <h2 className='text-lg font-semibold text-gray-900'>Kelola Lagu</h2>
+              <p className='text-sm text-gray-500 mt-1'>
+                Tambah, edit, dan kelola lagu untuk pelayanan musik
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 hover:text-amber-800">
+                      <Sparkles className="mr-2 h-4 w-4" /> Rekomendasi AI
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>Rekomendasi Lagu Berbasis AI</DialogTitle>
+                    <DialogDescription>
+                      Jelaskan suasana atau tema acara (misalnya: "Ibadah pembuka yang semangat", "Momen perenungan", "Pernikahan outdoor sore hari"), dan AI akan merekomendasikan lagu dari daftar Anda.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                      <Label htmlFor="occasion">Tema / Suasana Acara</Label>
+                      <Textarea 
+                          id="occasion" 
+                          value={recommendationOccasion} 
+                          onChange={(e) => setRecommendationOccasion(e.target.value)}
+                          placeholder="Contoh: Ibadah penyembahan yang khusyuk dan intim"
+                          className="min-h-[100px]"
+                      />
+                  </div>
+                  <DialogFooter>
+                      <Button onClick={handleGetRecommendations} disabled={isGenerating} className="bg-amber-600 hover:bg-amber-700">
+                          {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                          {isGenerating ? 'Mencari...' : 'Dapatkan Rekomendasi'}
+                      </Button>
+                  </DialogFooter>
 
-                {(isGenerating || recommendations.length > 0) && (
-                    <div className="mt-6 pt-4 border-t">
-                        <h4 className="font-semibold mb-3 text-gray-800">Hasil Rekomendasi:</h4>
-                        {isGenerating && (
-                           <div className="space-y-2">
-                                <div className="h-16 bg-gray-100 rounded-md animate-pulse"></div>
-                                <div className="h-16 bg-gray-100 rounded-md animate-pulse delay-75"></div>
-                                <div className="h-16 bg-gray-100 rounded-md animate-pulse delay-150"></div>
-                           </div>
-                        )}
-                        {recommendations.length > 0 && !isGenerating && (
-                            <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
-                                {recommendations.map(rec => (
-                                    <div key={rec.id} className="p-3 bg-amber-50 border border-amber-100 rounded-lg">
-                                        <p className="font-bold text-amber-900">{rec.judul}</p>
-                                        <p className="text-sm text-gray-600 italic mt-1">"{rec.reason}"</p>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                )}
-              </DialogContent>
-            </Dialog>
-            <Link
-              href='/dashboard/musik/list-lagu/tambah'
-              className='bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors flex items-center space-x-2 whitespace-nowrap'
-            >
-              <FiPlus className='w-5 h-5' />
-              <span>Tambah Lagu</span>
-            </Link>
+                  {(isGenerating || recommendations.length > 0) && (
+                      <div className="mt-6 pt-4 border-t">
+                          <h4 className="font-semibold mb-3 text-gray-800">Hasil Rekomendasi:</h4>
+                          {isGenerating && (
+                             <div className="space-y-2">
+                                  <div className="h-16 bg-gray-100 rounded-md animate-pulse"></div>
+                                  <div className="h-16 bg-gray-100 rounded-md animate-pulse delay-75"></div>
+                                  <div className="h-16 bg-gray-100 rounded-md animate-pulse delay-150"></div>
+                             </div>
+                          )}
+                          {recommendations.length > 0 && !isGenerating && (
+                              <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+                                  {recommendations.map(rec => (
+                                      <div key={rec.id} className="p-3 bg-amber-50 border border-amber-100 rounded-lg">
+                                          <p className="font-bold text-amber-900">{rec.judul}</p>
+                                          <p className="text-sm text-gray-600 italic mt-1">"{rec.reason}"</p>
+                                      </div>
+                                  ))}
+                              </div>
+                          )}
+                      </div>
+                  )}
+                </DialogContent>
+              </Dialog>
+              <Button onClick={handleAddSong} className='bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors flex items-center space-x-2 whitespace-nowrap'>
+                <FiPlus className='w-5 h-5' />
+                <span>Tambah Lagu</span>
+              </Button>
+            </div>
           </div>
+          {renderContent()}
         </div>
-        {renderContent()}
       </div>
-    </div>
+      <SongFormDialog 
+        open={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        onSubmit={handleFormSubmit}
+        initialData={selectedSong}
+      />
+    </>
   );
 }
