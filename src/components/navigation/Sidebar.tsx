@@ -59,6 +59,15 @@ export default function Sidebar() {
     return () => window.removeEventListener('resize', handleResize);
   }, [isMobileOpen]);
 
+  React.useEffect(() => {
+    // Open the parent menu of the active submenu item on initial load or path change
+    const activeMenuItem = dashboardMenu.find(item => isSubmenuActive(item));
+    if (activeMenuItem && !expandedMenus.includes(activeMenuItem.title)) {
+      setExpandedMenus(prev => [...prev, activeMenuItem.title]);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
   const toggleMenu = (title: string) => {
     setExpandedMenus((prev) =>
       prev.includes(title)
@@ -89,10 +98,10 @@ export default function Sidebar() {
             <Skeleton className="h-3 w-1/2" />
         </div>
       </div>
-      <Skeleton className="h-10 w-full" />
-      <Skeleton className="h-10 w-full" />
-      <Skeleton className="h-10 w-full" />
-      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-10 w-full rounded-lg" />
+      <Skeleton className="h-10 w-full rounded-lg" />
+      <Skeleton className="h-10 w-full rounded-lg" />
+      <Skeleton className="h-10 w-full rounded-lg" />
     </div>
   );
 
@@ -111,18 +120,18 @@ export default function Sidebar() {
         </button>
       </div>
 
-      <div
-        className={`fixed md:relative min-h-screen max-h-screen bg-white transition-all duration-300 ease-in-out ${
+      <aside
+        className={`relative h-screen bg-white transition-all duration-300 ease-in-out ${
           isCollapsed ? 'w-20' : 'w-64'
-        } border-r border-gray-200 z-30 ${
+        } border-r border-gray-200 z-30 flex flex-col ${
           isMobile
             ? isMobileOpen
               ? 'translate-x-0'
               : '-translate-x-full'
             : 'translate-x-0'
-        }`}
+        } md:translate-x-0`}
       >
-        <div className='flex items-center p-4 border-b border-gray-200'>
+        <div className='flex items-center p-4 border-b border-gray-200 flex-shrink-0'>
           <Image
             src='/images/logo.png'
             alt='Every Nation Logo'
@@ -133,7 +142,7 @@ export default function Sidebar() {
         </div>
 
         {isLoading ? (
-           <div className="p-4 border-b border-gray-200">
+           <div className="p-4 border-b border-gray-200 flex-shrink-0">
              <div className="flex items-center space-x-3">
                <Skeleton className="h-10 w-10 rounded-full" />
                {!isCollapsed && (
@@ -145,18 +154,20 @@ export default function Sidebar() {
              </div>
            </div>
         ) : user && (
-          <UserProfile
-            isCollapsed={isCollapsed}
-            name={user.nama}
-            pelayanan={user.pelayanan}
-            imageUrl={user.image_url || '/images/avatar.jpg'}
-          />
+          <div className="flex-shrink-0">
+            <UserProfile
+              isCollapsed={isCollapsed}
+              name={user.nama}
+              pelayanan={user.pelayanan}
+              imageUrl={user.image_url || '/images/avatar.jpg'}
+            />
+          </div>
         )}
 
         {!isMobile && (
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className='absolute -right-3 top-24 bg-white border border-gray-200 rounded-full p-1.5 hover:bg-gray-50'
+            className='absolute -right-3 top-24 bg-white border border-gray-200 rounded-full p-1.5 hover:bg-gray-50 z-40'
           >
             <FiChevronLeft
               className={`w-4 h-4 transition-transform ${
@@ -166,7 +177,7 @@ export default function Sidebar() {
           </button>
         )}
 
-        <div className='py-4 flex-1 flex flex-col h-[calc(100vh-185px)]'>
+        <div className='flex-1 flex flex-col overflow-y-auto py-4'>
           <p
             className={`px-4 text-xs font-medium text-gray-400 mb-2 ${
               isCollapsed ? 'text-center' : ''
@@ -174,14 +185,14 @@ export default function Sidebar() {
           >
             Menu
           </p>
-          <nav className='space-y-1 overflow-y-auto flex-grow pb-16'>
+          <nav className='flex-1 space-y-1 px-2'>
             {isLoading ? renderSkeleton() : filteredMenu.map((item) => (
               <div key={item.title}>
                 {item.submenu && item.submenu.length > 0 ? (
                   <div>
                     <button
                       onClick={() => toggleMenu(item.title)}
-                      className={`w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium relative transition-colors duration-200 ${
+                      className={`w-full flex items-center justify-between px-2 py-2.5 text-sm font-medium rounded-lg relative transition-colors duration-200 ${
                         isSubmenuActive(item)
                           ? 'text-primary-600 bg-primary-50'
                           : 'text-gray-600 hover:text-primary-600 hover:bg-gray-50'
@@ -192,7 +203,7 @@ export default function Sidebar() {
                           isCollapsed ? 'w-full justify-center' : 'space-x-3'
                         }`}
                       >
-                        <item.icon className='w-5 h-5' />
+                        <item.icon className='w-5 h-5 flex-shrink-0' />
                         {!isCollapsed && <span>{item.title}</span>}
                       </div>
                       {!isCollapsed && (
@@ -204,37 +215,31 @@ export default function Sidebar() {
                           )}
                         </div>
                       )}
-                      {isSubmenuActive(item) && (
-                        <div className='absolute right-0 top-0 h-full w-1 bg-primary-600'></div>
-                      )}
                     </button>
                     {!isCollapsed && (
                       <div
-                        className={`overflow-hidden transition-all duration-200 ease-in-out ${
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${
                           expandedMenus.includes(item.title)
                             ? 'max-h-[500px] opacity-100'
                             : 'max-h-0 opacity-0'
                         }`}
                       >
-                        <div className='pl-8 space-y-1'>
+                        <div className='pl-4 mt-1 space-y-1'>
                           {item.submenu.map((submenu) => (
                             <Link
                               key={submenu.title}
                               href={submenu.href}
-                              className={`block px-4 py-2 text-sm font-medium relative transition-colors duration-200 ${
+                              className={`block px-2 py-2 text-sm font-medium rounded-lg relative transition-colors duration-200 ${
                                 isActive(submenu.href)
-                                  ? 'text-primary-600 bg-primary-50'
+                                  ? 'text-primary-600 bg-primary-100/50'
                                   : 'text-gray-600 hover:text-primary-600 hover:bg-gray-50'
                               }`}
                               onClick={() => isMobile && setIsMobileOpen(false)}
                             >
                               <div className='flex items-center space-x-3'>
-                                <submenu.icon className='w-5 h-5' />
+                                <submenu.icon className='w-5 h-5 flex-shrink-0' />
                                 <span>{submenu.title}</span>
                               </div>
-                              {isActive(submenu.href) && (
-                                <div className='absolute right-0 top-0 h-full w-1 bg-primary-600'></div>
-                              )}
                             </Link>
                           ))}
                         </div>
@@ -244,7 +249,7 @@ export default function Sidebar() {
                 ) : (
                   <Link
                     href={item.href}
-                    className={`block px-4 py-2.5 text-sm font-medium relative transition-colors duration-200 ${
+                    className={`block px-2 py-2.5 text-sm font-medium rounded-lg relative transition-colors duration-200 ${
                       isActive(item.href)
                         ? 'text-primary-600 bg-primary-50'
                         : 'text-gray-600 hover:text-primary-600 hover:bg-gray-50'
@@ -256,12 +261,9 @@ export default function Sidebar() {
                         isCollapsed ? 'w-full justify-center' : 'space-x-3'
                       }`}
                     >
-                      <item.icon className='w-5 h-5' />
+                      <item.icon className='w-5 h-5 flex-shrink-0' />
                       {!isCollapsed && <span>{item.title}</span>}
                     </div>
-                    {isActive(item.href) && (
-                      <div className='absolute right-0 top-0 h-full w-1 bg-primary-600'></div>
-                    )}
                   </Link>
                 )}
               </div>
@@ -269,7 +271,7 @@ export default function Sidebar() {
           </nav>
         </div>
 
-        <div className='absolute bottom-0 w-full border-t border-gray-200 bg-white flex'>
+        <div className='border-t border-gray-200 bg-white flex flex-shrink-0'>
           <Link
             href='/dashboard/pengaturan'
             className={`flex-1 flex items-center py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 relative transition-colors duration-200 ${
@@ -281,9 +283,6 @@ export default function Sidebar() {
               className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'}`}
             />
             {!isCollapsed && <span>Pengaturan</span>}
-            {isActive('/dashboard/pengaturan') && (
-              <div className='absolute right-0 top-0 h-full w-1 bg-primary-600'></div>
-            )}
           </Link>
           <button
             className={`flex-1 flex items-center py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-red-600 border-l border-gray-200 transition-colors duration-200 ${
@@ -297,11 +296,11 @@ export default function Sidebar() {
             {!isCollapsed && <span>Keluar</span>}
           </button>
         </div>
-      </div>
+      </aside>
 
       {isMobile && isMobileOpen && (
         <div
-          className='fixed inset-0 bg-black bg-opacity-50 z-20'
+          className='fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden'
           onClick={() => setIsMobileOpen(false)}
         />
       )}
