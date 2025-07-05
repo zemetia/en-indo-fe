@@ -33,9 +33,18 @@ export default function AttendancePage() {
   }, []);
 
   const handleScan = (data: { text: string } | null) => {
-    if (data) {
-      setScannedData(data.text);
-      showToast('QR Code berhasil dipindai!', 'success');
+    if (data && data.text) {
+      let content = data.text;
+      try {
+        // Attempt to parse the data as JSON and prettify it
+        const parsedJson = JSON.parse(data.text);
+        content = JSON.stringify(parsedJson, null, 2);
+        showToast('QR Code JSON berhasil dipindai!', 'success');
+      } catch (e) {
+        // If it's not valid JSON, just show the raw text
+        showToast('QR Code berhasil dipindai!', 'info');
+      }
+      setScannedData(content);
     }
   };
 
@@ -127,14 +136,14 @@ export default function AttendancePage() {
                   Hasil Pindai
               </CardTitle>
               <CardDescription>
-                  Data mentah dari QR Code yang dipindai akan muncul di sini.
+                  Data dari QR Code yang dipindai akan muncul di sini.
               </CardDescription>
             </CardHeader>
             <CardContent>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 min-h-[150px] flex flex-col justify-between break-words">
                   {scannedData ? (
                     <>
-                      <p className="text-gray-800 text-sm font-mono flex-grow">{scannedData}</p>
+                      <p className="text-gray-800 text-sm font-mono flex-grow whitespace-pre-wrap">{scannedData}</p>
                       <Button onClick={copyToClipboard} variant="outline" size="sm" className="mt-4 w-full">
                         <ClipboardCopy className="w-4 h-4 mr-2" />
                         Salin Hasil
