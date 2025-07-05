@@ -11,7 +11,6 @@ import { ai } from '@/ai/genkit';
 
 // Import all flows so they are registered with the Genkit runtime.
 import '@/ai/flows/hello';
-import '@/ai/flows/songRecommendation';
 
 // Export the Next.js API route handlers.
 export { GET, POST } from '@genkit-ai/next';

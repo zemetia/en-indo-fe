@@ -2,24 +2,13 @@
 
 import { motion } from 'framer-motion';
 import * as React from 'react';
-import { FiEdit2, FiMusic, FiPlus, FiTrash2 } from 'react-icons/fi';
-import { Loader2, Sparkles } from 'lucide-react';
+import { FiEdit2, FiMusic, FiPlus, FiTrash2, FiYoutube, FiTag, FiKey, FiCalendar } from 'react-icons/fi';
+import { Search } from 'lucide-react';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import { useToast } from '@/context/ToastContext';
-import { recommendSongs, SongRecommendationOutput } from '@/ai/flows/songRecommendation';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import SongFormDialog, { SongFormData } from '@/components/dashboard/SongFormDialog';
 
 interface Song {
@@ -48,50 +37,18 @@ const MOCK_SONGS: Song[] = [
 export default function ListLaguPage() {
   const { showToast } = useToast();
   const [songs, setSongs] = React.useState<Song[]>(MOCK_SONGS);
-  const [loading] = React.useState(false);
-  const [error] = React.useState<string | null>(null);
-
-  const [isGenerating, setIsGenerating] = React.useState(false);
-  const [recommendationOccasion, setRecommendationOccasion] = React.useState('');
-  const [recommendations, setRecommendations] = React.useState<SongRecommendationOutput['recommendations']>([]);
-  const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = React.useState('');
 
   const [isFormOpen, setIsFormOpen] = React.useState(false);
   const [selectedSong, setSelectedSong] = React.useState<Partial<SongFormData> | null>(null);
 
-  const handleGetRecommendations = async () => {
-    if (!recommendationOccasion.trim() || songs.length === 0) {
-        showToast('Mohon isi tema acara terlebih dahulu.', 'warning');
-        return;
-    }
-    setIsGenerating(true);
-    setRecommendations([]);
-    
-    const availableSongs = songs
-      .filter(s => s.status === 'active')
-      .map(s => ({
-        id: s.id,
-        judul: s.judul,
-        penyanyi: s.penyanyi,
-        genre: s.genre,
-    }));
-
-    try {
-        const result = await recommendSongs({
-            occasion: recommendationOccasion,
-            songs: availableSongs,
-        });
-        if (result.recommendations.length === 0) {
-          showToast('AI tidak menemukan rekomendasi yang cocok.', 'info');
-        }
-        setRecommendations(result.recommendations);
-    } catch (e) {
-        console.error(e);
-        showToast('Gagal mendapatkan rekomendasi dari AI.', 'error');
-    } finally {
-        setIsGenerating(false);
-    }
-  }
+   const filteredSongs = songs.filter(song =>
+    song.judul.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    song.penyanyi.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (song.tags && song.tags.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   const handleEditSong = (song: Song) => {
     setSelectedSong({
@@ -141,8 +98,20 @@ export default function ListLaguPage() {
   const renderContent = () => {
     if (loading) {
       return (
-        <div className='flex justify-center items-center py-10'>
-          <div className='w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin'></div>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+            {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 animate-pulse">
+                    <div className="space-y-3">
+                        <div className="h-5 bg-gray-200 rounded w-3/4"></div>
+                        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                         <div className="h-3 bg-gray-200 rounded w-1/3"></div>
+                    </div>
+                     <div className="mt-4 pt-4 border-t border-gray-100 flex flex-wrap gap-2">
+                        <div className="h-5 w-16 bg-gray-200 rounded-full"></div>
+                        <div className="h-5 w-20 bg-gray-200 rounded-full"></div>
+                    </div>
+                </div>
+            ))}
         </div>
       );
     }
@@ -151,15 +120,17 @@ export default function ListLaguPage() {
       return <p className='text-center text-red-500'>{error}</p>;
     }
 
-    if (songs.length === 0) {
+    if (filteredSongs.length === 0) {
       return (
         <div className='text-center py-10 bg-gray-50 rounded-xl'>
           <FiMusic className='w-10 h-10 text-gray-400 mx-auto mb-4' />
           <h3 className='text-lg font-semibold text-gray-900 mb-2'>
-            Tidak ada lagu
+            Tidak ada lagu ditemukan
           </h3>
           <p className='text-gray-600 max-w-md mx-auto mb-6'>
-            Belum ada lagu yang tersedia. Silakan tambahkan lagu baru.
+            {searchTerm
+              ? `Tidak ada hasil yang cocok dengan "${searchTerm}"`
+              : 'Belum ada lagu yang tersedia. Silakan tambahkan lagu baru.'}
           </p>
            <Button onClick={handleAddSong} className="bg-amber-600 text-white hover:bg-amber-700">
               <FiPlus className='w-5 h-5 mr-2' />
@@ -170,80 +141,73 @@ export default function ListLaguPage() {
     }
 
     return (
-      <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
-        <table className='w-full text-sm text-left text-gray-500'>
-          <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
-            <tr>
-              <th scope='col' className='px-6 py-3 font-medium'>
-                Judul Lagu
-              </th>
-              <th scope='col' className='px-6 py-3 font-medium'>
-                Penyanyi
-              </th>
-              <th scope='col' className='px-6 py-3 font-medium'>
-                Genre
-              </th>
-              <th scope='col' className='px-6 py-3 font-medium'>
-                Durasi
-              </th>
-              <th scope='col' className='px-6 py-3 font-medium'>
-                Status
-              </th>
-              <th scope='col' className='px-6 py-3 font-medium text-right'>
-                Aksi
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {songs.map((song, index) => (
-              <motion.tr
-                key={song.id}
-                className='bg-white border-b last:border-b-0 hover:bg-gray-50'
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
-                  <div className='flex items-center'>
-                    <div className='flex-shrink-0 h-10 w-10'>
-                      <div className='h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center'>
-                        <FiMusic className='h-6 w-6 text-amber-600' />
-                      </div>
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+        {filteredSongs.map((song, index) => (
+          <motion.div
+            key={song.id}
+            className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden group"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
+            whileHover={{ y: -5, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' }}
+          >
+            <div className='p-6 flex-grow'>
+                <div className='flex justify-between items-start'>
+                    <div className='min-w-0'>
+                        <h3 className='font-bold text-lg text-gray-900 truncate'>{song.judul}</h3>
+                        <p className='text-sm text-gray-500 truncate'>Oleh {song.penyanyi}</p>
                     </div>
-                    <div className='ml-4'>{song.judul}</div>
-                  </div>
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap'>{song.penyanyi}</td>
-                <td className='px-6 py-4 whitespace-nowrap'>{song.genre}</td>
-                <td className='px-6 py-4 whitespace-nowrap'>{song.durasi}</td>
-                <td className='px-6 py-4 whitespace-nowrap'>
-                  <span
-                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      song.status === 'active'
+                    <span className={`px-2 py-0.5 text-xs font-semibold rounded-full flex-shrink-0 ${
+                        song.status === 'active'
                         ? 'bg-green-100 text-green-800'
                         : 'bg-red-100 text-red-800'
-                    }`}
-                  >
-                    {song.status === 'active' ? 'Aktif' : 'Tidak Aktif'}
-                  </span>
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
-                  <div className='flex space-x-2 justify-end'>
-                    <button
-                      onClick={() => handleEditSong(song)}
-                      className='text-blue-600 hover:text-blue-900'
-                    >
-                      <FiEdit2 className='w-5 h-5' />
+                    }`}>
+                        {song.status === 'active' ? 'Aktif' : 'Tidak Aktif'}
+                    </span>
+                </div>
+
+                <div className='mt-4 pt-4 border-t border-gray-100 space-y-2 text-sm'>
+                    <div className='flex items-center text-gray-600'>
+                        <FiKey className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
+                        <span>Nada Dasar: {song.nadaDasar || '-'}</span>
+                    </div>
+                     <div className='flex items-center text-gray-600'>
+                        <FiCalendar className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" />
+                        <span>Tahun: {song.tahunRilis || '-'}</span>
+                    </div>
+                    {song.tags && (
+                        <div className='flex items-start text-gray-600'>
+                            <FiTag className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0 mt-1" />
+                            <div className='flex flex-wrap gap-1.5'>
+                                {song.tags.split(',').map(tag => (
+                                    <span key={tag} className='px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 rounded-full'>
+                                        {tag.trim()}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <div className='bg-gray-50 p-3 flex justify-between items-center border-t'>
+                {song.youtubeLink ? (
+                    <a href={song.youtubeLink} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center text-sm text-blue-600 hover:text-blue-800 font-medium">
+                        <FiYoutube className='w-4 h-4 mr-1.5' />
+                        YouTube
+                    </a>
+                ) : <div />}
+                <div className='flex items-center space-x-1'>
+                    <button onClick={() => handleEditSong(song)} className='p-2 text-gray-500 hover:text-blue-600 rounded-md hover:bg-blue-50 transition-colors'>
+                        <FiEdit2 className='w-4 h-4' />
                     </button>
-                    <button className='text-red-600 hover:text-red-900'>
-                      <FiTrash2 className='w-5 h-5' />
+                    <button className='p-2 text-gray-500 hover:text-red-600 rounded-md hover:bg-red-50 transition-colors'>
+                        <FiTrash2 className='w-4 h-4' />
                     </button>
-                  </div>
-                </td>
-              </motion.tr>
-            ))}
-          </tbody>
-        </table>
+                </div>
+            </div>
+          </motion.div>
+        ))}
       </div>
     );
   };
@@ -253,7 +217,7 @@ export default function ListLaguPage() {
       <div className='space-y-6'>
         <FeaturedCard
           title='Daftar Lagu'
-          description='Kelola daftar lagu untuk pelayanan musik'
+          description='Kelola daftar lagu untuk pelayanan musik gereja.'
           actionLabel='Kembali ke Dashboard Musik'
           gradientFrom='from-amber-500'
           gradientTo='to-amber-700'
@@ -262,70 +226,25 @@ export default function ListLaguPage() {
         <div className='bg-white rounded-xl shadow-sm p-6 border border-gray-200'>
           <div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0'>
             <div>
-              <h2 className='text-lg font-semibold text-gray-900'>Kelola Lagu</h2>
+              <h2 className='text-xl font-semibold text-gray-900'>Database Lagu</h2>
               <p className='text-sm text-gray-500 mt-1'>
-                Tambah, edit, dan kelola lagu untuk pelayanan musik
+                Kelola dan lihat semua lagu yang tersedia.
               </p>
             </div>
-            <div className="flex items-center space-x-2">
-              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 hover:text-amber-800">
-                      <Sparkles className="mr-2 h-4 w-4" /> Rekomendasi AI
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-lg">
-                  <DialogHeader>
-                    <DialogTitle>Rekomendasi Lagu Berbasis AI</DialogTitle>
-                    <DialogDescription>
-                      Jelaskan suasana atau tema acara (misalnya: "Ibadah pembuka yang semangat", "Momen perenungan", "Pernikahan outdoor sore hari"), dan AI akan merekomendasikan lagu dari daftar Anda.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                      <Label htmlFor="occasion">Tema / Suasana Acara</Label>
-                      <Textarea 
-                          id="occasion" 
-                          value={recommendationOccasion} 
-                          onChange={(e) => setRecommendationOccasion(e.target.value)}
-                          placeholder="Contoh: Ibadah penyembahan yang khusyuk dan intim"
-                          className="min-h-[100px]"
-                      />
-                  </div>
-                  <DialogFooter>
-                      <Button onClick={handleGetRecommendations} disabled={isGenerating} className="bg-amber-600 hover:bg-amber-700">
-                          {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                          {isGenerating ? 'Mencari...' : 'Dapatkan Rekomendasi'}
-                      </Button>
-                  </DialogFooter>
-
-                  {(isGenerating || recommendations.length > 0) && (
-                      <div className="mt-6 pt-4 border-t">
-                          <h4 className="font-semibold mb-3 text-gray-800">Hasil Rekomendasi:</h4>
-                          {isGenerating && (
-                             <div className="space-y-2">
-                                  <div className="h-16 bg-gray-100 rounded-md animate-pulse"></div>
-                                  <div className="h-16 bg-gray-100 rounded-md animate-pulse delay-75"></div>
-                                  <div className="h-16 bg-gray-100 rounded-md animate-pulse delay-150"></div>
-                             </div>
-                          )}
-                          {recommendations.length > 0 && !isGenerating && (
-                              <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
-                                  {recommendations.map(rec => (
-                                      <div key={rec.id} className="p-3 bg-amber-50 border border-amber-100 rounded-lg">
-                                          <p className="font-bold text-amber-900">{rec.judul}</p>
-                                          <p className="text-sm text-gray-600 italic mt-1">"{rec.reason}"</p>
-                                      </div>
-                                  ))}
-                              </div>
-                          )}
-                      </div>
-                  )}
-                </DialogContent>
-              </Dialog>
-              <Button onClick={handleAddSong} className='bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors flex items-center space-x-2 whitespace-nowrap'>
-                <FiPlus className='w-5 h-5' />
-                <span>Tambah Lagu</span>
-              </Button>
+            <div className="flex items-center space-x-2 w-full md:w-auto">
+                <div className='relative flex-grow'>
+                    <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400' />
+                    <Input
+                        placeholder='Cari judul, penyanyi, tag...'
+                        className='pl-10 w-full md:w-64'
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <Button onClick={handleAddSong} className='bg-amber-600 text-white hover:bg-amber-700'>
+                    <FiPlus className='w-5 h-5 mr-2' />
+                    <span>Tambah Lagu</span>
+                </Button>
             </div>
           </div>
           {renderContent()}
