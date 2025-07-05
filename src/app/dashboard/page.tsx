@@ -2,12 +2,11 @@
 
 import Link from 'next/link';
 import * as React from 'react';
-import { Search, ArrowRight } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { dashboardMenu, MenuItem } from '@/constant/menu';
-import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import Skeleton from '@/components/Skeleton';
-import { motion } from 'framer-motion';
+import { Input } from '@/components/ui/input';
 
 export default function DashboardPage() {
   const { user, isLoading } = useAuth();
@@ -28,7 +27,7 @@ export default function DashboardPage() {
   const categories = {
     utama: {
       title: 'Menu Utama',
-      items: ['/dashboard', 'jadwal-saya', 'ketersediaan'],
+      items: ['/dashboard', 'jadwal-saya', 'ketersediaan', 'attendance'],
     },
     jemaat: {
       title: 'Manajemen Jemaat & Komunitas',
@@ -36,7 +35,7 @@ export default function DashboardPage() {
     },
     pelayanan: {
       title: 'Manajemen Pelayanan & Acara',
-      items: ['event', 'musik', 'pelayanan', 'attendance'],
+      items: ['event', 'musik', 'pelayanan'],
     },
   };
 
@@ -58,80 +57,94 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className='space-y-8'>
-        <Skeleton className='h-40 w-full rounded-xl' />
-        <div className='space-y-6'>
-          <Skeleton className='h-8 w-1/4 rounded-lg' />
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-            <Skeleton className='h-48 w-full rounded-xl' />
-            <Skeleton className='h-48 w-full rounded-xl' />
-            <Skeleton className='h-48 w-full rounded-xl' />
-          </div>
+      <div className="space-y-8">
+        <div className="flex justify-between items-center">
+            <Skeleton className="h-8 w-1/3 rounded-lg" />
+        </div>
+        <Skeleton className="h-12 w-full rounded-lg" />
+        
+        <div className="space-y-4 pt-4">
+            <Skeleton className="h-7 w-1/4 rounded-lg" />
+            <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4'>
+              {[...Array(3)].map((_, i) => (
+                  <div key={i} className="flex items-center p-3">
+                      <Skeleton className="w-16 h-16 rounded-xl mr-4" />
+                      <div className="space-y-2 flex-1">
+                          <Skeleton className="h-4 w-3/4" />
+                          <Skeleton className="h-3 w-1/2" />
+                      </div>
+                  </div>
+              ))}
+            </div>
+        </div>
+        <div className="space-y-4 pt-4">
+            <Skeleton className="h-7 w-1/4 rounded-lg" />
+            <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4'>
+              {[...Array(6)].map((_, i) => (
+                  <div key={i} className="flex items-center p-3">
+                      <Skeleton className="w-16 h-16 rounded-xl mr-4" />
+                      <div className="space-y-2 flex-1">
+                          <Skeleton className="h-4 w-3/4" />
+                          <Skeleton className="h-3 w-1/2" />
+                      </div>
+                  </div>
+              ))}
+            </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className='space-y-8'>
-      <FeaturedCard
-        title={`Selamat Datang, ${user?.nama || 'Pengguna'}!`}
-        description='Kelola semua aspek pelayanan gereja dari satu tempat terpusat.'
-        actionLabel='Lihat Profil Saya'
-        gradientFrom='from-blue-500'
-        gradientTo='to-indigo-500'
-      />
-
-      <div className='relative'>
-        <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
-          <Search className='h-5 w-5 text-gray-400' />
+    <div className='space-y-10'>
+        <div>
+            <h1 className="text-3xl font-bold text-gray-800">Aplikasi & Layanan</h1>
+            <p className="text-gray-500 mt-1">Akses semua fitur dan layanan yang Anda butuhkan di sini.</p>
         </div>
-        <input
-          type='text'
-          className='block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
-          placeholder='Cari menu...'
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
+        
+        <div className='relative'>
+            <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400' />
+            <Input
+                type='text'
+                className='w-full pl-10 pr-4 py-2 text-base h-12 bg-white border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400'
+                placeholder='Cari menu atau layanan...'
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+            />
+        </div>
 
-      {Object.entries(groupedMenu).map(([key, category]) => (
-        <div key={key} className='space-y-4'>
-          <h2 className='text-xl font-semibold text-gray-800 border-b pb-2'>
-            {category.title}
-          </h2>
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-            {category.items.map((card, index) => (
-              <motion.div
-                key={card.href}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <Link href={card.href} className='group block h-full'>
-                  <div className='h-full bg-white rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-lg hover:border-primary/30 border-2 border-transparent hover:-translate-y-1 flex flex-col'>
-                    <div
-                      className={`mb-4 inline-block p-3 rounded-lg ${card.color} transition-transform group-hover:rotate-6 group-hover:scale-110`}
-                    >
-                      <card.icon className='w-6 h-6 text-white' />
+        {Object.entries(groupedMenu).length > 0 ? (
+        Object.entries(groupedMenu).map(([key, category]) => (
+            <div key={key} className='space-y-4'>
+            <h2 className='text-xl font-semibold text-gray-800'>
+                {category.title}
+            </h2>
+            <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-2'>
+                {category.items.map((card) => (
+                <Link
+                    key={card.href}
+                    href={card.href}
+                    className="group flex items-center p-3 rounded-xl transition-colors hover:bg-gray-100"
+                >
+                    <div className={`flex-shrink-0 p-3 rounded-lg ${card.color} mr-4`}>
+                    <card.icon className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className='text-lg font-bold text-gray-800'>
-                      {card.title}
-                    </h3>
-                    <p className='text-sm text-gray-500 mt-1 flex-grow'>
-                      {card.description}
-                    </p>
-                    <div className='flex justify-end items-center text-sm font-medium text-blue-600 mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
-                      Akses Menu{' '}
-                      <ArrowRight className='w-4 h-4 ml-1 transition-transform group-hover:translate-x-1' />
+                    <div className="min-w-0">
+                    <h3 className="font-semibold text-gray-900">{card.title}</h3>
+                    <p className="text-sm text-gray-500 truncate">{card.description}</p>
                     </div>
-                  </div>
                 </Link>
-              </motion.div>
-            ))}
-          </div>
+                ))}
+            </div>
+            </div>
+        ))
+        ) : (
+        <div className="text-center py-16 bg-gray-50 rounded-lg">
+            <Search className="mx-auto h-12 w-12 text-gray-400"/>
+            <h3 className="mt-2 text-lg font-medium text-gray-900">Tidak ada menu ditemukan</h3>
+            <p className="mt-1 text-sm text-gray-500">Coba kata kunci lain untuk mencari menu yang Anda inginkan.</p>
         </div>
-      ))}
+        )}
     </div>
   );
 }
