@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import * as React from 'react';
-import { Search } from 'lucide-react';
+import { Search, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { dashboardMenu, MenuItem, hasAccess, ADMIN_ROLE } from '@/constant/menu';
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import Skeleton from '@/components/Skeleton';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function DashboardPage() {
   const { user, isLoading } = useAuth();
@@ -33,21 +34,17 @@ export default function DashboardPage() {
   );
 
   const categories = {
-    jemaat: {
-      title: 'Manajemen Jemaat',
-      items: ['jemaat', 'life-group', 'lifegroup'],
+    utama: {
+      title: 'Menu Utama',
+      items: ['/dashboard', 'jadwal-saya', 'ketersediaan'],
     },
-    event: {
-      title: 'Manajemen Event',
-      items: ['event'],
+    jemaat: {
+      title: 'Manajemen Jemaat & Komunitas',
+      items: ['jemaat', 'lifegroup', 'pemuridan'],
     },
     pelayanan: {
-      title: 'Manajemen Pelayanan',
-      items: ['pelayanan', 'musik'],
-    },
-    sistem: {
-      title: 'Manajemen Sistem',
-      items: ['role'],
+      title: 'Manajemen Pelayanan & Acara',
+      items: ['event', 'musik', 'pelayanan', 'attendance'],
     },
   };
 
@@ -66,17 +63,18 @@ export default function DashboardPage() {
     },
     {} as Record<string, { title: string; items: MenuItem[] }>
   );
+  
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-8">
         <Skeleton className="h-40 w-full rounded-xl" />
-        <div className="space-y-4">
-          <Skeleton className="h-8 w-1/4 rounded" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-            <Skeleton className="h-40 w-full rounded-xl" />
-            <Skeleton className="h-40 w-full rounded-xl" />
-            <Skeleton className="h-40 w-full rounded-xl" />
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-1/4 rounded-lg" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Skeleton className="h-48 w-full rounded-xl" />
+            <Skeleton className="h-48 w-full rounded-xl" />
+            <Skeleton className="h-48 w-full rounded-xl" />
           </div>
         </div>
       </div>
@@ -84,13 +82,13 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className='space-y-6'>
+    <div className='space-y-8'>
       <FeaturedCard
-        title='Every Nation Portal'
-        description='Selamat datang di Dashboard Admin Every Nation Indonesia'
-        actionLabel='Jelajahi sekarang'
-        gradientFrom='from-orange-500'
-        gradientTo='to-red-500'
+        title={`Selamat Datang, ${user?.nama || 'Pengguna'}!`}
+        description='Kelola semua aspek pelayanan gereja dari satu tempat terpusat.'
+        actionLabel='Lihat Profil Saya'
+        gradientFrom='from-blue-500'
+        gradientTo='to-indigo-500'
       />
 
       <div className='relative'>
@@ -99,7 +97,7 @@ export default function DashboardPage() {
         </div>
         <input
           type='text'
-          className='block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-orange-500 focus:border-orange-500 sm:text-sm'
+          className='block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
           placeholder='Cari menu...'
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -108,25 +106,26 @@ export default function DashboardPage() {
 
       {Object.entries(groupedMenu).map(([key, category]) => (
         <div key={key} className='space-y-4'>
-          <h2 className='text-xl font-semibold text-gray-900'>
+          <h2 className='text-xl font-semibold text-gray-800 border-b pb-2'>
             {category.title}
           </h2>
-          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
             {category.items.map((card) => (
-              <Link
-                key={card.href}
-                href={card.href}
-                className='group block p-6 bg-white rounded-xl shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-lg hover:border-blue-500 hover:-translate-y-1'
-              >
-                <div
-                  className={`inline-block p-3 rounded-lg ${card.color} transition-transform group-hover:scale-110`}
-                >
-                  <card.icon className='w-6 h-6 text-white' />
-                </div>
-                <h3 className='mt-4 text-lg font-medium text-gray-900'>
-                  {card.title}
-                </h3>
-                <p className='mt-1 text-sm text-gray-600'>{card.description}</p>
+              <Link key={card.href} href={card.href} className="group block h-full">
+                <Card className="h-full transition-all duration-300 hover:shadow-lg hover:border-primary/50 hover:-translate-y-1 flex flex-col border-gray-200">
+                    <CardHeader className="flex-grow">
+                        <div className={`mb-4 inline-block p-3 rounded-lg ${card.color} transition-transform group-hover:scale-110`}>
+                            <card.icon className='w-6 h-6 text-white' />
+                        </div>
+                        <CardTitle>{card.title}</CardTitle>
+                        <CardDescription>{card.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex justify-end items-center text-sm font-medium text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            Akses Menu <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
+                        </div>
+                    </CardContent>
+                </Card>
               </Link>
             ))}
           </div>

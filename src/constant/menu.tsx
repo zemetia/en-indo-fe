@@ -210,45 +210,11 @@ export const dashboardMenu: MenuItem[] = [
     ]
   },
   {
-    title: 'Departemen',
-    description: 'Kelola departemen',
-    icon: RiOrganizationChart,
-    href: '/dashboard/departemen',
-    color: 'bg-orange-500',
-    permissions: ['admin', 'departemen'],
-  },
-  {
     title: 'Pemuridan',
     description: 'Kelola pemuridan anda',
     icon: FaPeopleArrows,
     href: '/dashboard/pemuridan',
     color: 'bg-cyan-800',
     permissions: ['admin', 'pemuridan', 'lifegroup'],
-  },
-  {
-    title: 'Manajemen Role',
-    description: 'Kelola role dan izin pengguna',
-    icon: TbUserStar,
-    href: '/dashboard/role',
-    color: 'bg-cyan-500',
-    permissions: ['admin'],
-    submenu: [
-      {
-        title: 'User Role',
-        description: 'Kelola peran pengguna',
-        icon: FiUsers,
-        href: '/dashboard/role/user-role',
-        color: 'bg-blue-500',
-        permissions: ['admin'],
-      },
-      {
-        title: 'Role Permission',
-        description: 'Kelola izin peran',
-        icon: FiLock,
-        href: '/dashboard/role/role-permission',
-        color: 'bg-green-500',
-        permissions: ['admin'],
-      },
-    ],
   },
 ] as const;
