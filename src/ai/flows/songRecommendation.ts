@@ -7,7 +7,7 @@
  * - SongRecommendationOutput - The return type for the recommendSongs function.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai } from 'genkit';
 import { z } from 'zod';
 
 const SongSchema = z.object({
