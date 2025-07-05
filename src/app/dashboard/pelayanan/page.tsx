@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import { useState } from 'react';
-import { FiAward, FiHome, FiPlus, FiSearch, FiTrash2, FiUser } from 'react-icons/fi';
+import { FiAward, FiHome, FiPlus, FiSearch, FiTrash2, FiUser, FiStar, FiTag } from 'react-icons/fi';
+import Image from 'next/image';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import {
@@ -21,22 +22,37 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/context/ToastContext';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 
 interface Assignment {
   id: string;
+  personId: string;
   personName: string;
+  personAvatar: string;
   pelayananName: string;
   churchName: string;
   isPic: boolean;
 }
 
+interface GroupedAssignment {
+    personId: string;
+    personName: string;
+    personAvatar: string;
+    roles: {
+        id: string;
+        pelayananName: string;
+        churchName: string;
+        isPic: boolean;
+    }[];
+}
+
 const MOCK_ASSIGNMENTS: Assignment[] = [
-  { id: 'a1', personName: 'Andi Suryo', pelayananName: 'Pemusik', churchName: 'EN Jakarta', isPic: false },
-  { id: 'a2', personName: 'Budi Santoso', pelayananName: 'Pemusik', churchName: 'EN Jakarta', isPic: true },
-  { id: 'a3', personName: 'Citra Lestari', pelayananName: 'Singer', churchName: 'EN Bandung', isPic: false },
-  { id: 'a4', personName: 'Dewi Anggraini', pelayananName: 'Usher', churchName: 'EN Surabaya', isPic: true },
-  { id: 'a5', personName: 'Eko Prasetyo', pelayananName: 'Media', churchName: 'EN Jakarta', isPic: false },
-  { id: 'a6', personName: 'Fitri Handayani', pelayananName: 'Kids', churchName: 'EN Bandung', isPic: false },
+  { id: 'a1', personId: 'p1', personName: 'Andi Suryo', personAvatar: 'https://placehold.co/100x100.png', pelayananName: 'Pemusik', churchName: 'EN Jakarta', isPic: false },
+  { id: 'a2', personId: 'p1', personName: 'Andi Suryo', personAvatar: 'https://placehold.co/100x100.png', pelayananName: 'Usher', churchName: 'EN Bandung', isPic: true },
+  { id: 'a3', personId: 'p2', personName: 'Budi Santoso', personAvatar: 'https://placehold.co/100x100.png', pelayananName: 'Pemusik', churchName: 'EN Jakarta', isPic: true },
+  { id: 'a4', personId: 'p3', personName: 'Citra Lestari', personAvatar: 'https://placehold.co/100x100.png', pelayananName: 'Singer', churchName: 'EN Bandung', isPic: false },
+  { id: 'a5', personId: 'p3', personName: 'Citra Lestari', personAvatar: 'https://placehold.co/100x100.png', pelayananName: 'Media', churchName: 'EN Jakarta', isPic: true },
+  { id: 'a6', personId: 'p4', personName: 'Dewi Anggraini', personAvatar: 'https://placehold.co/100x100.png', pelayananName: 'Usher', churchName: 'EN Surabaya', isPic: false },
 ];
 
 export default function ManagePelayananPage() {
@@ -56,12 +72,41 @@ export default function ManagePelayananPage() {
     setSelectedAssignment(null);
   };
   
-  const filteredAssignments = assignments.filter(
-    (a) =>
-      a.personName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      a.pelayananName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      a.churchName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredAndGroupedArray = React.useMemo(() => {
+      const groupedByPerson = assignments.reduce((acc, assignment) => {
+          const { personId, personName, personAvatar } = assignment;
+          if (!acc[personId]) {
+              acc[personId] = {
+                  personId,
+                  personName,
+                  personAvatar,
+                  roles: [],
+              };
+          }
+          acc[personId].roles.push({
+              id: assignment.id,
+              pelayananName: assignment.pelayananName,
+              churchName: assignment.churchName,
+              isPic: assignment.isPic,
+          });
+          return acc;
+      }, {} as Record<string, GroupedAssignment>);
+
+      if (!searchTerm) {
+          return Object.values(groupedByPerson);
+      }
+
+      const lowercasedFilter = searchTerm.toLowerCase();
+      return Object.values(groupedByPerson).filter(
+          (personGroup) =>
+              personGroup.personName.toLowerCase().includes(lowercasedFilter) ||
+              personGroup.roles.some(
+                  (role) =>
+                      role.pelayananName.toLowerCase().includes(lowercasedFilter) ||
+                      role.churchName.toLowerCase().includes(lowercasedFilter)
+              )
+      );
+  }, [assignments, searchTerm]);
 
   return (
     <div className='space-y-6'>
@@ -78,7 +123,7 @@ export default function ManagePelayananPage() {
         <div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4'>
             <div>
               <h2 className='text-xl font-semibold text-gray-900'>Daftar Penugasan Pelayanan</h2>
-              <p className='text-sm text-gray-500 mt-1'>Total {filteredAssignments.length} penugasan ditemukan.</p>
+              <p className='text-sm text-gray-500 mt-1'>Total {filteredAndGroupedArray.length} pelayan ditemukan.</p>
             </div>
             <div className='flex w-full md:w-auto space-x-4'>
                 <div className='relative flex-grow'>
@@ -99,73 +144,74 @@ export default function ManagePelayananPage() {
             </div>
         </div>
 
-        <div className='overflow-x-auto'>
-            <table className='w-full text-sm text-left text-gray-500'>
-                <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
-                    <tr>
-                        <th scope='col' className='px-6 py-3 font-medium'>Nama Jemaat</th>
-                        <th scope='col' className='px-6 py-3 font-medium'>Pelayanan</th>
-                        <th scope='col' className='px-6 py-3 font-medium'>Gereja</th>
-                        <th scope='col' className='px-6 py-3 font-medium'>Status PIC</th>
-                        <th scope='col' className='px-6 py-3 font-medium text-right'>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {filteredAssignments.length > 0 ? (
-                        filteredAssignments.map((assignment, index) => (
-                        <motion.tr 
-                            key={assignment.id} 
-                            className='bg-white border-b last:border-b-0 hover:bg-gray-50'
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                        >
-                            <td className='px-6 py-4 whitespace-nowrap font-medium text-gray-900 flex items-center'>
-                                <FiUser className='mr-3 text-gray-400'/>
-                                {assignment.personName}
-                            </td>
-                            <td className='px-6 py-4 whitespace-nowrap'>
-                                <div className='flex items-center'>
-                                    <FiAward className='mr-3 text-gray-400'/>
-                                    {assignment.pelayananName}
+        {filteredAndGroupedArray.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filteredAndGroupedArray.map((personGroup, index) => (
+                    <motion.div 
+                        key={personGroup.personId}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                    >
+                        <Card className="h-full flex flex-col">
+                            <CardHeader>
+                                <div className="flex items-center space-x-4">
+                                    <Image src={personGroup.personAvatar} alt={personGroup.personName} width={48} height={48} className="rounded-full" data-ai-hint="person portrait" />
+                                    <div>
+                                        <CardTitle>{personGroup.personName}</CardTitle>
+                                        <CardDescription>{personGroup.roles.length} peran pelayanan</CardDescription>
+                                    </div>
                                 </div>
-                            </td>
-                            <td className='px-6 py-4 whitespace-nowrap'>
-                                <div className='flex items-center'>
-                                    <FiHome className='mr-3 text-gray-400'/>
-                                    {assignment.churchName}
+                            </CardHeader>
+                            <CardContent className="flex-grow">
+                                <div className="space-y-3">
+                                    {personGroup.roles.map(role => (
+                                        <div key={role.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                            <div className='min-w-0'>
+                                                <p className="font-semibold text-gray-800 flex items-center gap-2">
+                                                    <FiAward className="text-indigo-500 w-4 h-4"/>
+                                                    <span className='truncate'>{role.pelayananName}</span>
+                                                </p>
+                                                <p className="text-sm text-gray-500 flex items-center gap-2 mt-1">
+                                                    <FiHome className="text-gray-400 w-4 h-4"/>
+                                                     <span className='truncate'>{role.churchName}</span>
+                                                </p>
+                                                {role.isPic && (
+                                                    <span className="mt-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                                        <FiStar className='w-3 h-3 mr-1.5'/>
+                                                        PIC
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className='text-red-500 hover:text-red-700 hover:bg-red-50 ml-2 flex-shrink-0'
+                                                onClick={() => {
+                                                    const assignmentToUnassign = assignments.find(a => a.id === role.id);
+                                                    if(assignmentToUnassign) {
+                                                        setSelectedAssignment(assignmentToUnassign);
+                                                        setShowConfirmation(true);
+                                                    }
+                                                }}
+                                            >
+                                                <FiTrash2 className='h-4 w-4'/>
+                                            </Button>
+                                        </div>
+                                    ))}
                                 </div>
-                            </td>
-                            <td className='px-6 py-4 whitespace-nowrap'>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${assignment.isPic ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'}`}>
-                                    {assignment.isPic ? 'Ya' : 'Tidak'}
-                                </span>
-                            </td>
-                            <td className='px-6 py-4 whitespace-nowrap text-right'>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className='text-red-500 hover:text-red-700 hover:bg-red-50'
-                                    onClick={() => {
-                                        setSelectedAssignment(assignment);
-                                        setShowConfirmation(true);
-                                    }}
-                                >
-                                    <FiTrash2 className='h-4 w-4'/>
-                                </Button>
-                            </td>
-                        </motion.tr>
-                        ))
-                    ) : (
-                        <tr>
-                            <td colSpan={5} className='text-center py-10 text-gray-500'>
-                                Tidak ada data penugasan yang cocok dengan pencarian Anda.
-                            </td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
-        </div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                ))}
+            </div>
+        ) : (
+            <div className='text-center py-16 text-gray-500 bg-gray-50 rounded-lg'>
+                <FiUser className='mx-auto h-12 w-12 text-gray-400 mb-4' />
+                <h3 className="text-lg font-semibold text-gray-800">Tidak Ada Hasil</h3>
+                <p>Tidak ada data penugasan yang cocok dengan pencarian Anda.</p>
+            </div>
+        )}
       </div>
 
        <AlertDialog open={showConfirmation} onOpenChange={setShowConfirmation}>
