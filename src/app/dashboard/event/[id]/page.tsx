@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { format, parseISO } from 'date-fns';
 import { id } from 'date-fns/locale';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, MapPin, Users, Repeat, User as UserIcon, Search, Check, X, Save, Plus, Minus, Baby, QrCode, Download, UserPlus } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Repeat, User as UserIcon, Search, Check, X, Save, Plus, Minus, Baby, QrCode, Download, UserPlus, CalendarDays } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
@@ -49,9 +49,17 @@ interface Event {
   allDay: boolean;
   timezone: string;
   recurrenceRule?: {
+    id: string;
     frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
-    endDate?: string;
-    byWeekday?: string[];
+    interval: number;
+    byWeekday: string[];
+    byMonthDay: number[];
+    byMonth: number[];
+    bySetPos?: number[];
+    weekStart?: string;
+    byYearDay?: number[];
+    count?: number;
+    until?: string;
   };
   isPublic: boolean;
   pics?: PIC[];
@@ -92,6 +100,7 @@ const MOCK_ALL_JEMAAT = [
 
 export default function EventDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const { showToast } = useToast();
   const eventId = params.id as string;
 
@@ -136,7 +145,14 @@ export default function EventDetailPage() {
           endDatetime: '2025-07-20T10:00:00+07:00',
           allDay: false,
           timezone: 'Asia/Jakarta',
-          recurrenceRule: { frequency: 'WEEKLY', byWeekday: ['SU'] },
+          recurrenceRule: { 
+            id: 'rule1', 
+            frequency: 'WEEKLY' as const, 
+            interval: 1,
+            byWeekday: ['SU'],
+            byMonthDay: [],
+            byMonth: [] 
+          },
           isPublic: true,
           pics: [
             { id: 'user1', name: 'Pdt. Budi Santoso', imageUrl: 'https://placehold.co/100x100.png' },
@@ -278,14 +294,80 @@ export default function EventDetailPage() {
   const formatFullDate = (datetime: string) => format(parseISO(datetime), 'EEEE, d MMMM yyyy', { locale: id });
   const formatRecurrence = (rule: Event['recurrenceRule']) => {
     if (!rule) return null;
+    
     let text = '';
-    switch (rule.frequency) {
-        case 'DAILY': text = 'Setiap hari'; break;
-        case 'WEEKLY': text = 'Setiap minggu'; break;
-        case 'MONTHLY': text = 'Setiap bulan'; break;
-        case 'YEARLY': text = 'Setiap tahun'; break;
+    const { frequency, interval, byWeekday, byMonthDay, byMonth, bySetPos, count, until } = rule;
+    
+    // Base frequency text
+    switch (frequency) {
+      case 'DAILY':
+        text = interval === 1 ? 'Setiap hari' : `Setiap ${interval} hari`;
+        break;
+      case 'WEEKLY':
+        if (byWeekday && byWeekday.length > 0) {
+          const dayNames = byWeekday.map(d => {
+            const dayMap: {[key: string]: string} = {
+              'SU': 'Minggu', 'MO': 'Senin', 'TU': 'Selasa', 
+              'WE': 'Rabu', 'TH': 'Kamis', 'FR': 'Jumat', 'SA': 'Sabtu'
+            };
+            return dayMap[d] || d;
+          }).join(', ');
+          const prefix = interval === 1 ? 'Setiap minggu pada' : `Setiap ${interval} minggu pada`;
+          text = `${prefix} ${dayNames}`;
+        } else {
+          text = interval === 1 ? 'Setiap minggu' : `Setiap ${interval} minggu`;
+        }
+        break;
+      case 'MONTHLY':
+        if (byMonthDay && byMonthDay.length > 0) {
+          const dayText = byMonthDay.map(d => d === -1 ? 'hari terakhir' : `tanggal ${d}`).join(', ');
+          const prefix = interval === 1 ? 'Setiap bulan pada' : `Setiap ${interval} bulan pada`;
+          text = `${prefix} ${dayText}`;
+        } else if (byWeekday && byWeekday.length > 0 && bySetPos && bySetPos.length > 0) {
+          const dayMap: {[key: string]: string} = {
+            'SU': 'Minggu', 'MO': 'Senin', 'TU': 'Selasa', 
+            'WE': 'Rabu', 'TH': 'Kamis', 'FR': 'Jumat', 'SA': 'Sabtu'
+          };
+          const day = dayMap[byWeekday[0]] || byWeekday[0];
+          const ordinalMap: {[key: number]: string} = {
+            1: 'pertama', 
+            2: 'kedua', 
+            3: 'ketiga', 
+            4: 'keempat', 
+            [-1]: 'terakhir'
+          };
+          const ordinal = ordinalMap[bySetPos[0]] || bySetPos[0].toString();
+          const prefix = interval === 1 ? 'Setiap bulan pada' : `Setiap ${interval} bulan pada`;
+          text = `${prefix} ${day} ${ordinal}`;
+        } else {
+          text = interval === 1 ? 'Setiap bulan' : `Setiap ${interval} bulan`;
+        }
+        break;
+      case 'YEARLY':
+        if (byMonth && byMonth.length > 0) {
+          const monthNames = byMonth.map(m => {
+            const monthMap: {[key: number]: string} = {
+              1: 'Januari', 2: 'Februari', 3: 'Maret', 4: 'April',
+              5: 'Mei', 6: 'Juni', 7: 'Juli', 8: 'Agustus',
+              9: 'September', 10: 'Oktober', 11: 'November', 12: 'Desember'
+            };
+            return monthMap[m] || m.toString();
+          }).join(', ');
+          const prefix = interval === 1 ? 'Setiap tahun pada bulan' : `Setiap ${interval} tahun pada bulan`;
+          text = `${prefix} ${monthNames}`;
+        } else {
+          text = interval === 1 ? 'Setiap tahun' : `Setiap ${interval} tahun`;
+        }
+        break;
     }
-    if (rule.endDate) text += ` hingga ${format(parseISO(rule.endDate), 'd MMM yyyy', { locale: id })}`;
+    
+    // Add end condition
+    if (until) {
+      text += ` hingga ${format(parseISO(until), 'd MMM yyyy', { locale: id })}`;
+    } else if (count) {
+      text += ` (${count} kali)`;
+    }
+    
     return text;
   };
 
@@ -314,6 +396,28 @@ export default function EventDetailPage() {
         gradientFrom='from-emerald-500'
         gradientTo='to-emerald-700'
       />
+
+      {/* Action Buttons */}
+      <div className="flex flex-wrap gap-3">
+        <Button 
+          onClick={() => router.push('/dashboard/event/calendar')}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          <CalendarDays className="h-4 w-4" />
+          Lihat Kalender
+        </Button>
+        {event.recurrenceRule && (
+          <Button 
+            onClick={() => router.push(`/dashboard/event/${event.id}/edit`)}
+            variant="outline" 
+            className="flex items-center gap-2"
+          >
+            <Repeat className="h-4 w-4" />
+            Edit Seri Event
+          </Button>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Left Column */}

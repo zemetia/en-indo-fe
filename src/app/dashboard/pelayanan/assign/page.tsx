@@ -1,6 +1,5 @@
 'use client';
 
-import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
@@ -15,54 +14,23 @@ import { FiSearch, FiUsers, FiCheck, FiHome, FiAward, FiList } from 'react-icons
 import Link from 'next/link';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
-import { getToken } from '@/lib/helper';
+import { personService, SimplePerson } from '@/lib/person-service';
+import { churchService, Church } from '@/lib/church-service';
+import { pelayananService, PelayananInfo } from '@/lib/pelayanan-service';
+import { useToast } from '@/context/ToastContext';
 
-interface Pelayanan {
-  id: string;
-  nama: string;
-  gereja: string;
-  jumlah_person: number;
-  is_aktif: boolean;
-}
-
-interface Person {
-  id: string;
-  nama: string;
-  gender: string;
-  church: string;
-  is_aktif: boolean;
-}
-
-interface Church {
-  id: string;
-  nama: string;
-}
 
 export default function AssignPelayananPage() {
-  const [pelayanan, setPelayanan] = useState<Array<Pelayanan>>([
-      { id: 'p1', nama: 'Pemusik', gereja: 'EN Jakarta', jumlah_person: 10, is_aktif: true },
-      { id: 'p2', nama: 'Singer', gereja: 'EN Jakarta', jumlah_person: 15, is_aktif: true },
-      { id: 'p3', nama: 'Usher', gereja: 'EN Jakarta', jumlah_person: 20, is_aktif: true },
-      { id: 'p4', nama: 'Media', gereja: 'EN Bandung', jumlah_person: 8, is_aktif: true },
-      { id: 'p5', nama: 'Kids', gereja: 'EN Surabaya', jumlah_person: 12, is_aktif: false },
-  ]);
-  const [persons, setPersons] = useState<Array<Person>>([
-      { id: 'u1', nama: 'Andi Suryo', gender: 'L', church: 'EN Jakarta', is_aktif: true },
-      { id: 'u2', nama: 'Budi Santoso', gender: 'L', church: 'EN Jakarta', is_aktif: true },
-      { id: 'u3', nama: 'Citra Lestari', gender: 'P', church: 'EN Bandung', is_aktif: true },
-      { id: 'u4', nama: 'Dewi Anggraini', gender: 'P', church: 'EN Surabaya', is_aktif: false },
-  ]);
-  const [churches, setChurches] = useState<Array<Church>>([
-      { id: 'c1', nama: 'EN Jakarta' },
-      { id: 'c2', nama: 'EN Bandung' },
-      { id: 'c3', nama: 'EN Surabaya' },
-  ]);
+  const { showToast } = useToast();
+  const [pelayanan, setPelayanan] = useState<Array<PelayananInfo>>([]);
+  const [persons, setPersons] = useState<Array<SimplePerson>>([]);
+  const [churches, setChurches] = useState<Array<Church>>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(false); // Set to false since we use mock data
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
+  const [selectedPerson, setSelectedPerson] = useState<SimplePerson | null>(null);
   const [selectedChurch, setSelectedChurch] = useState<Church | null>(null);
-  const [selectedPelayanan, setSelectedPelayanan] = useState<Pelayanan | null>(
+  const [selectedPelayanan, setSelectedPelayanan] = useState<PelayananInfo | null>(
     null
   );
   const [isPIC, setIsPIC] = useState(false);
@@ -71,55 +39,86 @@ export default function AssignPelayananPage() {
   );
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Since we are using mock data, we can comment out the API fetching logic for now.
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     setLoading(true);
-  //     try {
-  //       const token = getToken();
-  //       if (!token) {
-  //         setError('Token autentikasi tidak ditemukan. Silakan login kembali.');
-  //         setLoading(false);
-  //         return;
-  //       }
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        // Fetch data independently and handle partial failures
+        const results = await Promise.allSettled([
+          pelayananService.getAllPelayanan(),
+          personService.getSimpleList(),
+          churchService.getSimpleList(),
+        ]);
 
-  //       const [pelayananResponse, personsResponse, churchesResponse] =
-  //         await Promise.all([
-  //           axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/pelayanan`, {
-  //             headers: { Authorization: `Bearer ${token}` },
-  //           }),
-  //           axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/person`, {
-  //             headers: { Authorization: `Bearer ${token}` },
-  //           }),
-  //           axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/church`, {
-  //             headers: { Authorization: `Bearer ${token}` },
-  //           }),
-  //         ]);
+        // Handle pelayanan data
+        if (results[0].status === 'fulfilled') {
+          setPelayanan(results[0].value);
+        } else {
+          console.error('Failed to fetch pelayanan:', results[0].reason);
+          showToast('Gagal memuat data pelayanan', 'warning');
+        }
 
-  //       setPelayanan(pelayananResponse.data.data);
-  //       setPersons(personsResponse.data.data);
-  //       setChurches(churchesResponse.data.data);
-  //       setError(null);
-  //     } catch (error) {
-  //       setError('Gagal mengambil data. Silakan coba lagi nanti.');
-  //       console.error(error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
+        // Handle persons data  
+        if (results[1].status === 'fulfilled') {
+          setPersons(results[1].value);
+        } else {
+          console.error('Failed to fetch persons:', results[1].reason);
+          showToast('Gagal memuat data jemaat', 'warning');
+        }
 
-  //   fetchData();
-  // }, []);
+        // Handle churches data
+        if (results[2].status === 'fulfilled') {
+          setChurches(results[2].value);
+        } else {
+          console.error('Failed to fetch churches:', results[2].reason);
+          showToast('Gagal memuat data gereja', 'warning');
+        }
+
+        // Only show error if ALL requests failed
+        const allFailed = results.every(result => result.status === 'rejected');
+        if (allFailed) {
+          setError('Tidak dapat memuat data. Silakan periksa koneksi internet Anda.');
+        } else if (results.some(result => result.status === 'rejected')) {
+          showToast('Beberapa data tidak dapat dimuat, tetapi Anda masih dapat menggunakan fitur yang tersedia.', 'warning');
+        }
+
+      } catch (unexpectedError) {
+        console.error('Unexpected error in fetchData:', unexpectedError);
+        setError('Terjadi kesalahan tidak terduga.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Only run once on mount
+    fetchData();
+  }, []);
 
   const handleAssignPelayanan = async () => {
-    // Mock assignment logic
-    console.log({
-        person: selectedPerson,
-        church: selectedChurch,
-        pelayanan: selectedPelayanan,
-        isPIC,
-    });
-    setShowSuccess(true);
+    if (!selectedPerson || !selectedChurch || !selectedPelayanan) {
+      showToast('Please select person, church, and pelayanan', 'error');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await pelayananService.assignPelayanan({
+        person_id: selectedPerson.id,
+        church_id: selectedChurch.id,
+        pelayanan_id: selectedPelayanan.id,
+        is_pic: isPIC,
+      });
+      
+      setShowSuccess(true);
+      showToast('Pelayanan berhasil di-assign!', 'success');
+    } catch (error) {
+      console.error('Failed to assign pelayanan:', error);
+      showToast('Gagal assign pelayanan. Silakan coba lagi.', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAssignAgain = () => {
@@ -135,21 +134,21 @@ export default function AssignPelayananPage() {
     setActiveTab('person');
   };
 
-  const filteredPersons = persons
+  const filteredPersons = persons && Array.isArray(persons)
     ? persons.filter((item) =>
-        item.nama.toLowerCase().includes(searchTerm.toLowerCase())
+        item?.nama?.toLowerCase()?.includes(searchTerm.toLowerCase())
       )
     : [];
 
-  const filteredPelayanan = pelayanan
+  const filteredPelayanan = pelayanan && Array.isArray(pelayanan)
     ? pelayanan.filter((item) =>
-        item.nama.toLowerCase().includes(searchTerm.toLowerCase())
+        item?.pelayanan?.toLowerCase()?.includes(searchTerm.toLowerCase())
       )
     : [];
 
-  const filteredChurches = churches
+  const filteredChurches = churches && Array.isArray(churches)
     ? churches.filter((item) =>
-        item.nama.toLowerCase().includes(searchTerm.toLowerCase())
+        item?.name?.toLowerCase()?.includes(searchTerm.toLowerCase())
       )
     : [];
     
@@ -173,7 +172,8 @@ export default function AssignPelayananPage() {
     );
   }
 
-  if (error) {
+  // Only show full error state if ALL data failed AND we're not loading
+  if (error && !loading && pelayanan.length === 0 && persons.length === 0 && churches.length === 0) {
     return (
       <div className='space-y-6'>
         <FeaturedCard
@@ -188,13 +188,13 @@ export default function AssignPelayananPage() {
             <div className='text-red-500 mb-2 text-5xl'>
               <BsPeople className='mx-auto' />
             </div>
-            <h3 className='text-lg font-semibold text-gray-900 mb-2'>Error</h3>
+            <h3 className='text-lg font-semibold text-gray-900 mb-2'>Tidak Dapat Memuat Data</h3>
             <p className='text-gray-600 mb-4'>{error}</p>
             <button
               onClick={() => window.location.reload()}
               className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'
             >
-              Coba Lagi
+              Muat Ulang Halaman
             </button>
           </div>
         </div>
@@ -237,8 +237,8 @@ export default function AssignPelayananPage() {
                 </h3>
                 <p className='text-gray-600 max-w-md'>
                   {selectedPerson?.nama} berhasil ditugaskan sebagai{' '}
-                  {isPIC ? 'PIC ' : ''}pelayanan {selectedPelayanan?.nama} di{' '}
-                  {selectedChurch?.nama}
+                  {isPIC ? 'PIC ' : ''}pelayanan {selectedPelayanan?.pelayanan} di{' '}
+                  {selectedChurch?.name}
                 </p>
               </div>
 
@@ -308,46 +308,86 @@ export default function AssignPelayananPage() {
             <div className='min-h-[300px]'>
               <AnimatePresence mode='wait'>
                 {activeTab === 'person' && (
-                  <motion.div key='person' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-                    {filteredPersons.map((item) => (
-                      <motion.div key={item.id} whileHover={{y: -3}} onClick={() => { setSelectedPerson(item); setActiveTab('church'); }} className={`p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${selectedPerson?.id === item.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300 bg-white'}`}>
-                        <div className='flex items-center space-x-3'>
-                          <div className='p-2 rounded-full bg-indigo-100 text-indigo-600'><BsPeople className='w-5 h-5' /></div>
-                          <div className='flex-1'><h4 className='font-semibold text-gray-900'>{item.nama}</h4><p className='text-xs text-gray-500'>{item.church}</p></div>
-                          {selectedPerson?.id === item.id && <FiCheck className='w-5 h-5 text-indigo-600' />}
-                        </div>
-                      </motion.div>
-                    ))}
+                  <motion.div key='person' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    {filteredPersons.length > 0 ? (
+                      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+                        {filteredPersons.map((item, index) => (
+                          <motion.div key={item?.id || `person-${index}`} whileHover={{y: -3}} onClick={() => { setSelectedPerson(item); setActiveTab('church'); }} className={`p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${selectedPerson?.id === item.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300 bg-white'}`}>
+                            <div className='flex items-center space-x-3'>
+                              <div className='p-2 rounded-full bg-indigo-100 text-indigo-600'><BsPeople className='w-5 h-5' /></div>
+                              <div className='flex-1'><h4 className='font-semibold text-gray-900'>{item?.nama || 'Nama tidak tersedia'}</h4><p className='text-xs text-gray-500'>{item?.church || 'Gereja tidak tersedia'}</p></div>
+                              {selectedPerson?.id === item.id && <FiCheck className='w-5 h-5 text-indigo-600' />}
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className='text-center py-12 text-gray-500'>
+                        <BsPeople className='mx-auto h-12 w-12 text-gray-400 mb-4' />
+                        <h3 className='font-semibold text-gray-700 mb-2'>
+                          {persons.length === 0 ? 'Data Jemaat Tidak Tersedia' : 'Tidak Ada Hasil Pencarian'}
+                        </h3>
+                        <p className='text-sm'>
+                          {persons.length === 0 ? 'Data jemaat sedang tidak dapat dimuat.' : `Tidak ada jemaat yang cocok dengan "${searchTerm}".`}
+                        </p>
+                      </div>
+                    )}
                   </motion.div>
                 )}
 
                 {activeTab === 'church' && (
-                   <motion.div key='church' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-                    {filteredChurches.map((item) => (
-                      <motion.div key={item.id} whileHover={{y: -3}} onClick={() => { setSelectedChurch(item); setActiveTab('pelayanan'); }} className={`p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${selectedChurch?.id === item.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300 bg-white'}`}>
-                        <div className='flex items-center space-x-3'>
-                          <div className='p-2 rounded-full bg-indigo-100 text-indigo-600'><FiHome className='w-5 h-5' /></div>
-                          <div className='flex-1'><h4 className='font-semibold text-gray-900'>{item.nama}</h4></div>
-                          {selectedChurch?.id === item.id && <FiCheck className='w-5 h-5 text-indigo-600' />}
-                        </div>
-                      </motion.div>
-                    ))}
+                  <motion.div key='church' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                    {filteredChurches.length > 0 ? (
+                      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+                        {filteredChurches.map((item, index) => (
+                          <motion.div key={item?.id || `church-${index}`} whileHover={{y: -3}} onClick={() => { setSelectedChurch(item); setActiveTab('pelayanan'); }} className={`p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${selectedChurch?.id === item.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300 bg-white'}`}>
+                            <div className='flex items-center space-x-3'>
+                              <div className='p-2 rounded-full bg-indigo-100 text-indigo-600'><FiHome className='w-5 h-5' /></div>
+                              <div className='flex-1'><h4 className='font-semibold text-gray-900'>{item?.name || 'Nama gereja tidak tersedia'}</h4></div>
+                              {selectedChurch?.id === item.id && <FiCheck className='w-5 h-5 text-indigo-600' />}
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className='text-center py-12 text-gray-500'>
+                        <FiHome className='mx-auto h-12 w-12 text-gray-400 mb-4' />
+                        <h3 className='font-semibold text-gray-700 mb-2'>
+                          {churches.length === 0 ? 'Data Gereja Tidak Tersedia' : 'Tidak Ada Hasil Pencarian'}
+                        </h3>
+                        <p className='text-sm'>
+                          {churches.length === 0 ? 'Data gereja sedang tidak dapat dimuat.' : `Tidak ada gereja yang cocok dengan "${searchTerm}".`}
+                        </p>
+                      </div>
+                    )}
                   </motion.div>
                 )}
 
                 {activeTab === 'pelayanan' && (
                   <motion.div key='pelayanan' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='space-y-6'>
-                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-                      {filteredPelayanan.map((item) => (
-                        <motion.div key={item.id} whileHover={{y: -3}} onClick={() => setSelectedPelayanan(item)} className={`p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${selectedPelayanan?.id === item.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300 bg-white'}`}>
-                          <div className='flex items-center space-x-3'>
-                            <div className='p-2 rounded-full bg-indigo-100 text-indigo-600'><FiAward className='w-5 h-5' /></div>
-                            <div className='flex-1'><h4 className='font-semibold text-gray-900'>{item.nama}</h4></div>
-                            {selectedPelayanan?.id === item.id && <FiCheck className='w-5 h-5 text-indigo-600' />}
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
+                    {filteredPelayanan.length > 0 ? (
+                      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+                        {filteredPelayanan.map((item, index) => (
+                          <motion.div key={item?.id || `pelayanan-${index}`} whileHover={{y: -3}} onClick={() => setSelectedPelayanan(item)} className={`p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${selectedPelayanan?.id === item.id ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300 bg-white'}`}>
+                            <div className='flex items-center space-x-3'>
+                              <div className='p-2 rounded-full bg-indigo-100 text-indigo-600'><FiAward className='w-5 h-5' /></div>
+                              <div className='flex-1'><h4 className='font-semibold text-gray-900'>{item?.pelayanan || 'Pelayanan tidak tersedia'}</h4><p className='text-xs text-gray-500'>{item?.department?.name || 'Departemen tidak tersedia'}</p></div>
+                              {selectedPelayanan?.id === item.id && <FiCheck className='w-5 h-5 text-indigo-600' />}
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className='text-center py-12 text-gray-500'>
+                        <FiAward className='mx-auto h-12 w-12 text-gray-400 mb-4' />
+                        <h3 className='font-semibold text-gray-700 mb-2'>
+                          {pelayanan.length === 0 ? 'Data Pelayanan Tidak Tersedia' : 'Tidak Ada Hasil Pencarian'}
+                        </h3>
+                        <p className='text-sm'>
+                          {pelayanan.length === 0 ? 'Data pelayanan sedang tidak dapat dimuat.' : `Tidak ada pelayanan yang cocok dengan "${searchTerm}".`}
+                        </p>
+                      </div>
+                    )}
 
                     {selectedPelayanan && (
                       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='bg-indigo-50 rounded-lg p-4 mt-6'>

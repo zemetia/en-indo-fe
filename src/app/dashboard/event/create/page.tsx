@@ -18,6 +18,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/context/ToastContext';
+import { createEvent, CreateEventRequest } from '@/lib/api/events';
+import { RecurrencePicker } from '@/components/ui/recurrence-picker';
 
 // --- Interfaces and Mock Data ---
 interface User {
@@ -28,8 +30,15 @@ interface User {
 
 interface RecurrenceRule {
   frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
-  endDate?: string;
+  interval: number;
   byWeekday?: string[];
+  byMonthDay?: number[];
+  byMonth?: number[];
+  bySetPos?: number[];
+  weekStart?: string;
+  byYearDay?: number[];
+  count?: number;
+  until?: string;
 }
 
 const MOCK_USERS: User[] = [
@@ -40,16 +49,12 @@ const MOCK_USERS: User[] = [
   { id: 'user5', name: 'Citra Lestari', avatar: 'https://placehold.co/100x100.png' },
 ];
 
-const WEEKDAYS = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
-const WEEKDAY_LABELS = ['M', 'S', 'S', 'R', 'K', 'J', 'S'];
-
-
 export default function CreateEventPage() {
   const router = useRouter();
   const { showToast } = useToast();
-  const [isRecurring, setIsRecurring] = useState(false);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [picSearch, setPicSearch] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -65,11 +70,7 @@ export default function CreateEventPage() {
     isPublic: false,
     bannerImage: null as File | null,
     pics: [] as User[],
-    recurrenceRule: {
-        frequency: 'WEEKLY' as 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY',
-        byWeekday: [] as string[],
-        endDate: undefined as string | undefined,
-    }
+    recurrenceRule: null as RecurrenceRule | null
   });
 
   const availablePics = MOCK_USERS.filter(user => 
@@ -97,22 +98,11 @@ export default function CreateEventPage() {
     }));
   };
   
-  const handleRecurrenceChange = (key: keyof RecurrenceRule, value: any) => {
+  const handleRecurrenceChange = (rule: RecurrenceRule | null) => {
     setFormData(prev => ({
       ...prev,
-      recurrenceRule: {
-        ...prev.recurrenceRule!,
-        [key]: value,
-      } as RecurrenceRule
+      recurrenceRule: rule
     }));
-  };
-
-  const toggleWeekday = (day: string) => {
-    const currentDays = formData.recurrenceRule?.byWeekday || [];
-    const newDays = currentDays.includes(day)
-      ? currentDays.filter(d => d !== day)
-      : [...currentDays, day];
-    handleRecurrenceChange('byWeekday', newDays);
   };
 
   const addPic = (user: User) => {
@@ -126,24 +116,80 @@ export default function CreateEventPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const startDatetime = formData.allDay ? `${formData.eventDate}T00:00` : `${formData.eventDate}T${formData.startTime}`;
-    const endDatetime = formData.allDay ? `${formData.eventDate}T23:59` : `${formData.eventDate}T${formData.endTime}`;
-
-    const submissionData = {
-      ...formData,
-      startDatetime,
-      endDatetime,
-    };
+    if (isSubmitting) return;
     
-    // Clean up temporary fields before submission
-    delete (submissionData as any).eventDate;
-    delete (submissionData as any).startTime;
-    delete (submissionData as any).endTime;
-
-    const finalFormData = isRecurring ? submissionData : { ...submissionData, recurrenceRule: undefined };
-    console.log('Creating event:', finalFormData);
-    showToast('Event berhasil dibuat!', 'success');
-    router.push('/dashboard/event');
+    setIsSubmitting(true);
+    
+    try {
+      // Prepare the request data according to our API interface
+      const requestData: CreateEventRequest = {
+        title: formData.title,
+        description: formData.description || undefined,
+        capacity: formData.capacity,
+        type: formData.type,
+        eventDate: formData.eventDate,
+        eventLocation: formData.eventLocation,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        allDay: formData.allDay,
+        timezone: formData.timezone,
+        isPublic: formData.isPublic,
+        // Add recurrence rule if it exists
+        ...(formData.recurrenceRule && {
+          recurrenceRule: {
+            frequency: formData.recurrenceRule.frequency,
+            interval: formData.recurrenceRule.interval,
+            ...(formData.recurrenceRule.byWeekday?.length && { 
+              byWeekday: formData.recurrenceRule.byWeekday 
+            }),
+            ...(formData.recurrenceRule.byMonthDay?.length && { 
+              byMonthDay: formData.recurrenceRule.byMonthDay 
+            }),
+            ...(formData.recurrenceRule.byMonth?.length && { 
+              byMonth: formData.recurrenceRule.byMonth 
+            }),
+            ...(formData.recurrenceRule.bySetPos?.length && { 
+              bySetPos: formData.recurrenceRule.bySetPos 
+            }),
+            ...(formData.recurrenceRule.weekStart && { 
+              weekStart: formData.recurrenceRule.weekStart 
+            }),
+            ...(formData.recurrenceRule.byYearDay?.length && { 
+              byYearDay: formData.recurrenceRule.byYearDay 
+            }),
+            ...(formData.recurrenceRule.until && { 
+              until: formData.recurrenceRule.until 
+            }),
+            ...(formData.recurrenceRule.count && { 
+              count: formData.recurrenceRule.count 
+            }),
+          }
+        })
+      };
+      
+      // TODO: Handle banner image upload separately
+      if (formData.bannerImage) {
+        // For now, we'll skip the banner upload
+        // In a real implementation, you'd upload the file first and get the URL
+        console.log('Banner image upload not implemented yet');
+      }
+      
+      console.log('Creating event with data:', requestData);
+      
+      const createdEvent = await createEvent(requestData);
+      
+      showToast(`Event "${createdEvent.title}" berhasil dibuat!`, 'success');
+      router.push('/dashboard/event');
+      
+    } catch (error) {
+      console.error('Error creating event:', error);
+      showToast(
+        `Gagal membuat event: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        'error'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -246,45 +292,11 @@ export default function CreateEventPage() {
             
             {/* --- Recurrence --- */}
             <Section title="Pengaturan Pengulangan">
-                <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-600">Aktifkan jika ini adalah acara rutin atau berulang.</p>
-                    <label className='flex items-center cursor-pointer'>
-                        <span className='mr-2 text-sm font-medium text-gray-700'>Event Berulang</span>
-                        <input type='checkbox' checked={isRecurring} onChange={(e) => setIsRecurring(e.target.checked)} className='toggle-checkbox' />
-                    </label>
-                </div>
-
-                {isRecurring && (
-                    <motion.div initial={{opacity: 0, height: 0}} animate={{opacity: 1, height: 'auto'}} className='mt-4 p-4 bg-gray-50 rounded-lg border space-y-4'>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Field label="Frekuensi">
-                                <Select value={formData.recurrenceRule?.frequency} onValueChange={(v) => handleRecurrenceChange('frequency', v)}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value='DAILY'>Setiap Hari</SelectItem>
-                                        <SelectItem value='WEEKLY'>Setiap Minggu</SelectItem>
-                                        <SelectItem value='MONTHLY'>Setiap Bulan</SelectItem>
-                                        <SelectItem value='YEARLY'>Setiap Tahun</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </Field>
-                            <Field label="Berakhir Pada">
-                                <Input type='date' value={formData.recurrenceRule?.endDate || ''} onChange={(e) => handleRecurrenceChange('endDate', e.target.value)} />
-                            </Field>
-                        </div>
-                        {formData.recurrenceRule?.frequency === 'WEEKLY' && (
-                            <Field label="Ulangi Pada Hari">
-                                <div className="flex space-x-2">
-                                    {WEEKDAYS.map((day, index) => (
-                                        <Button key={day} type="button" size="icon" variant={formData.recurrenceRule?.byWeekday?.includes(day) ? "default" : "outline"} onClick={() => toggleWeekday(day)}>
-                                            {WEEKDAY_LABELS[index]}
-                                        </Button>
-                                    ))}
-                                </div>
-                            </Field>
-                        )}
-                    </motion.div>
-                )}
+                <RecurrencePicker
+                    value={formData.recurrenceRule}
+                    onChange={handleRecurrenceChange}
+                    startDate={formData.eventDate}
+                />
             </Section>
 
             {/* --- PIC Selection --- */}
@@ -327,8 +339,13 @@ export default function CreateEventPage() {
             <div className='flex items-center justify-between mt-8 pt-6 border-t'>
                 <label className='flex items-center'><input type='checkbox' name='isPublic' checked={formData.isPublic} onChange={handleInputChange} className='rounded' /><span className='ml-2 text-sm'>Event publik (dapat dilihat semua jemaat)</span></label>
                 <div className="flex justify-end space-x-4">
-                    <Button type='button' onClick={() => router.back()} variant='outline'><X className='h-4 w-4 mr-2' />Batal</Button>
-                    <Button type='submit' className="bg-emerald-600 hover:bg-emerald-700"><Save className='h-4 w-4 mr-2' />Simpan Event</Button>
+                    <Button type='button' onClick={() => router.back()} variant='outline' disabled={isSubmitting}>
+                        <X className='h-4 w-4 mr-2' />Batal
+                    </Button>
+                    <Button type='submit' className="bg-emerald-600 hover:bg-emerald-700" disabled={isSubmitting}>
+                        <Save className='h-4 w-4 mr-2' />
+                        {isSubmitting ? 'Menyimpan...' : 'Simpan Event'}
+                    </Button>
                 </div>
             </div>
         </form>

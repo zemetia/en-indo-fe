@@ -6,7 +6,8 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // If trying to access dashboard without being logged in, redirect to login
-  if (pathname.startsWith('/dashboard') && !userData) {
+  // Exclude pelayanan-saya from authentication requirement
+  if (pathname.startsWith('/dashboard') && !userData && !pathname.includes('/pelayanan-saya')) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 

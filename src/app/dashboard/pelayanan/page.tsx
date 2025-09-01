@@ -4,8 +4,8 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
-import { useState } from 'react';
-import { FiAward, FiHome, FiPlus, FiSearch, FiTrash2, FiUser, FiStar, FiTag } from 'react-icons/fi';
+import { useState, useEffect } from 'react';
+import { FiAward, FiHome, FiPlus, FiSearch, FiTrash2, FiUser, FiStar, FiTag, FiRefreshCw } from 'react-icons/fi';
 import Image from 'next/image';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
@@ -23,16 +23,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/context/ToastContext';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-
-interface Assignment {
-  id: string;
-  personId: string;
-  personName: string;
-  personAvatar: string;
-  pelayananName: string;
-  churchName: string;
-  isPic: boolean;
-}
+import { pelayananService, PelayananAssignment } from '@/lib/pelayanan-service';
+import Skeleton from '@/components/Skeleton';
 
 interface GroupedAssignment {
     personId: string;
@@ -46,35 +38,70 @@ interface GroupedAssignment {
     }[];
 }
 
-const MOCK_ASSIGNMENTS: Assignment[] = [
-  { id: 'a1', personId: 'p1', personName: 'Andi Suryo', personAvatar: 'https://placehold.co/100x100.png', pelayananName: 'Pemusik', churchName: 'EN Jakarta', isPic: false },
-  { id: 'a2', personId: 'p1', personName: 'Andi Suryo', personAvatar: 'https://placehold.co/100x100.png', pelayananName: 'Usher', churchName: 'EN Bandung', isPic: true },
-  { id: 'a3', personId: 'p2', personName: 'Budi Santoso', personAvatar: 'https://placehold.co/100x100.png', pelayananName: 'Pemusik', churchName: 'EN Jakarta', isPic: true },
-  { id: 'a4', personId: 'p3', personName: 'Citra Lestari', personAvatar: 'https://placehold.co/100x100.png', pelayananName: 'Singer', churchName: 'EN Bandung', isPic: false },
-  { id: 'a5', personId: 'p3', personName: 'Citra Lestari', personAvatar: 'https://placehold.co/100x100.png', pelayananName: 'Media', churchName: 'EN Jakarta', isPic: true },
-  { id: 'a6', personId: 'p4', personName: 'Dewi Anggraini', personAvatar: 'https://placehold.co/100x100.png', pelayananName: 'Usher', churchName: 'EN Surabaya', isPic: false },
-];
-
 export default function ManagePelayananPage() {
   const router = useRouter();
   const { showToast } = useToast();
-  const [assignments, setAssignments] = useState<Assignment[]>(MOCK_ASSIGNMENTS);
+  const [assignments, setAssignments] = useState<PelayananAssignment[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
+  const [selectedAssignment, setSelectedAssignment] = useState<PelayananAssignment | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const handleUnassign = () => {
+  // Fetch assignments from API
+  useEffect(() => {
+    fetchAssignments();
+  }, [currentPage]);
+
+  const fetchAssignments = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await pelayananService.getAllAssignments(currentPage, 10);
+      setAssignments(response.data);
+      setTotalPages(response.max_page);
+    } catch (error) {
+      console.error('Failed to fetch assignments:', error);
+      setError('Gagal memuat data pelayanan. Silakan coba lagi.');
+      showToast('Gagal memuat data pelayanan.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUnassign = async () => {
     if (!selectedAssignment) return;
     
-    setAssignments(prev => prev.filter(a => a.id !== selectedAssignment.id));
-    showToast(`Pelayanan untuk ${selectedAssignment.personName} berhasil dihapus.`, 'success');
-    setShowConfirmation(false);
-    setSelectedAssignment(null);
+    try {
+      setIsDeleting(true);
+      await pelayananService.unassignPelayanan(selectedAssignment.id);
+      
+      // Remove from local state
+      setAssignments(prev => prev.filter(a => a.id !== selectedAssignment.id));
+      showToast(`Pelayanan untuk ${selectedAssignment.person_name} berhasil dihapus.`, 'success');
+      setShowConfirmation(false);
+      setSelectedAssignment(null);
+    } catch (error) {
+      console.error('Failed to unassign pelayanan:', error);
+      showToast('Gagal menghapus penugasan pelayanan.', 'error');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleRefresh = () => {
+    fetchAssignments();
   };
   
   const filteredAndGroupedArray = React.useMemo(() => {
       const groupedByPerson = assignments.reduce((acc, assignment) => {
-          const { personId, personName, personAvatar } = assignment;
+          const personId = assignment.person_id;
+          const personName = assignment.person_name;
+          const personAvatar = 'https://placehold.co/100x100.png'; // Default avatar
+          
           if (!acc[personId]) {
               acc[personId] = {
                   personId,
@@ -85,9 +112,9 @@ export default function ManagePelayananPage() {
           }
           acc[personId].roles.push({
               id: assignment.id,
-              pelayananName: assignment.pelayananName,
-              churchName: assignment.churchName,
-              isPic: assignment.isPic,
+              pelayananName: assignment.pelayanan,
+              churchName: assignment.church_name,
+              isPic: assignment.is_pic,
           });
           return acc;
       }, {} as Record<string, GroupedAssignment>);
@@ -108,6 +135,32 @@ export default function ManagePelayananPage() {
       );
   }, [assignments, searchTerm]);
 
+  if (error) {
+    return (
+      <div className='space-y-6'>
+        <FeaturedCard
+          title='Manajemen Pelayanan'
+          description='Lihat, atur, dan hapus penugasan pelayanan untuk semua jemaat.'
+          actionLabel='Assign Pelayanan Baru'
+          onAction={() => router.push('/dashboard/pelayanan/assign')}
+          gradientFrom='from-indigo-500'
+          gradientTo='to-purple-500'
+        />
+        <div className='bg-white rounded-xl shadow-sm p-6 border border-gray-200'>
+          <div className='text-center py-16 text-red-500 bg-red-50 rounded-lg border border-red-200'>
+            <FiUser className='mx-auto h-12 w-12 text-red-400 mb-4' />
+            <h3 className="text-lg font-semibold text-red-800">Terjadi Kesalahan</h3>
+            <p>{error}</p>
+            <Button onClick={handleRefresh} className="mt-4">
+              <FiRefreshCw className="mr-2 h-4 w-4" />
+              Muat Ulang
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className='space-y-6'>
       <FeaturedCard
@@ -123,7 +176,9 @@ export default function ManagePelayananPage() {
         <div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4'>
             <div>
               <h2 className='text-xl font-semibold text-gray-900'>Daftar Penugasan Pelayanan</h2>
-              <p className='text-sm text-gray-500 mt-1'>Total {filteredAndGroupedArray.length} pelayan ditemukan.</p>
+              <p className='text-sm text-gray-500 mt-1'>
+                {isLoading ? 'Memuat data...' : `Total ${filteredAndGroupedArray.length} pelayan ditemukan.`}
+              </p>
             </div>
             <div className='flex w-full md:w-auto space-x-4'>
                 <div className='relative flex-grow'>
@@ -133,8 +188,13 @@ export default function ManagePelayananPage() {
                         className='pl-10'
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
+                        disabled={isLoading}
                     />
                 </div>
+                <Button onClick={handleRefresh} variant="outline" disabled={isLoading}>
+                    <FiRefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}/>
+                    Refresh
+                </Button>
                 <Button asChild>
                     <Link href="/dashboard/pelayanan/assign">
                         <FiPlus className='mr-2 h-4 w-4'/>
@@ -144,7 +204,25 @@ export default function ManagePelayananPage() {
             </div>
         </div>
 
-        {filteredAndGroupedArray.length > 0 ? (
+        {isLoading ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="border border-gray-200 rounded-lg p-4">
+                <div className="flex items-center space-x-3 mb-4">
+                  <Skeleton className="h-12 w-12 rounded-full" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <Skeleton className="h-16 w-full rounded-lg" />
+                  <Skeleton className="h-8 w-full rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredAndGroupedArray.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {filteredAndGroupedArray.map((personGroup, index) => (
                     <motion.div 
@@ -194,6 +272,7 @@ export default function ManagePelayananPage() {
                                                         setShowConfirmation(true);
                                                     }
                                                 }}
+                                                disabled={isDeleting}
                                             >
                                                 <FiTrash2 className='h-4 w-4'/>
                                             </Button>
@@ -220,18 +299,21 @@ export default function ManagePelayananPage() {
             <AlertDialogTitle>Konfirmasi Unassign</AlertDialogTitle>
             <AlertDialogDescription>
               Apakah Anda yakin ingin menghapus penugasan pelayanan
-              <strong className='text-gray-900'> {selectedAssignment?.pelayananName} </strong>
+              <strong className='text-gray-900'> {selectedAssignment?.pelayanan} </strong>
               untuk
-              <strong className='text-gray-900'> {selectedAssignment?.personName}</strong>?
+              <strong className='text-gray-900'> {selectedAssignment?.person_name}</strong>?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setSelectedAssignment(null)}>Batal</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setSelectedAssignment(null)} disabled={isDeleting}>
+              Batal
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleUnassign}
-              className="bg-red-600 hover:bg-red-700"
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 disabled:opacity-50"
             >
-              Ya, Unassign
+              {isDeleting ? 'Menghapus...' : 'Ya, Unassign'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

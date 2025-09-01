@@ -58,12 +58,13 @@ export default function DataJemaatPage() {
 
   const fetchJemaat = async () => {
     setLoading(true);
+    setError(null);
+    
     try {
       const token = getToken();
 
       if (!token) {
         setError('Token autentikasi tidak ditemukan. Silakan login kembali.');
-        setLoading(false);
         return;
       }
 
@@ -76,26 +77,32 @@ export default function DataJemaatPage() {
         }
       );
 
+      // Handle different response formats gracefully
+      let jemaatData: Jemaat[] = [];
       if (response.data && Array.isArray(response.data)) {
-        setJemaat(response.data);
-      } else if (
-        response.data &&
-        typeof response.data === 'object' &&
-        Array.isArray(response.data.data)
-      ) {
-        setJemaat(response.data.data);
+        jemaatData = response.data;
+      } else if (response.data?.data && Array.isArray(response.data.data)) {
+        jemaatData = response.data.data;
       } else {
-        throw new Error('Format data tidak valid');
+        console.warn('Unexpected response format:', response.data);
+        jemaatData = [];
       }
 
-      setError(null);
+      setJemaat(jemaatData);
+      
     } catch (error) {
-      setError('Gagal mengambil data jemaat. Silakan coba lagi nanti.');
+      console.error('Failed to fetch jemaat:', error);
+      setError('Gagal memuat data jemaat. Silakan coba lagi.');
+      // Don't clear existing data on error
+      if (!jemaat) {
+        setJemaat([]);
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  // Load data once on mount
   useEffect(() => {
     fetchJemaat();
   }, []);
@@ -150,8 +157,20 @@ export default function DataJemaatPage() {
       );
     }
 
-    if (error) {
-      return <p className='text-center text-red-500 py-10'>{error}</p>;
+    if (error && !jemaat) {
+      return (
+        <div className='text-center py-10 bg-red-50 rounded-xl border border-red-200'>
+          <BsPeople className='w-10 h-10 text-red-400 mx-auto mb-4' />
+          <h3 className='text-lg font-semibold text-red-800 mb-2'>Gagal Memuat Data</h3>
+          <p className='text-red-600 mb-4'>{error}</p>
+          <button
+            onClick={fetchJemaat}
+            className='px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors'
+          >
+            Coba Lagi
+          </button>
+        </div>
+      );
     }
 
     if (filteredJemaat.length === 0) {
@@ -266,6 +285,23 @@ export default function DataJemaatPage() {
       />
 
       <div className='bg-white rounded-xl shadow-sm p-6 border border-gray-200'>
+        {error && jemaat && (
+          <div className='mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3'>
+            <div className='flex items-center justify-between'>
+              <div className='flex items-center'>
+                <div className='w-2 h-2 bg-yellow-500 rounded-full mr-2'></div>
+                <span className='text-sm text-yellow-800'>Data mungkin tidak terbaru. {error}</span>
+              </div>
+              <button
+                onClick={fetchJemaat}
+                className='text-sm text-yellow-700 hover:text-yellow-900 underline'
+              >
+                Muat Ulang
+              </button>
+            </div>
+          </div>
+        )}
+        
         <div className='flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0'>
           <div>
             <h2 className='text-lg font-semibold text-gray-900'>
