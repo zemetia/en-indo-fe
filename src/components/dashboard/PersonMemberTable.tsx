@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { FiEdit2, FiTrash2, FiCrown, FiStar, FiUser } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiStar, FiUser } from 'react-icons/fi';
+import { Crown } from 'lucide-react';
 import { LifeGroupPersonMember } from '@/lib/lifegroup';
 
 type PersonMemberTableProps = {
@@ -14,7 +15,7 @@ type PersonMemberTableProps = {
 const getPositionIcon = (position: string) => {
   switch (position) {
     case 'LEADER':
-      return <FiCrown className="w-4 h-4 text-yellow-600" />;
+      return <Crown className="w-4 h-4 text-yellow-600" />;
     case 'CO_LEADER':
       return <FiStar className="w-4 h-4 text-blue-600" />;
     case 'MEMBER':
@@ -28,7 +29,7 @@ const getPositionBadge = (position: string) => {
     case 'LEADER':
       return (
         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-          <FiCrown className="w-3 h-3 mr-1 mt-0.5" />
+          <Crown className="w-3 h-3 mr-1 mt-0.5" />
           Pemimpin
         </span>
       );

@@ -3,7 +3,8 @@
 import { motion } from 'framer-motion';
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { FiX, FiUser, FiHome, FiAward, FiCheck, FiStar, FiTag, FiCrown } from 'react-icons/fi';
+import { FiX, FiUser, FiHome, FiAward, FiCheck, FiStar, FiTag } from 'react-icons/fi';
+import { Crown } from 'lucide-react';
 import Select from 'react-select';
 
 import {
@@ -282,7 +283,7 @@ export default function QuickAssignModal({
                       className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                     />
                     <label htmlFor="isPIC" className="text-sm font-medium text-gray-700 flex items-center">
-                      <FiCrown className="inline w-4 h-4 mr-1 text-yellow-600" />
+                      <Crown className="inline w-4 h-4 mr-1 text-yellow-600" />
                       Jadikan PIC Departemen (akan otomatis membuat pelayanan PIC)
                     </label>
                   </div>
@@ -328,7 +329,7 @@ export default function QuickAssignModal({
                     <p><strong>Gereja:</strong> {selectedChurchName}</p>
                     <p><strong>Departemen:</strong> {selectedDepartmentName}</p>
                     {isPIC ? (
-                      <p><strong>Role:</strong> <span className="inline-flex items-center"><FiCrown className="w-4 h-4 mr-1 text-yellow-600" />PIC Departemen (otomatis membuat pelayanan PIC)</span></p>
+                      <p><strong>Role:</strong> <span className="inline-flex items-center"><Crown className="w-4 h-4 mr-1 text-yellow-600" />PIC Departemen (otomatis membuat pelayanan PIC)</span></p>
                     ) : (
                       <p><strong>Pelayanan:</strong> {selectedPelayananData?.pelayanan}</p>
                     )}

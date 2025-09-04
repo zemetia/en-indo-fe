@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FiX, FiUser, FiCrown, FiStar, FiSearch } from 'react-icons/fi';
+import { FiX, FiUser, FiStar, FiSearch } from 'react-icons/fi';
+import { Crown } from 'lucide-react';
 import { personService, SimplePerson } from '@/lib/person-service';
 import { AddPersonMemberRequest } from '@/lib/lifegroup';
 
@@ -97,7 +98,7 @@ export default function AddPersonMemberModal({
   const getPositionIcon = (position: string) => {
     switch (position) {
       case 'LEADER':
-        return <FiCrown className="w-4 h-4 text-yellow-600" />;
+        return <Crown className="w-4 h-4 text-yellow-600" />;
       case 'CO_LEADER':
         return <FiStar className="w-4 h-4 text-blue-600" />;
       case 'MEMBER':

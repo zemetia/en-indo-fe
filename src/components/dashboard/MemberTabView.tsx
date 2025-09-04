@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FiUsers, FiUserPlus, FiCrown } from 'react-icons/fi';
+import { FiUsers, FiUserPlus } from 'react-icons/fi';
+import { Crown } from 'lucide-react';
 import PersonMemberTable from './PersonMemberTable';
 import VisitorMemberTable from './VisitorMemberTable';
 import AddPersonMemberModal from './AddPersonMemberModal';
@@ -163,7 +164,7 @@ export default function MemberTabView({
             Anggota Person ({personMembers.length})
             {leaderCount > 0 && (
               <div className="ml-2 flex items-center">
-                <FiCrown className="w-3 h-3 text-yellow-500" />
+                <Crown className="w-3 h-3 text-yellow-500" />
                 <span className="text-xs text-yellow-600 ml-1">
                   {leaderCount + coLeaderCount} Pemimpin
                 </span>
