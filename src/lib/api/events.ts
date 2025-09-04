@@ -195,7 +195,8 @@ class EventsAPI {
     endpoint: string, 
     options?: RequestInit,
     maxRetries = 3,
-    backoffMs = 1000
+    backoffMs = 1000,
+    signal?: AbortSignal
   ): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
     let lastError: APIError;
@@ -207,6 +208,7 @@ class EventsAPI {
             'Content-Type': 'application/json',
             ...options?.headers,
           },
+          signal,
           ...options,
         });
 
@@ -332,14 +334,14 @@ class EventsAPI {
     return this.request<EventOccurrence[]>(`/events/${id}/occurrences?${params}`);
   }
 
-  async getOccurrencesInRange(startDate: string, endDate: string, timezone?: string): Promise<EventOccurrence[]> {
+  async getOccurrencesInRange(startDate: string, endDate: string, timezone?: string, signal?: AbortSignal): Promise<EventOccurrence[]> {
     const params = new URLSearchParams({
       startDate,
       endDate,
       ...(timezone && { timezone }),
     });
 
-    return this.request<EventOccurrence[]>(`/events/occurrences?${params}`);
+    return this.request<EventOccurrence[]>(`/events/occurrences?${params}`, {}, 3, 1000, signal);
   }
 
   async updateSingleOccurrence(id: string, data: UpdateOccurrenceRequest): Promise<void> {

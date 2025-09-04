@@ -47,6 +47,10 @@ export default function EventPage() {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    document.title = 'Manajemen Acara - Dashboard Every Nation';
+  }, []);
+
+  useEffect(() => {
     setIsClient(true);
   }, []);
 

@@ -66,7 +66,7 @@ export default function PelayananSayaPage() {
     if (!authLoading) {
       fetchPelayananData();
     }
-  }, [authLoading, user?.id]);
+  }, [authLoading, user?.token]);
 
   if (authLoading || isLoading) {
     return (

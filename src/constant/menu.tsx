@@ -1,5 +1,5 @@
 
-import { BsCalendarEvent, BsCalendarWeek } from 'react-icons/bs';
+import { BsCalendarEvent, BsCalendarWeek, BsPersonCircle, BsPersonCheck } from 'react-icons/bs';
 import {
   FiCalendar,
   FiHome,
@@ -9,6 +9,7 @@ import {
   FiUsers,
   FiCheckSquare,
   FiUserPlus,
+  FiEdit3,
 } from 'react-icons/fi';
 import { HiOutlineUserGroup } from 'react-icons/hi2';
 import { IoMusicalNotesOutline } from 'react-icons/io5';
@@ -17,6 +18,9 @@ import { RiOrganizationChart } from 'react-icons/ri';
 import { FaPeopleArrows } from 'react-icons/fa';
 import { TbUserStar } from 'react-icons/tb';
 import { QrCode } from 'lucide-react';
+import { FaChurch } from 'react-icons/fa';
+import { RiBuilding2Line } from 'react-icons/ri';
+import { MdOutlineBarChart, MdOutlineList } from 'react-icons/md';
 
 export type MenuItem = {
   title: string;
@@ -104,12 +108,56 @@ export const dashboardMenu: MenuItem[] = [
     permissions: ['admin', 'event'],
   },
   {
-    title: 'Data Jemaat',
-    description: 'Kelola data jemaat',
+    title: 'Manajemen Data',
+    description: 'Kelola data jemaat dan tamu',
     icon: FiUsers,
-    href: '/dashboard/jemaat',
+    href: '/dashboard/data',
     color: 'bg-green-500',
     permissions: ['admin', 'jemaat'],
+    submenu: [
+      {
+        title: 'Data Jemaat',
+        description: 'Kelola data jemaat gereja',
+        icon: FiUsers,
+        href: '/dashboard/jemaat',
+        color: 'bg-green-600',
+        permissions: ['admin', 'jemaat'],
+      },
+      {
+        title: 'Data Tamu',
+        description: 'Kelola data tamu dan pengunjung gereja',
+        icon: BsPersonCheck,
+        href: '/dashboard/tamu',
+        color: 'bg-green-700',
+        permissions: ['admin', 'jemaat'],
+      },
+    ],
+  },
+  {
+    title: 'Gereja',
+    description: 'Kelola data gereja',
+    icon: FaChurch,
+    href: '/dashboard/church',
+    color: 'bg-blue-500',
+    permissions: ['admin'],
+    submenu: [
+      {
+        title: 'Daftar Gereja',
+        description: 'Kelola data gereja dan informasi gereja',
+        icon: MdOutlineList,
+        href: '/dashboard/church',
+        color: 'bg-blue-600',
+        permissions: ['admin'],
+      },
+      {
+        title: 'Statistik Gereja',
+        description: 'Lihat statistik dan analitik gereja',
+        icon: MdOutlineBarChart,
+        href: '/dashboard/church/statistics',
+        color: 'bg-blue-700',
+        permissions: ['admin'],
+      },
+    ],
   },
   {
     title: 'Lifegroup',
@@ -118,6 +166,34 @@ export const dashboardMenu: MenuItem[] = [
     href: '/dashboard/lifegroup',
     color: 'bg-purple-500',
     permissions: ['admin', 'lifegroup'],
+    submenu: [
+      {
+        title: 'Daftar Lifegroup',
+        description: 'Kelola semua lifegroup di gereja',
+        icon: FiList,
+        href: '/dashboard/lifegroup/daftar',
+        color: 'bg-purple-600',
+        permissions: ['admin', 'lifegroup'],
+        requirePIC: true,
+      },
+      {
+        title: 'My Lifegroup',
+        description: 'Lihat lifegroup saya',
+        icon: BsPersonCircle,
+        href: '/dashboard/lifegroup/my-lifegroup',
+        color: 'bg-purple-700',
+        permissions: ['*'],
+      },
+      {
+        title: 'Tambah Lifegroup',
+        description: 'Buat lifegroup baru',
+        icon: FiUserPlus,
+        href: '/dashboard/lifegroup/tambah',
+        color: 'bg-purple-800',
+        permissions: ['admin', 'lifegroup'],
+        requirePIC: true,
+      },
+    ],
   },
   {
     title: 'Event',
@@ -207,12 +283,20 @@ export const dashboardMenu: MenuItem[] = [
     permissions: ['admin', 'pelayanan'],
     submenu: [
         {
-          title: 'Daftar Pelayanan',
+          title: 'Daftar Penugasan',
           description: 'Lihat semua penugasan pelayanan',
           icon: FiList,
           href: '/dashboard/pelayanan',
           color: 'bg-yellow-600',
           permissions: ['admin', 'pelayanan'],
+        },
+        {
+          title: 'Kelola Pelayanan',
+          description: 'Kelola jenis-jenis pelayanan',
+          icon: FiEdit3,
+          href: '/dashboard/pelayanan/manage',
+          color: 'bg-yellow-500',
+          permissions: ['admin'],
         },
         {
           title: 'Assign Pelayanan',
@@ -222,6 +306,14 @@ export const dashboardMenu: MenuItem[] = [
           color: 'bg-yellow-700',
           permissions: ['admin', 'pelayanan'],
           requirePIC: true,
+        },
+        {
+          title: 'Departemen',
+          description: 'Kelola departemen dan PIC',
+          icon: RiBuilding2Line,
+          href: '/dashboard/department',
+          color: 'bg-yellow-800',
+          permissions: ['admin'],
         },
     ]
   },

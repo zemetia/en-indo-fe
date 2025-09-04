@@ -5,9 +5,12 @@ export interface Church {
   id: string;
   name: string;
   address: string;
+  church_code: string;
   phone: string;
   email: string;
   website: string;
+  latitude: number;
+  longitude: number;
   kabupaten_id: number;
   kabupaten: string;
   provinsi_id: number;
@@ -19,9 +22,12 @@ export interface Church {
 export interface ChurchRequest {
   name: string;
   address: string;
+  church_code: string;
   phone?: string;
   email?: string;
   website?: string;
+  latitude?: number;
+  longitude?: number;
   kabupaten_id: number;
 }
 
@@ -59,10 +65,18 @@ export const churchService = {
     if (params.page) searchParams.append('page', params.page.toString());
     if (params.per_page) searchParams.append('per_page', params.per_page.toString());
     
-    const response = await apiClient.get<ApiResponse<PaginationResponse<Church>>>(
+    const response = await apiClient.get<PaginationResponse<Church>>(
       `/api/church?${searchParams.toString()}`
     );
-    return response.data.data;
+    
+    // The API already returns the pagination response directly
+    return {
+      data: response.data.data || [],
+      page: response.data.page || 1,
+      per_page: response.data.per_page || params.per_page || 12,
+      max_page: response.data.max_page || 1,
+      count: response.data.count || 0
+    };
   },
 
   // Get church by ID
@@ -74,13 +88,13 @@ export const churchService = {
   // Get churches by kabupaten ID
   async getByKabupatenId(kabupatenId: number): Promise<Church[]> {
     const response = await apiClient.get<ApiResponse<Church[]>>(`/api/church/kabupaten/${kabupatenId}`);
-    return response.data.data;
+    return response.data?.data || [];
   },
 
   // Get churches by provinsi ID
   async getByProvinsiId(provinsiId: number): Promise<Church[]> {
     const response = await apiClient.get<ApiResponse<Church[]>>(`/api/church/provinsi/${provinsiId}`);
-    return response.data.data;
+    return response.data?.data || [];
   },
 
   // Create new church

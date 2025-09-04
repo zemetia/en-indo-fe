@@ -34,6 +34,10 @@ type Color = (typeof colorList)[number];
 export default function ComponentPage() {
   const [mode, setMode] = React.useState<'dark' | 'light'>('light');
   const [color, setColor] = React.useState<Color>('sky');
+  
+  React.useEffect(() => {
+    document.title = 'Komponen - Every Nation Indonesia';
+  }, []);
   function toggleMode() {
     return mode === 'dark' ? setMode('light') : setMode('dark');
   }

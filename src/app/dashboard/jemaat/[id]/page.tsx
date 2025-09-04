@@ -35,7 +35,20 @@ import { getToken } from '@/lib/helper';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-// Definisi tipe data jemaat
+// Definisi tipe data jemaat sesuai backend response
+interface LifeGroupResponse {
+  id: string;
+  name: string;
+}
+
+interface PelayananResponse {
+  pelayanan_id: string;
+  pelayanan: string;
+  church_id: string;
+  church_name: string;
+  is_pic: boolean;
+}
+
 interface JemaatData {
   id: string;
   nama: string;
@@ -47,7 +60,6 @@ interface JemaatData {
   status_perkawinan: string;
   nama_pasangan: string;
   pasangan_id: string;
-  pasangan: string;
   tanggal_perkawinan: string;
   alamat: string;
   nomor_telepon: string;
@@ -61,10 +73,12 @@ interface JemaatData {
   kode_jemaat: string;
   church_id: string;
   church: string;
-  life_groups: string[];
-  kabupaten_id: string;
+  life_groups: LifeGroupResponse[];
+  kabupaten_id: number;
   kabupaten: string;
-  pelayanan: string[];
+  pelayanan: PelayananResponse[];
+  created_at: string;
+  updated_at: string;
 }
 
 const InfoItem = ({
@@ -123,7 +137,7 @@ export default function DetailJemaatPage() {
             },
           }
         );
-        setJemaat(response.data);
+        setJemaat(response.data.data);
         setError(null);
       } catch (error) {
         setError('Gagal mengambil data jemaat. Silakan coba lagi nanti.');
@@ -421,13 +435,13 @@ export default function DetailJemaatPage() {
                     {jemaat.life_groups && jemaat.life_groups.length > 0 ? (
                       jemaat.life_groups.map((lg, index) => (
                         <motion.div
-                          key={index}
+                          key={lg.id}
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.1 }}
                           className='bg-blue-50 rounded-md p-3 text-sm font-medium text-blue-800'
                         >
-                          {lg}
+                          {lg.name}
                         </motion.div>
                       ))
                     ) : (
@@ -443,17 +457,31 @@ export default function DetailJemaatPage() {
                     <HandHelping className='w-4 h-4 mr-2' />
                     Pelayanan
                   </h4>
-                  <div className='space-y-2'>
+                  <div className='space-y-3'>
                     {jemaat.pelayanan && jemaat.pelayanan.length > 0 ? (
                       jemaat.pelayanan.map((p, index) => (
                         <motion.div
-                          key={index}
+                          key={p.pelayanan_id}
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.1 }}
-                          className='bg-emerald-50 rounded-md p-3 text-sm font-medium text-emerald-800'
+                          className='bg-emerald-50 rounded-lg p-4 border border-emerald-200'
                         >
-                          {p}
+                          <div className='flex items-start justify-between'>
+                            <div className='flex-1'>
+                              <h5 className='font-semibold text-emerald-900 text-sm'>
+                                {p.pelayanan}
+                              </h5>
+                              <p className='text-xs text-emerald-700 mt-1'>
+                                {p.church_name}
+                              </p>
+                            </div>
+                            {p.is_pic && (
+                              <span className='bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded-full border border-yellow-300'>
+                                PIC
+                              </span>
+                            )}
+                          </div>
                         </motion.div>
                       ))
                     ) : (

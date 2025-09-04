@@ -1,3 +1,5 @@
+"use client";
+
 import { AnimatePresence } from 'framer-motion';
 import React, { createContext, ReactNode, useContext, useState } from 'react';
 
@@ -29,7 +31,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const showToast = (message: string, type: ToastType) => {
-    const id = Date.now();
+    const id = Date.now() + Math.random() * 1000000;
     setToasts((prevToasts) => [...prevToasts, { id, message, type }]);
   };
 

@@ -29,24 +29,29 @@ export default function Sidebar() {
 
   React.useEffect(() => {
     setHasMounted(true);
-  }, []);
+    
+    // Only run resize logic on client after mount
+    const handleResize = () => {
+      if (typeof window === 'undefined') return;
+      
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) {
+        setIsCollapsed(true);
+      } else {
+        setIsMobileOpen(false);
+      }
+    };
 
-  React.useEffect(() => {
-    if (hasMounted) {
-      const handleResize = () => {
-        const mobile = window.innerWidth < 768;
-        setIsMobile(mobile);
-        if (mobile) {
-          setIsCollapsed(true);
-        } else {
-          setIsMobileOpen(false);
-        }
-      };
-      handleResize();
+    // Initial setup
+    handleResize();
+    
+    // Add event listener
+    if (typeof window !== 'undefined') {
       window.addEventListener('resize', handleResize);
       return () => window.removeEventListener('resize', handleResize);
     }
-  }, [hasMounted]);
+  }, []);
 
   React.useEffect(() => {
     // Open the parent menu of the active submenu item on initial load or path change
@@ -95,6 +100,24 @@ export default function Sidebar() {
       <Skeleton className="h-10 w-full rounded-lg" />
     </div>
   );
+
+  // Don't render until hydrated to prevent hydration mismatch
+  if (!hasMounted) {
+    return (
+      <aside className="w-64 h-screen bg-white border-r border-gray-200 flex flex-col">
+        <div className='flex items-center p-4 border-b border-gray-200 flex-shrink-0'>
+          <Image
+            src='/images/logo.png'
+            alt='Every Nation Logo'
+            width={100}
+            height={40}
+            className='mx-auto'
+          />
+        </div>
+        {renderSkeleton()}
+      </aside>
+    );
+  }
 
   return (
     <>

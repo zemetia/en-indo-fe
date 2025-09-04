@@ -1,4 +1,5 @@
 'use client';
+import { useEffect } from 'react';
 import { BookOpen, Users, Globe, Sparkles, HeartHandshake, Briefcase, Video, Music } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -6,6 +7,9 @@ import Image from 'next/image';
 import { Card } from '@/components/ui/card';
 
 export default function ServicesPage() {
+  useEffect(() => {
+    document.title = 'Pelayanan - Every Nation Indonesia';
+  }, []);
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } },

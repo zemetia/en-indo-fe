@@ -13,4 +13,15 @@ import { ai } from '@/ai/genkit';
 import '@/ai/flows/hello';
 
 // Export the Next.js API route handlers.
-export { GET, POST } from '@genkit-ai/next';
+import { NextRequest, NextResponse } from 'next/server';
+import nextjs from '@genkit-ai/next';
+
+const handler = nextjs.handler;
+
+export async function GET(req: NextRequest) {
+  return handler(req);
+}
+
+export async function POST(req: NextRequest) {
+  return handler(req);
+}

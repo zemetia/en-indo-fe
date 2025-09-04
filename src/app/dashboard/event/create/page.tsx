@@ -197,6 +197,7 @@ export default function CreateEventPage() {
       <FeaturedCard
         title='Buat Event Baru'
         description='Isi detail event yang akan dibuat, termasuk pengulangan dan penanggung jawab.'
+        actionLabel='Mulai Buat'
         gradientFrom='from-emerald-500'
         gradientTo='to-emerald-700'
       />

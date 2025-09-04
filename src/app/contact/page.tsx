@@ -1,4 +1,5 @@
 'use client';
+import { useEffect } from 'react';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -6,6 +7,9 @@ import { Input } from '@/components/ui/input';
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 
 export default function ContactPage() {
+  useEffect(() => {
+    document.title = 'Kontak - Every Nation Indonesia';
+  }, []);
   const geoUrl = "https://raw.githubusercontent.com/tvalentius/Indonesia-topojson/master/indonesiaprovince.json";
   const mainOffice = { name: 'EN Indonesia Office', coordinates: [106.8272, -6.1751] as [number, number] };
 

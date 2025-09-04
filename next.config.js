@@ -4,6 +4,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 });
 
 const nextConfig = {
+  output: 'standalone',
   serverExternalPackages: ['@genkit-ai/googleai'],
   typescript: {
     ignoreBuildErrors: true,
@@ -92,6 +93,10 @@ const nextConfig = {
   // Enable compression and minification
   compress: true,
   poweredByHeader: false,
+  // Disable internal tracing
+  env: {
+    NEXT_TELEMETRY_DISABLED: '1',
+  },
 };
 
 module.exports = withBundleAnalyzer(nextConfig);

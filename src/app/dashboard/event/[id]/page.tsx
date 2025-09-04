@@ -104,6 +104,10 @@ export default function EventDetailPage() {
   const { showToast } = useToast();
   const eventId = params.id as string;
 
+  useEffect(() => {
+    document.title = 'Detail Acara - Dashboard Every Nation';
+  }, []);
+
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');

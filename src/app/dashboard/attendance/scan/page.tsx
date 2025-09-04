@@ -23,6 +23,10 @@ export default function ScanAttendancePage() {
   const [scannedEvent, setScannedEvent] = useState<Event | null>(null);
   const [scanSuccess, setScanSuccess] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    document.title = 'Scan Presensi - Dashboard Every Nation';
+  }, []);
   const scannerRef = useRef<QrScanner | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
 

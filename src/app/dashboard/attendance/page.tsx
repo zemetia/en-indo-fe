@@ -17,6 +17,10 @@ export default function AttendancePage() {
   const [cameraError, setCameraError] = useState<string | null>(null);
   const lastScannedRef = useRef<string | null>(null);
 
+  useEffect(() => {
+    document.title = 'Presensi - Dashboard Every Nation';
+  }, []);
+
   const handleScan = (result: QrScanner.ScanResult) => {
     const data = result.data;
     if (data) {

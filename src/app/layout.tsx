@@ -1,14 +1,7 @@
-'use client';
-
 import { Inter } from 'next/font/google';
-import { usePathname } from 'next/navigation';
-
 import '@/app/globals.css';
-
-import Navbar from '@/components/navigation/Navbar';
-import Footer from '@/components/navigation/Footer';
-
 import { ToastProvider } from '@/context/ToastContext';
+import ConditionalWrapper from '@/components/ConditionalWrapper';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -17,10 +10,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  const isDashboard = pathname?.startsWith('/dashboard');
-  const isLogin = pathname === '/login';
-
   return (
     <html lang='id' className={inter.variable}>
       <head>
@@ -58,11 +47,9 @@ export default function RootLayout({
       </head>
       <body>
         <ToastProvider>
-            {!isDashboard && !isLogin && <Navbar />}
-            <main>
-                {children}
-            </main>
-            {!isDashboard && !isLogin && <Footer />}
+          <ConditionalWrapper>
+            {children}
+          </ConditionalWrapper>
         </ToastProvider>
       </body>
     </html>

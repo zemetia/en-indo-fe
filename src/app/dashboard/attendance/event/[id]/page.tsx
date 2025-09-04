@@ -57,6 +57,10 @@ export default function EventAttendancePage({
   >([]);
   const [event, setEvent] = useState<Event | null>(null);
 
+  useEffect(() => {
+    document.title = 'Presensi Acara - Dashboard Every Nation';
+  }, []);
+
   // Mock data event - nantinya akan diambil dari API
   useEffect(() => {
     setEvent({

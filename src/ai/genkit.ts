@@ -15,4 +15,5 @@ export const ai = genkit({
     googleAI(), // Assumes GOOGLE_API_KEY is set in the environment.
     nextjs(),   // Integrates Genkit with Next.js for API routes.
   ],
+  model: 'googleai/gemini-1.5-flash', // Add default model
 });

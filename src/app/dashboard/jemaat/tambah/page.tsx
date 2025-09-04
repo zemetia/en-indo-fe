@@ -105,6 +105,7 @@ export default function TambahJemaatPage() {
         <FeaturedCard
           title='Tambah Jemaat Baru'
           description='Lengkapi formulir di bawah untuk menambahkan data jemaat baru ke dalam sistem.'
+          actionLabel='Simpan Data'
           gradientFrom='from-blue-500'
           gradientTo='to-blue-700'
         />

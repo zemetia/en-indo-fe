@@ -1,4 +1,5 @@
 'use client';
+import { useEffect } from 'react';
 import { Building, Milestone, Users, Eye, Target, Heart, Handshake, BrainCircuit } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
@@ -7,6 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
 export default function AboutPage() {
+  useEffect(() => {
+    document.title = 'Tentang Kami - Every Nation Indonesia';
+  }, []);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.2 } },

@@ -21,18 +21,32 @@ const menuItems = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
   const [hasScrolled, setHasScrolled] = React.useState(false);
+  const [hasMounted, setHasMounted] = React.useState(false);
   const pathname = usePathname();
 
   React.useEffect(() => {
+    setHasMounted(true);
+    
     const handleScroll = () => {
+      if (typeof window === 'undefined') return;
       setHasScrolled(window.scrollY > 20);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    
+    // Add event listener only on client
+    if (typeof window !== 'undefined') {
+      window.addEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+    }
   }, []);
 
   return (
-    <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${hasScrolled ? 'bg-white/80 backdrop-blur-lg border-b border-gray-200' : 'bg-transparent'}`}>
+    <header 
+      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+        hasMounted && hasScrolled 
+          ? 'bg-white/80 backdrop-blur-lg border-b border-gray-200' 
+          : 'bg-transparent'
+      }`}
+    >
       <div className='container mx-auto px-4'>
         <div className='flex items-center justify-between h-20'>
           {/* Logo */}

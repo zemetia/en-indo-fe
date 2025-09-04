@@ -32,6 +32,10 @@ export default function ManualAttendancePage() {
     Participant[]
   >([]);
 
+  useEffect(() => {
+    document.title = 'Presensi Manual - Dashboard Every Nation';
+  }, []);
+
   const initialParticipants = [
     {
       id: '1',

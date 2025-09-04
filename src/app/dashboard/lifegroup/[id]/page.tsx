@@ -8,106 +8,64 @@ import Image from 'next/image';
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import PersonCard from '@/components/dashboard/PersonCard';
+import MemberTabView from '@/components/dashboard/MemberTabView';
 import { Users, MapPin, Church as ChurchIcon, Star, MessageSquare } from 'lucide-react';
 import Skeleton from '@/components/Skeleton';
-
-
-// Interfaces
-interface IChurch {
-  id: string;
-  nama: string;
-}
-
-interface ILeader {
-  id: string;
-  nama: string;
-  image_url: string;
-  email: string;
-  nomor_telepon: string;
-}
-
-interface IPerson {
-  id: string;
-  nama: string;
-  church: string;
-  email: string | null;
-  nomor_telepon: string | null;
-  is_aktif: boolean;
-}
-
-interface ILifeGroupDetail {
-  id: string;
-  name: string;
-  location: string;
-  whatsapp_link: string;
-  church: IChurch;
-  leader: ILeader;
-  persons: IPerson[];
-}
+import { lifeGroupApi, LifeGroup } from '@/lib/lifegroup';
+import { getToken } from '@/lib/helper';
 
 
 export default function LifeGroupDetailPage() {
     const params = useParams();
     const router = useRouter();
     const id = params?.id as string;
-    const [lifeGroup, setLifeGroup] = useState<ILifeGroupDetail | null>(null);
+    const [lifeGroup, setLifeGroup] = useState<LifeGroup | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [personCount, setPersonCount] = useState(0);
+    const [visitorCount, setVisitorCount] = useState(0);
+    const [canManageMembers, setCanManageMembers] = useState(false);
     
     useEffect(() => {
         if (!id) return;
 
         const fetchLifeGroup = async () => {
-            setLoading(true);
-            
-            // This is a mock API call. Replace with your actual API endpoint.
-            // For example:
-            // const token = getToken();
-            // if (!token) { /* handle error */ }
-            // try {
-            //     const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/lifegroup/${id}`, {
-            //         headers: { Authorization: `Bearer ${token}` },
-            //     });
-            //     setLifeGroup(response.data.data);
-            // } catch (err) {
-            //     setError('Gagal memuat data Life Group.');
-            // } finally {
-            //     setLoading(false);
-            // }
-
-            // MOCK DATA for demonstration
-            const mockData: ILifeGroupDetail = {
-                id: '1',
-                name: 'Life Group Alpha',
-                location: 'Jakarta Selatan',
-                whatsapp_link: 'https://wa.me/1234567890',
-                church: { id: '1', nama: 'EN Jakarta Pusat' },
-                leader: {
-                    id: 'leader1',
-                    nama: 'Pdt. John Doe',
-                    image_url: 'https://placehold.co/100x100.png',
-                    email: 'john.doe@example.com',
-                    nomor_telepon: '0812-3456-7890'
-                },
-                persons: [
-                    { id: 'person1', nama: 'Andi Suryo', church: 'EN Jakarta Pusat', email: 'andi@mail.com', nomor_telepon: '08111', is_aktif: true },
-                    { id: 'person2', nama: 'Budi Santoso', church: 'EN Jakarta Pusat', email: 'budi@mail.com', nomor_telepon: '08222', is_aktif: true },
-                    { id: 'person3', nama: 'Citra Lestari', church: 'EN Jakarta Pusat', email: 'citra@mail.com', nomor_telepon: '08333', is_aktif: false },
-                    { id: 'person4', nama: 'Dewi Anggraini', church: 'EN Jakarta Pusat', email: 'dewi@mail.com', nomor_telepon: '08444', is_aktif: true },
-                ]
-            };
-
-            // Simulate API delay
-            setTimeout(() => {
-                setLifeGroup(mockData);
+            const token = getToken();
+            if (!token) {
+                setError('Access denied. Please login again.');
                 setLoading(false);
-            }, 1000);
+                return;
+            }
 
+            try {
+                setLoading(true);
+                const response = await lifeGroupApi.getById(id);
+                setLifeGroup(response);
+
+                // Check if current user can manage members
+                // This is a simplified check - in real implementation, you might want to check
+                // if the user is the leader, co-leader, or has special permissions
+                const userId = localStorage.getItem('user_id'); // Assuming user_id is stored
+                if (userId) {
+                    const isLeaderOrCoLeader = response.leader_id === userId || 
+                                             (response.co_leader_id && response.co_leader_id === userId);
+                    setCanManageMembers(isLeaderOrCoLeader);
+                }
+            } catch (err) {
+                console.error('Error fetching life group:', err);
+                setError('Failed to load Life Group data.');
+            } finally {
+                setLoading(false);
+            }
         };
 
         fetchLifeGroup();
     }, [id]);
+
+    const handleMemberCountChange = (personCount: number, visitorCount: number) => {
+        setPersonCount(personCount);
+        setVisitorCount(visitorCount);
+    };
 
     if (loading) {
         return (
@@ -144,7 +102,7 @@ export default function LifeGroupDetailPage() {
         <div className="space-y-6">
             <FeaturedCard
                 title={lifeGroup.name}
-                description={`Kelompok sel di bawah naungan ${lifeGroup.church.nama}`}
+                description={`Kelompok sel di bawah naungan ${lifeGroup.church.name}`}
                 actionLabel="Kembali ke Daftar"
                 onAction={() => router.push('/dashboard/lifegroup/daftar')}
                 gradientFrom="from-emerald-500"
@@ -162,17 +120,12 @@ export default function LifeGroupDetailPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="flex flex-col items-center text-center">
-                            <Image
-                                src={lifeGroup.leader.image_url}
-                                alt={lifeGroup.leader.nama}
-                                width={100}
-                                height={100}
-                                data-ai-hint="leader portrait"
-                                className="rounded-full mb-4 border-4 border-white shadow-md"
-                            />
-                            <h3 className="text-xl font-bold text-gray-900">{lifeGroup.leader.nama}</h3>
+                            <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4 border-4 border-white shadow-md">
+                                {lifeGroup.leader.person.nama.charAt(0).toUpperCase()}
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900">{lifeGroup.leader.person.nama}</h3>
                             <p className="text-sm text-gray-600">{lifeGroup.leader.email}</p>
-                            <p className="text-sm text-gray-600">{lifeGroup.leader.nomor_telepon}</p>
+                            <p className="text-sm text-gray-600">{lifeGroup.leader.person.nomor_telepon}</p>
                         </CardContent>
                     </Card>
 
@@ -187,7 +140,7 @@ export default function LifeGroupDetailPage() {
                                 <ChurchIcon className="w-5 h-5 mr-3 text-gray-500" />
                                 <div>
                                     <p className="text-gray-500">Gereja</p>
-                                    <p className="font-medium text-gray-800">{lifeGroup.church.nama}</p>
+                                    <p className="font-medium text-gray-800">{lifeGroup.church.name}</p>
                                 </div>
                             </div>
                             <div className="flex items-center">
@@ -212,23 +165,23 @@ export default function LifeGroupDetailPage() {
                 <div className="lg:col-span-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center">
-                                <Users className="w-5 h-5 mr-3 text-blue-600" />
-                                Anggota ({lifeGroup.persons.length})
+                            <CardTitle className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                    <Users className="w-5 h-5 mr-3 text-blue-600" />
+                                    <span>Anggota Life Group</span>
+                                </div>
+                                <div className="text-sm text-gray-600">
+                                    {personCount + visitorCount} Total • {personCount} Person • {visitorCount} Pengunjung
+                                </div>
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            {lifeGroup.persons.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {lifeGroup.persons.map((person, index) => (
-                                        <PersonCard key={person.id} person={person} index={index} />
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="text-center py-10 bg-gray-50 rounded-lg">
-                                    <p className="text-gray-500">Belum ada anggota di life group ini.</p>
-                                </div>
-                            )}
+                            <MemberTabView
+                                lifeGroupId={id}
+                                lifeGroupChurchId={lifeGroup.church_id}
+                                canManageMembers={canManageMembers}
+                                onMemberCountChange={handleMemberCountChange}
+                            />
                         </CardContent>
                     </Card>
                 </div>

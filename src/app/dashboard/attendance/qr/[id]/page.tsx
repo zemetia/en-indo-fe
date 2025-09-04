@@ -22,6 +22,10 @@ export default function CongregantQRPage({
   const router = useRouter();
   const [congregant, setCongregant] = useState<Congregant | null>(null);
 
+  useEffect(() => {
+    document.title = 'QR Code Presensi - Dashboard Every Nation';
+  }, []);
+
   // Mock data congregant - nantinya akan diambil dari API
   useEffect(() => {
     setCongregant({

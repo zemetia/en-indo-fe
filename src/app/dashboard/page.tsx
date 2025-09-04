@@ -12,6 +12,10 @@ export default function DashboardPage() {
   const { user, isLoading } = useAuth();
   const [searchQuery, setSearchQuery] = React.useState('');
 
+  React.useEffect(() => {
+    document.title = 'Dashboard - Every Nation Indonesia';
+  }, []);
+
   const filteredMenu = React.useMemo(() => {
     if (!user) return [];
     // For development, show all menus. In production, permission checks should be enabled.

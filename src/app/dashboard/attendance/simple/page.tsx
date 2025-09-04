@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar, Save, Users, Minus, Plus, Baby, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
@@ -28,6 +28,10 @@ export default function SimpleAttendancePage() {
     youth: 0,
     kids: 0,
   });
+
+  useEffect(() => {
+    document.title = 'Presensi Sederhana - Dashboard Every Nation';
+  }, []);
 
   // Mock data events - nantinya akan diambil dari API
   const events = [

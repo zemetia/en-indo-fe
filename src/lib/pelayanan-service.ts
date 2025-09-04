@@ -8,9 +8,13 @@ export interface PelayananAssignment {
   person_name: string;
   pelayanan_id: string;
   pelayanan: string;
+  pelayanan_is_pic: boolean;
   church_id: string;
   church_name: string;
-  is_pic: boolean;
+  department_id: string;
+  department_name: string;
+  has_user_account: boolean;
+  is_user_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -34,7 +38,7 @@ export interface AssignPelayananRequest {
   person_id: string;
   pelayanan_id: string;
   church_id: string;
-  is_pic: boolean;
+  is_pic?: boolean;
 }
 
 export interface PaginationResponse<T> {
@@ -72,9 +76,15 @@ export const pelayananService = {
     return response.data.data;
   },
 
-  // Get all available pelayanan for dropdowns
-  async getAllPelayanan(): Promise<PelayananInfo[]> {
-    const response = await apiClient.get<ApiResponse<PelayananInfo[]>>('/api/pelayanan/list');
+  // Get all available pelayanan for dropdowns  
+  async getAllPelayanan(departmentId?: string): Promise<PelayananInfo[]> {
+    const params = new URLSearchParams();
+    if (departmentId) {
+      params.append('department_id', departmentId);
+    }
+    
+    const url = params.toString() ? `/api/pelayanan/list?${params.toString()}` : '/api/pelayanan/list';
+    const response = await apiClient.get<ApiResponse<PelayananInfo[]>>(url);
     return response.data.data;
   },
 

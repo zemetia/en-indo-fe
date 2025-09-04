@@ -35,6 +35,10 @@ export default function QrAttendancePage() {
   const scannerRef = useRef<QrScanner | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
 
+  useEffect(() => {
+    document.title = 'QR Code Presensi - Dashboard Every Nation';
+  }, []);
+
   // Mock data events - nantinya akan diambil dari API
   const events = [
     { id: '1', name: 'Ibadah Minggu' },

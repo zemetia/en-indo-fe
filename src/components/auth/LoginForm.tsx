@@ -12,27 +12,36 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/context/ToastContext';
 import AuthCarousel from './AuthCarousel';
+import PasswordSetupModal from './PasswordSetupModal';
 import { setUserData, UserData } from '@/lib/helper';
+import { authService, LoginResponse } from '@/lib/auth-service';
+import { PasswordSetupProvider, usePasswordSetup } from '@/context/PasswordSetupContext';
 
 interface LoginFormData {
   email: string;
   password: string;
 }
 
-interface LoginResponse {
-  message: string;
-  data: UserData;
+// Create wrapper component with password setup context
+function LoginFormWithProvider() {
+  return (
+    <PasswordSetupProvider>
+      <LoginForm />
+    </PasswordSetupProvider>
+  );
 }
 
-export default function LoginForm() {
+function LoginForm() {
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: '',
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [showPasswordSetup, setShowPasswordSetup] = useState(false);
   const router = useRouter();
   const { showToast } = useToast();
+  const { setUserInfo } = usePasswordSetup();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -44,47 +53,55 @@ export default function LoginForm() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post<LoginResponse>(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/user/login`,
-        formData
-      );
+      const loginResponse = await authService.login({
+        email: formData.email,
+        password: formData.password,
+      });
 
       setIsLoading(false);
-      showToast('Login berhasil! Mengalihkan ke dashboard...', 'success');
-      setUserData(response.data.data);
       
-      // Redirect after a short delay to allow toast to be seen
-      setTimeout(() => {
-        router.push('/dashboard');
-        router.refresh(); // Refresh to ensure server components get the new cookie
-      }, 500);
-
-    } catch (error) {
-      setIsLoading(false);
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
-          if (error.response.status === 401) {
-            showToast('Email atau kata sandi salah.', 'error');
-          } else {
-            showToast(error.response.data?.message || 'Terjadi kesalahan server.', 'error');
-          }
-          console.error('Login error:', error.response.data);
-        } else if (error.request) {
-          // The request was made but no response was received
-          showToast('Tidak dapat terhubung ke server. Periksa koneksi Anda.', 'error');
-          console.error('Network error:', error.message);
-        } else {
-          // Something happened in setting up the request that triggered an Error
-          showToast('Terjadi kesalahan saat menyiapkan permintaan.', 'error');
-          console.error('Request setup error:', error.message);
-        }
+      // Check if password setup is required
+      if (loginResponse.requires_password_setup) {
+        showToast('Selamat datang! Mari atur kata sandi Anda.', 'info');
+        
+        // Convert to UserData format for context
+        const userData: UserData = {
+          token: loginResponse.token,
+          pelayanan: loginResponse.pelayanan,
+          nama: loginResponse.nama,
+          image_url: loginResponse.image_url,
+          is_verified: loginResponse.is_verified,
+          is_first_time_login: loginResponse.is_first_time_login,
+          requires_password_setup: loginResponse.requires_password_setup,
+          default_password_hint: loginResponse.default_password_hint,
+        };
+        
+        setUserInfo(userData);
+        setShowPasswordSetup(true);
       } else {
-        showToast('Terjadi kesalahan yang tidak terduga.', 'error');
-        console.error('Unexpected error:', error);
+        // Normal login flow - redirect to dashboard
+        showToast('Login berhasil! Mengalihkan ke dashboard...', 'success');
+        
+        // Redirect after a short delay to allow toast to be seen
+        setTimeout(() => {
+          router.push('/dashboard');
+        }, 500);
       }
+
+    } catch (error: any) {
+      setIsLoading(false);
+      showToast(error.message || 'Login gagal. Silakan coba lagi.', 'error');
+      console.error('Login error:', error);
     }
+  };
+
+  const handlePasswordSetupComplete = () => {
+    setShowPasswordSetup(false);
+    showToast('Setup berhasil! Mengalihkan ke dashboard...', 'success');
+    
+    setTimeout(() => {
+      router.push('/dashboard');
+    }, 500);
   };
 
   const formVariants = {
@@ -232,6 +249,15 @@ export default function LoginForm() {
           </motion.form>
         </motion.div>
       </div>
+
+      {/* Password Setup Modal */}
+      <PasswordSetupModal
+        isOpen={showPasswordSetup}
+        onComplete={handlePasswordSetupComplete}
+      />
     </div>
   );
 }
+
+// Export the wrapper component with context
+export default LoginFormWithProvider;

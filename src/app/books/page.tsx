@@ -1,4 +1,5 @@
 'use client';
+import { useEffect } from 'react';
 import { Book, Download, ShoppingCart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
@@ -6,6 +7,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 export default function BooksPage() {
+  useEffect(() => {
+    document.title = 'Buku - Every Nation Indonesia';
+  }, []);
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } },

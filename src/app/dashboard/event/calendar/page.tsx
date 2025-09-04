@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Filter, Download, RefreshCw, Calendar, Grid3x3, Wifi, WifiOff, AlertCircle } from 'lucide-react';
+import { useDebounce } from '@/lib/hooks/useDebounce';
+import { useAbortController, useRequestLock } from '@/lib/hooks/useAbortController';
+import { useCachedApi, createCacheKey } from '@/lib/hooks/useCache';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import DynamicEventCalendar from '@/components/events/DynamicEventCalendar';
@@ -32,6 +35,10 @@ function EventCalendarPageContent() {
   const router = useRouter();
   const { showToast } = useToast();
   
+  useEffect(() => {
+    document.title = 'Kalender Acara - Dashboard Every Nation';
+  }, []);
+  
   const [allEvents, setAllEvents] = useState<EventOccurrence[]>([]);  // Raw events from API
   const [events, setEvents] = useState<EventOccurrence[]>([]);       // Filtered events
   const [loading, setLoading] = useState(true);
@@ -50,6 +57,16 @@ function EventCalendarPageContent() {
     end: new Date()
   });
 
+  // Add request management hooks
+  const { getSignal, abort } = useAbortController([]);
+  const { lock, unlock, isLocked } = useRequestLock();
+  
+  // Add caching for events data (5 minute TTL)
+  const { cachedFetch } = useCachedApi<EventOccurrence[]>({ 
+    ttl: 5 * 60 * 1000, // 5 minutes
+    onError: (error) => console.error('Cached API error:', error)
+  });
+
   // Check backend connection status
   const checkConnection = useCallback(async () => {
     try {
@@ -62,6 +79,12 @@ function EventCalendarPageContent() {
 
   // Load events for the current date range (no filtering here)
   const loadEvents = useCallback(async (startDate: Date, endDate: Date, isRetry = false) => {
+    // Prevent multiple simultaneous requests
+    if (!lock()) {
+      console.log('Request blocked - another request in progress');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -71,17 +94,37 @@ function EventCalendarPageContent() {
       
       console.log('Loading events for range:', startDateStr, 'to', endDateStr);
       
-      const occurrences = await getOccurrencesInRange(
-        startDateStr, 
-        endDateStr, 
-        'Asia/Jakarta'
+      // Create cache key for this date range
+      const cacheKey = createCacheKey('events', startDateStr, endDateStr, 'Asia/Jakarta');
+      
+      // Abort any ongoing request before making new one
+      abort();
+      const signal = getSignal();
+      
+      // Use cached fetch with retry fallback
+      const occurrences = await cachedFetch(
+        cacheKey,
+        () => getOccurrencesInRange(startDateStr, endDateStr, 'Asia/Jakarta', signal),
+        isRetry // Force refresh on retry
       );
+      
+      // Check if request was cancelled
+      if (signal?.aborted) {
+        console.log('Request was cancelled');
+        return;
+      }
       
       setAllEvents(occurrences);
       setDateRange({ start: startDate, end: endDate });
       setConnectionStatus('connected');
       
-    } catch (err) {
+    } catch (err: any) {
+      // Don't handle errors for cancelled requests
+      if (err.name === 'AbortError' || err.name === 'CanceledError') {
+        console.log('Request cancelled:', err.message);
+        return;
+      }
+
       console.error('Error loading events:', err);
       const apiError = err as APIError;
       const isNetworkError = apiError?.isNetworkError || err instanceof TypeError;
@@ -100,8 +143,9 @@ function EventCalendarPageContent() {
       }
     } finally {
       setLoading(false);
+      unlock(); // Always unlock the request
     }
-  }, [showToast]);
+  }, [showToast, lock, unlock, abort, getSignal]);
 
   // Separate effect to apply filters to already loaded events
   useEffect(() => {
@@ -134,10 +178,15 @@ function EventCalendarPageContent() {
     loadEvents(startOfMonth, endOfMonth);
   }, [loadEvents, checkConnection]);
 
+  // Debounced date range change handler to prevent excessive API calls
+  const debouncedLoadEvents = useDebounce((start: Date, end: Date) => {
+    loadEvents(start, end);
+  }, 300); // 300ms debounce
+
   // Handle calendar date range changes
   const handleDateRangeChange = useCallback((start: Date, end: Date) => {
-    loadEvents(start, end);
-  }, [loadEvents]);
+    debouncedLoadEvents(start, end);
+  }, [debouncedLoadEvents]);
 
   // Handle event editing
   const handleEventEdit = useCallback(async (
@@ -214,6 +263,7 @@ function EventCalendarPageContent() {
       <FeaturedCard
         title="Kalender Event"
         description="Lihat semua event dan jadwal dalam tampilan kalender interaktif"
+        actionLabel="Lihat Detail"
         gradientFrom="from-blue-500"
         gradientTo="to-blue-700"
       />

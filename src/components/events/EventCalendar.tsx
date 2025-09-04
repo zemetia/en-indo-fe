@@ -310,7 +310,7 @@ export default function EventCalendar({
             date: 'Tanggal',
             time: 'Waktu',
             event: 'Event',
-            noEventsInRange: 'Tidak ada event pada periode ini.',
+            noEventsInRange: 'Tidak ada event pada periode ini. Klik tombol "Buat Event" untuk menambahkan event baru.',
             showMore: (total) => `+${total} lainnya`
           }}
           formats={{

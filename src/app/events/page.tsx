@@ -1,7 +1,7 @@
 'use client';
 import { Calendar, MapPin, Clock, Ticket, Users, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,10 @@ import Link from 'next/link';
 
 export default function EventsPage() {
   const [filter, setFilter] = useState('Semua');
+
+  useEffect(() => {
+    document.title = 'Acara - Every Nation Indonesia';
+  }, []);
 
   const events = [
     {
