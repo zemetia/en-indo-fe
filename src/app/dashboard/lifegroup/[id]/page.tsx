@@ -40,6 +40,13 @@ export default function LifeGroupDetailPage() {
             try {
                 setLoading(true);
                 const response = await lifeGroupApi.getById(id);
+                console.log('LifeGroup API Response:', response); // Debug log
+                
+                if (!response) {
+                    setError('Life Group data is empty.');
+                    return;
+                }
+                
                 setLifeGroup(response);
 
                 // Check if current user can manage members
@@ -49,11 +56,21 @@ export default function LifeGroupDetailPage() {
                 if (userId) {
                     const isLeaderOrCoLeader = response.leader_id === userId || 
                                              (response.co_leader_id && response.co_leader_id === userId);
-                    setCanManageMembers(isLeaderOrCoLeader);
+                    setCanManageMembers(!!isLeaderOrCoLeader);
                 }
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Error fetching life group:', err);
-                setError('Failed to load Life Group data.');
+                console.error('Error details:', err.response?.data);
+                
+                if (err.response?.status === 404) {
+                    setError('Life Group tidak ditemukan.');
+                } else if (err.response?.status === 401) {
+                    setError('Akses ditolak. Silakan login kembali.');
+                } else if (err.response?.status === 500) {
+                    setError('Terjadi kesalahan server. Silakan coba lagi nanti.');
+                } else {
+                    setError('Gagal memuat data Life Group. Silakan coba lagi.');
+                }
             } finally {
                 setLoading(false);
             }
@@ -98,11 +115,20 @@ export default function LifeGroupDetailPage() {
         return <div className="text-center text-gray-500 py-10">Life Group tidak ditemukan.</div>;
     }
 
+    // Additional data validation
+    if (!lifeGroup.leader || !lifeGroup.leader.person) {
+        return <div className="text-center text-red-500 py-10">Data pemimpin Life Group tidak lengkap. Silakan hubungi administrator.</div>;
+    }
+
+    if (!lifeGroup.church) {
+        return <div className="text-center text-red-500 py-10">Data gereja tidak ditemukan. Silakan hubungi administrator.</div>;
+    }
+
     return (
         <div className="space-y-6">
             <FeaturedCard
-                title={lifeGroup.name}
-                description={`Kelompok sel di bawah naungan ${lifeGroup.church.name}`}
+                title={lifeGroup.name || 'Life Group'}
+                description={`Kelompok sel di bawah naungan ${lifeGroup.church?.name || 'Gereja'}`}
                 actionLabel="Kembali ke Daftar"
                 onAction={() => router.push('/dashboard/lifegroup/daftar')}
                 gradientFrom="from-emerald-500"
@@ -121,11 +147,11 @@ export default function LifeGroupDetailPage() {
                         </CardHeader>
                         <CardContent className="flex flex-col items-center text-center">
                             <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4 border-4 border-white shadow-md">
-                                {lifeGroup.leader.person.nama.charAt(0).toUpperCase()}
+                                {(lifeGroup.leader?.person?.nama?.charAt(0) || lifeGroup.leader?.email?.charAt(0) || 'L').toUpperCase()}
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900">{lifeGroup.leader.person.nama}</h3>
-                            <p className="text-sm text-gray-600">{lifeGroup.leader.email}</p>
-                            <p className="text-sm text-gray-600">{lifeGroup.leader.person.nomor_telepon}</p>
+                            <h3 className="text-xl font-bold text-gray-900">{lifeGroup.leader?.person?.nama || lifeGroup.leader?.email || 'Pemimpin'}</h3>
+                            <p className="text-sm text-gray-600">{lifeGroup.leader?.email || 'Email tidak tersedia'}</p>
+                            <p className="text-sm text-gray-600">{lifeGroup.leader?.person?.nomor_telepon || 'Nomor telepon tidak tersedia'}</p>
                         </CardContent>
                     </Card>
 
@@ -140,25 +166,27 @@ export default function LifeGroupDetailPage() {
                                 <ChurchIcon className="w-5 h-5 mr-3 text-gray-500" />
                                 <div>
                                     <p className="text-gray-500">Gereja</p>
-                                    <p className="font-medium text-gray-800">{lifeGroup.church.name}</p>
+                                    <p className="font-medium text-gray-800">{lifeGroup.church?.name || 'Gereja tidak tersedia'}</p>
                                 </div>
                             </div>
                             <div className="flex items-center">
                                 <MapPin className="w-5 h-5 mr-3 text-gray-500" />
                                 <div>
                                     <p className="text-gray-500">Lokasi</p>
-                                    <p className="font-medium text-gray-800">{lifeGroup.location}</p>
+                                    <p className="font-medium text-gray-800">{lifeGroup.location || 'Lokasi tidak tersedia'}</p>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Button asChild size="lg" className="w-full bg-green-600 hover:bg-green-700 text-white">
-                        <Link href={lifeGroup.whatsapp_link} target="_blank">
-                            <MessageSquare className="w-5 h-5 mr-2" />
-                            Join Grup WhatsApp
-                        </Link>
-                    </Button>
+                    {lifeGroup.whatsapp_link && (
+                        <Button asChild size="lg" className="w-full bg-green-600 hover:bg-green-700 text-white">
+                            <Link href={lifeGroup.whatsapp_link} target="_blank">
+                                <MessageSquare className="w-5 h-5 mr-2" />
+                                Join Grup WhatsApp
+                            </Link>
+                        </Button>
+                    )}
                 </div>
 
                 {/* Right Column - Members */}
@@ -178,7 +206,7 @@ export default function LifeGroupDetailPage() {
                         <CardContent>
                             <MemberTabView
                                 lifeGroupId={id}
-                                lifeGroupChurchId={lifeGroup.church_id}
+                                lifeGroupChurchId={lifeGroup.church_id || lifeGroup.church?.id || ''}
                                 canManageMembers={canManageMembers}
                                 onMemberCountChange={handleMemberCountChange}
                             />
