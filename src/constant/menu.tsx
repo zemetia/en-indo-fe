@@ -177,7 +177,7 @@ export const dashboardMenu: MenuItem[] = [
         requirePIC: true,
       },
       {
-        title: 'My Lifegroup',
+        title: 'Lifegroup Saya',
         description: 'Lihat lifegroup saya',
         icon: BsPersonCircle,
         href: '/dashboard/lifegroup/my-lifegroup',

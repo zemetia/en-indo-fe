@@ -253,6 +253,71 @@ export function getDefaultLifegroupChurchId(): string | null {
 }
 
 /**
+ * Gets the user's role in a specific lifegroup, considering PIC hierarchy.
+ * @param lifeGroup - The lifegroup object
+ * @param userId - The user ID (optional, will use current user if not provided)
+ * @returns The user's role: 'pic', 'leader', 'co_leader', 'member', or null
+ */
+export function getUserRoleInLifeGroup(lifeGroup: any, userId?: string): string | null {
+  const currentUserId = userId || getCurrentUserId();
+  if (!currentUserId) return null;
+
+  // First check if user is PIC Lifegroup for this church
+  const permissions = getCurrentUserLifegroupPermissions();
+  if (permissions && lifeGroup.church_id) {
+    const isPICForThisChurch = permissions.churches.some(church => church.id === lifeGroup.church_id);
+    if (isPICForThisChurch) {
+      return 'pic';
+    }
+  }
+
+  // Then check person members (new structure)
+  const personMember = lifeGroup.person_members?.find((m: any) => 
+    m.person?.id === currentUserId || 
+    (lifeGroup.leader_id === currentUserId && m.position === 'LEADER') ||
+    (lifeGroup.co_leader_id === currentUserId && m.position === 'CO_LEADER')
+  );
+  if (personMember) {
+    switch (personMember.position) {
+      case 'LEADER': return 'leader';
+      case 'CO_LEADER': return 'co_leader';
+      case 'MEMBER': return 'member';
+      default: return 'member';
+    }
+  }
+
+  // Check if user is leader or co-leader directly (for cases where person_members isn't populated)
+  if (lifeGroup.leader_id === currentUserId) return 'leader';
+  if (lifeGroup.co_leader_id === currentUserId) return 'co_leader';
+
+  // Fallback to legacy members structure if exists
+  const member = lifeGroup.members?.find((m: any) => m.user_id === currentUserId && m.is_active);
+  return member?.role || null;
+}
+
+/**
+ * Checks if user can manage (edit/add members/change positions) a specific lifegroup.
+ * @param lifeGroup - The lifegroup object
+ * @param userId - The user ID (optional, will use current user if not provided)
+ * @returns True if user can manage this lifegroup
+ */
+export function canManageLifeGroup(lifeGroup: any, userId?: string): boolean {
+  const role = getUserRoleInLifeGroup(lifeGroup, userId);
+  return role === 'pic' || role === 'leader' || role === 'co_leader';
+}
+
+/**
+ * Checks if user can view a specific lifegroup.
+ * @param lifeGroup - The lifegroup object
+ * @param userId - The user ID (optional, will use current user if not provided)
+ * @returns True if user can view this lifegroup
+ */
+export function canViewLifeGroup(lifeGroup: any, userId?: string): boolean {
+  const role = getUserRoleInLifeGroup(lifeGroup, userId);
+  return role !== null; // Any role (pic, leader, co_leader, member) can view
+}
+
+/**
  * Logs the user out by removing the user data cookie and redirecting to the login page.
  */
 export function Logout() {

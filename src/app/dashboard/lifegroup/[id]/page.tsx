@@ -49,14 +49,23 @@ export default function LifeGroupDetailPage() {
                 
                 setLifeGroup(response);
 
-                // Check if current user can manage members
-                // This is a simplified check - in real implementation, you might want to check
-                // if the user is the leader, co-leader, or has special permissions
-                const userId = localStorage.getItem('user_id'); // Assuming user_id is stored
-                if (userId) {
-                    const isLeaderOrCoLeader = response.leader_id === userId || 
-                                             (response.co_leader_id && response.co_leader_id === userId);
-                    setCanManageMembers(!!isLeaderOrCoLeader);
+                // Check if current user can manage members by checking person members
+                const personId = localStorage.getItem('person_id'); // Get person_id instead of user_id
+                if (personId && response.person_members) {
+                    // Find if current person is a leader or co-leader in the person members
+                    const currentPersonMember = response.person_members.find(
+                        member => member.person_id === personId && 
+                                  (member.position === 'LEADER' || member.position === 'CO_LEADER')
+                    );
+                    setCanManageMembers(!!currentPersonMember);
+                } else {
+                    // Fallback to the old method if person_id is not available or person_members is empty
+                    const userId = localStorage.getItem('user_id');
+                    if (userId) {
+                        const isLeaderOrCoLeader = response.leader_id === userId || 
+                                                 (response.co_leader_id && response.co_leader_id === userId);
+                        setCanManageMembers(!!isLeaderOrCoLeader);
+                    }
                 }
             } catch (err: any) {
                 console.error('Error fetching life group:', err);
@@ -115,10 +124,6 @@ export default function LifeGroupDetailPage() {
         return <div className="text-center text-gray-500 py-10">Life Group tidak ditemukan.</div>;
     }
 
-    // Additional data validation
-    if (!lifeGroup.leader || !lifeGroup.leader.person) {
-        return <div className="text-center text-red-500 py-10">Data pemimpin Life Group tidak lengkap. Silakan hubungi administrator.</div>;
-    }
 
     if (!lifeGroup.church) {
         return <div className="text-center text-red-500 py-10">Data gereja tidak ditemukan. Silakan hubungi administrator.</div>;
@@ -136,24 +141,8 @@ export default function LifeGroupDetailPage() {
             />
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                {/* Left Column - Leader and Info */}
+                {/* Left Column - Info */}
                 <div className="lg:col-span-1 space-y-6">
-                    <Card className="shadow-lg border-2 border-emerald-300 bg-emerald-50">
-                        <CardHeader>
-                            <CardTitle className="flex items-center text-emerald-800">
-                                <Star className="w-5 h-5 mr-3 text-emerald-600" />
-                                Pemimpin Life Group
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex flex-col items-center text-center">
-                            <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4 border-4 border-white shadow-md">
-                                {(lifeGroup.leader?.person?.nama?.charAt(0) || lifeGroup.leader?.email?.charAt(0) || 'L').toUpperCase()}
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900">{lifeGroup.leader?.person?.nama || lifeGroup.leader?.email || 'Pemimpin'}</h3>
-                            <p className="text-sm text-gray-600">{lifeGroup.leader?.email || 'Email tidak tersedia'}</p>
-                            <p className="text-sm text-gray-600">{lifeGroup.leader?.person?.nomor_telepon || 'Nomor telepon tidak tersedia'}</p>
-                        </CardContent>
-                    </Card>
 
                     <Card>
                         <CardHeader>
@@ -167,6 +156,18 @@ export default function LifeGroupDetailPage() {
                                 <div>
                                     <p className="text-gray-500">Gereja</p>
                                     <p className="font-medium text-gray-800">{lifeGroup.church?.name || 'Gereja tidak tersedia'}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center">
+                                <Users className="w-5 h-5 mr-3 text-gray-500" />
+                                <div>
+                                    <p className="text-gray-500">Pemimpin Life Group</p>
+                                    <p className="font-medium text-gray-800">
+                                        {lifeGroup.leader?.person?.nama || 'Pemimpin tidak tersedia'}
+                                        {lifeGroup.co_leader?.person?.nama && (
+                                            <span className="text-gray-600"> & {lifeGroup.co_leader.person.nama}</span>
+                                        )}
+                                    </p>
                                 </div>
                             </div>
                             <div className="flex items-center">

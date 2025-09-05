@@ -13,7 +13,7 @@ import {
 import { FiUsers, FiCalendar, FiMapPin, FiRefreshCw, FiAlertTriangle, FiUser, FiStar, FiUserCheck } from 'react-icons/fi';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
-import { getCurrentUserId } from '@/lib/helper';
+import { getCurrentUserId, getUserRoleInLifeGroup, canManageLifeGroup, canViewLifeGroup } from '@/lib/helper';
 import { useToast } from '@/context/ToastContext';
 import { lifeGroupApi, type LifeGroup } from '@/lib/lifegroup';
 
@@ -40,7 +40,7 @@ export default function MyLifegroupPage() {
         return;
       }
 
-      const userLifeGroups = await lifeGroupApi.getByUser(userId);
+      const userLifeGroups = await lifeGroupApi.getMyLifeGroup();
       setLifeGroups(userLifeGroups || []);
       
     } catch (err: any) {
@@ -63,28 +63,13 @@ export default function MyLifegroupPage() {
   };
 
   const getUserRole = (lifeGroup: LifeGroup, userId: string) => {
-    // Check person members first (new structure)
-    const personMember = lifeGroup.person_members?.find(m => 
-      m.person?.id === userId || 
-      (lifeGroup.leader_id === userId && m.position === 'LEADER') ||
-      (lifeGroup.co_leader_id === userId && m.position === 'CO_LEADER')
-    );
-    if (personMember) {
-      switch (personMember.position) {
-        case 'LEADER': return 'leader';
-        case 'CO_LEADER': return 'co_leader';
-        case 'MEMBER': return 'member';
-        default: return 'member';
-      }
-    }
-
-    // Fallback to legacy members structure if exists
-    const member = lifeGroup.members?.find(m => m.user_id === userId && m.is_active);
-    return member?.role || null;
+    return getUserRoleInLifeGroup(lifeGroup, userId);
   };
 
   const getRoleIcon = (role: string) => {
     switch (role) {
+      case 'pic':
+        return <FiStar className='w-4 h-4 text-red-500' />;
       case 'leader':
         return <FiStar className='w-4 h-4 text-yellow-500' />;
       case 'co_leader':
@@ -98,6 +83,8 @@ export default function MyLifegroupPage() {
 
   const getRoleLabel = (role: string) => {
     switch (role) {
+      case 'pic':
+        return 'PIC Lifegroup';
       case 'leader':
         return 'Pemimpin';
       case 'co_leader':
@@ -111,6 +98,8 @@ export default function MyLifegroupPage() {
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
+      case 'pic':
+        return 'bg-red-100 text-red-800';
       case 'leader':
         return 'bg-yellow-100 text-yellow-800';
       case 'co_leader':
@@ -126,8 +115,8 @@ export default function MyLifegroupPage() {
     return (
       <div className='space-y-6'>
         <FeaturedCard
-          title='My Lifegroup'
-          description='Lihat informasi lifegroup yang Anda ikuti'
+          title='Lifegroup Saya'
+          description='Lihat lifegroup dimana Anda adalah anggota aktif'
           actionLabel='Kembali ke Lifegroup'
           onAction={() => window.location.href = '/dashboard/lifegroup'}
           gradientFrom='from-purple-500'
@@ -145,8 +134,8 @@ export default function MyLifegroupPage() {
     return (
       <div className='space-y-6'>
         <FeaturedCard
-          title='My Lifegroup'
-          description='Lihat informasi lifegroup yang Anda ikuti'
+          title='Lifegroup Saya'
+          description='Lihat lifegroup dimana Anda adalah anggota aktif'
           actionLabel='Kembali ke Lifegroup'
           onAction={() => window.location.href = '/dashboard/lifegroup'}
           gradientFrom='from-purple-500'
@@ -180,14 +169,16 @@ export default function MyLifegroupPage() {
   return (
     <div className='space-y-6'>
       <div className='flex justify-between items-center'>
-        <FeaturedCard
-          title='My Lifegroup'
-          description='Lihat informasi lifegroup yang Anda ikuti'
-          actionLabel='Kembali ke Lifegroup'
-          onAction={() => window.location.href = '/dashboard/lifegroup'}
-          gradientFrom='from-purple-500'
-          gradientTo='to-purple-700'
-        />
+        <div className='w-full'>
+          <FeaturedCard
+            title='Lifegroup Saya'
+            description='Lihat lifegroup dimana Anda adalah anggota aktif'
+            actionLabel='Kembali ke Lifegroup'
+            onAction={() => window.location.href = '/dashboard/lifegroup'}
+            gradientFrom='from-purple-500'
+            gradientTo='to-purple-700'
+          />
+        </div>
         <motion.button
           onClick={handleRefresh}
           className={`ml-4 p-2 rounded-lg border border-gray-300 hover:bg-gray-50 ${
@@ -216,7 +207,7 @@ export default function MyLifegroupPage() {
             >
               Semua ({lifeGroups.length})
             </button>
-            {['leader', 'co_leader', 'member'].map(role => {
+            {['pic', 'leader', 'co_leader', 'member'].map(role => {
               const count = lifeGroups.filter(group => {
                 const userRole = currentUserId ? getUserRole(group, currentUserId) : null;
                 return userRole === role;
@@ -243,7 +234,7 @@ export default function MyLifegroupPage() {
         </div>
       )}
 
-      {/* My Lifegroups List */}
+      {/* Lifegroup Sayas List */}
       <div className='bg-white rounded-xl shadow-sm p-6 border border-gray-200'>
         <h2 className='text-lg font-semibold mb-4 text-gray-900'>
           Lifegroup Saya
@@ -254,8 +245,8 @@ export default function MyLifegroupPage() {
             <BsPeople className='w-16 h-16 text-gray-300 mx-auto mb-4' />
             <h3 className='text-lg font-medium text-gray-900 mb-2'>Belum Mengikuti Lifegroup</h3>
             <p className='text-gray-500 mb-4'>
-              Anda belum terdaftar sebagai anggota di lifegroup manapun. 
-              Hubungi admin untuk bergabung dengan lifegroup.
+              Anda belum terdaftar sebagai anggota aktif di lifegroup manapun. 
+              Hubungi pemimpin lifegroup atau admin untuk bergabung.
             </p>
           </div>
         ) : (
@@ -355,7 +346,7 @@ export default function MyLifegroupPage() {
             Ringkasan Peran Saya
           </h2>
           <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-            {['leader', 'co_leader', 'member'].map(role => {
+            {['pic', 'leader', 'co_leader', 'member'].map(role => {
               const count = lifeGroups.filter(group => {
                 const userRole = currentUserId ? getUserRole(group, currentUserId) : null;
                 return userRole === role;

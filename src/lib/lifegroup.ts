@@ -73,7 +73,15 @@ export interface LifeGroupVisitorMember {
     ig_username?: string;
     phone_number?: string;
     kabupaten_id?: number;
-    kabupaten: string;
+    kabupaten: {
+      ID: number;
+      Name: string;
+      provinsi_id: number;
+      Provinsi: any;
+      created_at: string;
+      updated_at: string;
+      deleted_at?: string;
+    };
   };
   is_active: boolean;
   joined_date: string;
@@ -198,6 +206,12 @@ export const lifeGroupApi = {
   // Get lifegroups by user ID (for Kelola - user's lifegroups)
   getByUser: async (userId: string): Promise<LifeGroup[]> => {
     const response = await apiClient.get(`/api/lifegroup/user/${userId}`);
+    return response.data;
+  },
+
+  // Get user's own lifegroups (only where user is a member, ignoring PIC privileges)
+  getMyLifeGroup: async (): Promise<LifeGroup[]> => {
+    const response = await apiClient.get('/api/lifegroup/my-lifegroup');
     return response.data;
   },
 

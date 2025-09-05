@@ -13,7 +13,7 @@ import {
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import MemberTabView from '@/components/dashboard/MemberTabView';
 import { lifeGroupApi, LifeGroup } from '@/lib/lifegroup';
-import { getCurrentUserId } from '@/lib/helper';
+import { getCurrentUserId, canManageLifeGroup } from '@/lib/helper';
 import { useToast } from '@/context/ToastContext';
 import LifegroupPICGuard from '@/components/auth/LifegroupPICGuard';
 
@@ -49,9 +49,7 @@ export default function KelolaAnggotaPage() {
       // Check if current user can manage members
       const userId = getCurrentUserId();
       if (userId) {
-        const isLeaderOrCoLeader = data.leader_id === userId || 
-                                 (data.co_leader_id && data.co_leader_id === userId);
-        setCanManageMembers(isLeaderOrCoLeader);
+        setCanManageMembers(canManageLifeGroup(data, userId));
       }
     } catch (error: any) {
       console.error('Error fetching lifegroup:', error);

@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import { FiUsers, FiUserPlus } from 'react-icons/fi';
 import { Crown } from 'lucide-react';
-import PersonMemberTable from './PersonMemberTable';
-import VisitorMemberTable from './VisitorMemberTable';
+import UnifiedMemberTable from './UnifiedMemberTable';
 import AddPersonMemberModal from './AddPersonMemberModal';
 import AddVisitorMemberModal from './AddVisitorMemberModal';
 import { 
@@ -31,7 +30,6 @@ export default function MemberTabView({
   canManageMembers,
   onMemberCountChange,
 }: MemberTabViewProps) {
-  const [activeTab, setActiveTab] = useState<'person' | 'visitor'>('person');
   const [personMembers, setPersonMembers] = useState<LifeGroupPersonMember[]>([]);
   const [visitorMembers, setVisitorMembers] = useState<LifeGroupVisitorMember[]>([]);
   const [loading, setLoading] = useState(false);
@@ -44,10 +42,10 @@ export default function MemberTabView({
 
   useEffect(() => {
     // Notify parent about member count changes
-    if (onMemberCountChange) {
-      onMemberCountChange(personMembers.length, visitorMembers.length);
+    if (onMemberCountChange && personMembers && visitorMembers) {
+      onMemberCountChange(personMembers.length || 0, visitorMembers.length || 0);
     }
-  }, [personMembers.length, visitorMembers.length, onMemberCountChange]);
+  }, [personMembers, visitorMembers, onMemberCountChange]);
 
   const fetchMembers = async () => {
     try {
@@ -57,8 +55,8 @@ export default function MemberTabView({
         lifeGroupApi.getVisitorMembers(lifeGroupId),
       ]);
       
-      setPersonMembers(personResponse);
-      setVisitorMembers(visitorResponse);
+      setPersonMembers(personResponse || []);
+      setVisitorMembers(visitorResponse || []);
     } catch (error) {
       console.error('Error fetching members:', error);
     } finally {
@@ -140,51 +138,31 @@ export default function MemberTabView({
   };
 
   // Helper to get existing member IDs for filtering
-  const existingPersonIds = personMembers.map(member => member.person_id);
-  const existingVisitorIds = visitorMembers.map(member => member.visitor_id);
+  const existingPersonIds = (personMembers || []).map(member => member.person_id);
+  const existingVisitorIds = (visitorMembers || []).map(member => member.visitor_id);
 
   // Count leaders for display
-  const leaderCount = personMembers.filter(m => m.position === 'LEADER').length;
-  const coLeaderCount = personMembers.filter(m => m.position === 'CO_LEADER').length;
+  const leaderCount = (personMembers || []).filter(m => m.position === 'LEADER').length;
+  const coLeaderCount = (personMembers || []).filter(m => m.position === 'CO_LEADER').length;
 
   return (
     <div className="space-y-6">
-      {/* Tab Navigation */}
-      <div className="border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
-          <button
-            onClick={() => setActiveTab('person')}
-            className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
-              activeTab === 'person'
-                ? 'border-primary-500 text-primary-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
+      {/* Member Stats */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center text-sm text-gray-600">
             <FiUsers className="w-4 h-4 mr-2" />
-            Anggota Person ({personMembers.length})
+            <span>{(personMembers || []).length} Person • {(visitorMembers || []).length} Visitor</span>
             {leaderCount > 0 && (
-              <div className="ml-2 flex items-center">
-                <Crown className="w-3 h-3 text-yellow-500" />
-                <span className="text-xs text-yellow-600 ml-1">
+              <div className="ml-4 flex items-center">
+                <Crown className="w-3 h-3 text-yellow-500 mr-1" />
+                <span className="text-xs text-yellow-600">
                   {leaderCount + coLeaderCount} Pemimpin
                 </span>
               </div>
             )}
-          </button>
-          <button
-            onClick={() => setActiveTab('visitor')}
-            className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
-              activeTab === 'visitor'
-                ? 'border-primary-500 text-primary-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            <div className="w-4 h-4 mr-2 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs">V</span>
-            </div>
-            Pengunjung ({visitorMembers.length})
-          </button>
-        </nav>
+          </div>
+        </div>
       </div>
 
       {/* Add Member Buttons */}
@@ -192,27 +170,19 @@ export default function MemberTabView({
         <div className="flex flex-wrap gap-3">
           <button
             onClick={() => setShowAddPersonModal(true)}
-            className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-              activeTab === 'person'
-                ? 'bg-primary-600 text-white hover:bg-primary-700'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
+            className="flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors"
           >
             <FiUserPlus className="w-4 h-4 mr-2" />
             Tambah Anggota Person
           </button>
           <button
             onClick={() => setShowAddVisitorModal(true)}
-            className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-              activeTab === 'visitor'
-                ? 'bg-primary-600 text-white hover:bg-primary-700'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
+            className="flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors"
           >
-            <div className="w-4 h-4 mr-2 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs">+</span>
+            <div className="w-4 h-4 mr-2 bg-gradient-to-br from-purple-300 to-purple-400 rounded-full flex items-center justify-center">
+              <span className="text-purple-800 text-xs">+</span>
             </div>
-            Tambah Pengunjung
+            Tambah Visitor
           </button>
         </div>
       )}
@@ -223,27 +193,15 @@ export default function MemberTabView({
           <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
         </div>
       ) : (
-        /* Tab Content */
-        <div>
-          {activeTab === 'person' ? (
-            <div>
-              <PersonMemberTable
-                members={personMembers}
-                onUpdatePosition={handleUpdatePersonPosition}
-                onRemove={handleRemovePersonMember}
-                canManageMembers={canManageMembers}
-              />
-            </div>
-          ) : (
-            <div>
-              <VisitorMemberTable
-                members={visitorMembers}
-                onRemove={handleRemoveVisitorMember}
-                canManageMembers={canManageMembers}
-              />
-            </div>
-          )}
-        </div>
+        /* Unified Member Table */
+        <UnifiedMemberTable
+          personMembers={personMembers}
+          visitorMembers={visitorMembers}
+          onUpdatePersonPosition={handleUpdatePersonPosition}
+          onRemovePersonMember={handleRemovePersonMember}
+          onRemoveVisitorMember={handleRemoveVisitorMember}
+          canManageMembers={canManageMembers}
+        />
       )}
 
       {/* Modals */}

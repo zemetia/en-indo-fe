@@ -100,7 +100,7 @@ export default function VisitorMemberTable({
                 {member.visitor.kabupaten ? (
                   <div className="flex items-center text-blue-600">
                     <FiMapPin className="w-4 h-4 mr-1" />
-                    <span>{member.visitor.kabupaten}</span>
+                    <span>{member.visitor.kabupaten.Name}</span>
                   </div>
                 ) : (
                   <span className="text-gray-400">-</span>
