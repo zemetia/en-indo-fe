@@ -307,6 +307,50 @@ export function canManageLifeGroup(lifeGroup: any, userId?: string): boolean {
 }
 
 /**
+ * Checks if user can edit lifegroup details.
+ * @param lifeGroup - The lifegroup object
+ * @param userId - The user ID (optional, will use current user if not provided)
+ * @returns True if user can edit this lifegroup
+ */
+export function canEditLifeGroup(lifeGroup: any, userId?: string): boolean {
+  const role = getUserRoleInLifeGroup(lifeGroup, userId);
+  return role === 'pic' || role === 'leader' || role === 'co_leader';
+}
+
+/**
+ * Checks if user can delete lifegroup.
+ * @param lifeGroup - The lifegroup object
+ * @param userId - The user ID (optional, will use current user if not provided)
+ * @returns True if user can delete this lifegroup
+ */
+export function canDeleteLifeGroup(lifeGroup: any, userId?: string): boolean {
+  const role = getUserRoleInLifeGroup(lifeGroup, userId);
+  return role === 'pic' || role === 'leader'; // NO co_leader access for delete
+}
+
+/**
+ * Checks if user can add/edit members to a lifegroup.
+ * @param lifeGroup - The lifegroup object
+ * @param userId - The user ID (optional, will use current user if not provided)
+ * @returns True if user can add/edit members
+ */
+export function canAddEditMembers(lifeGroup: any, userId?: string): boolean {
+  const role = getUserRoleInLifeGroup(lifeGroup, userId);
+  return role === 'pic' || role === 'leader' || role === 'co_leader';
+}
+
+/**
+ * Checks if user can delete members from a lifegroup.
+ * @param lifeGroup - The lifegroup object
+ * @param userId - The user ID (optional, will use current user if not provided)
+ * @returns True if user can delete members
+ */
+export function canDeleteMembers(lifeGroup: any, userId?: string): boolean {
+  const role = getUserRoleInLifeGroup(lifeGroup, userId);
+  return role === 'pic' || role === 'leader'; // NO co_leader access for member deletion
+}
+
+/**
  * Checks if user can view a specific lifegroup.
  * @param lifeGroup - The lifegroup object
  * @param userId - The user ID (optional, will use current user if not provided)

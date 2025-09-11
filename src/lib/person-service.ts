@@ -152,4 +152,17 @@ export const personService = {
     const response = await this.getAll({ per_page: 1000 });
     return response.data;
   },
+
+  // Get persons from churches where current user is PIC Lifegroup
+  async getPersonsByPICLifegroupChurches(): Promise<SimplePerson[]> {
+    try {
+      const response = await apiClient.get<ApiResponse<SimplePerson[]>>('/api/person/by-pic-lifegroup-churches');
+      return response.data.data;
+    } catch (error: any) {
+      if (error.response?.status === 400 && error.response?.data?.error === 'no_person_id') {
+        throw new Error('User does not have a Person record associated. Please contact administrator.');
+      }
+      throw error;
+    }
+  },
 };

@@ -287,7 +287,7 @@ export default function Sidebar() {
 
         <div className='border-t border-gray-200 bg-white flex flex-shrink-0'>
           <Link
-            href='/dashboard/pengaturan'
+            href='/dashboard/settings'
             className={`flex-1 flex items-center py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 relative transition-colors duration-200 ${
               isCollapsed ? 'justify-center px-2' : 'px-4'
             }`}

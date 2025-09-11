@@ -1,15 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FiX, FiUser, FiStar, FiSearch } from 'react-icons/fi';
-import { Crown } from 'lucide-react';
+import { FiX, FiSearch, FiCheck, FiUsers } from 'react-icons/fi';
 import { personService, SimplePerson } from '@/lib/person-service';
-import { AddPersonMemberRequest } from '@/lib/lifegroup';
+import { AddPersonMembersBatchRequest, BatchOperationResult } from '@/lib/lifegroup';
 
 type AddPersonMemberModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (data: AddPersonMemberRequest) => Promise<void>;
+  onAdd: (data: AddPersonMembersBatchRequest) => Promise<BatchOperationResult>;
   existingPersonIds: string[];
   lifeGroupChurchId: string;
 };
@@ -24,8 +23,7 @@ export default function AddPersonMemberModal({
   const [persons, setPersons] = useState<SimplePerson[]>([]);
   const [filteredPersons, setFilteredPersons] = useState<SimplePerson[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPersonId, setSelectedPersonId] = useState('');
-  const [selectedPosition, setSelectedPosition] = useState<'LEADER' | 'CO_LEADER' | 'MEMBER'>('MEMBER');
+  const [selectedPersonIds, setSelectedPersonIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -70,49 +68,54 @@ export default function AddPersonMemberModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedPersonId) {
-      alert('Silakan pilih person terlebih dahulu');
+    if (selectedPersonIds.size === 0) {
+      alert('Silakan pilih minimal satu person terlebih dahulu');
       return;
     }
 
     try {
       setSubmitting(true);
-      await onAdd({
-        person_id: selectedPersonId,
-        position: selectedPosition,
+      const result = await onAdd({
+        person_ids: Array.from(selectedPersonIds),
       });
       
+      // Show result summary
+      if (result.failed > 0) {
+        const failedMessages = result.errors?.map(e => `${e.id}: ${e.error}`).join('\\n') || '';
+        alert(`Berhasil menambahkan ${result.successful} dari ${result.total_requested} anggota sebagai Member.\\n\\nError:\\n${failedMessages}`);
+      } else {
+        alert(`Berhasil menambahkan ${result.successful} anggota sebagai Member!`);
+      }
+      
       // Reset form
-      setSelectedPersonId('');
-      setSelectedPosition('MEMBER');
+      setSelectedPersonIds(new Set());
       setSearchTerm('');
       onClose();
     } catch (error) {
-      console.error('Error adding person member:', error);
+      console.error('Error adding person members:', error);
       alert('Gagal menambahkan anggota. Silakan coba lagi.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const getPositionIcon = (position: string) => {
-    switch (position) {
-      case 'LEADER':
-        return <Crown className="w-4 h-4 text-yellow-600" />;
-      case 'CO_LEADER':
-        return <FiStar className="w-4 h-4 text-blue-600" />;
-      case 'MEMBER':
-      default:
-        return <FiUser className="w-4 h-4 text-gray-600" />;
-    }
-  };
-
   const handleClose = () => {
-    setSelectedPersonId('');
-    setSelectedPosition('MEMBER');
+    setSelectedPersonIds(new Set());
     setSearchTerm('');
     onClose();
   };
+
+  const handlePersonToggle = (personId: string) => {
+    const newSelected = new Set(selectedPersonIds);
+    if (newSelected.has(personId)) {
+      newSelected.delete(personId);
+    } else {
+      newSelected.add(personId);
+    }
+    setSelectedPersonIds(newSelected);
+  };
+
+  const isPersonSelected = (personId: string) => selectedPersonIds.has(personId);
 
   if (!isOpen) return null;
 
@@ -120,58 +123,34 @@ export default function AddPersonMemberModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black bg-opacity-50" onClick={handleClose}></div>
       
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col">
+      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-3xl mx-4 max-h-[80vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Tambah Anggota Person
-          </h2>
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Tambah Anggota Person
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              Semua person yang dipilih akan ditambahkan sebagai Member. Posisi dapat diubah setelahnya.
+            </p>
+            {selectedPersonIds.size > 0 && (
+              <div className="flex items-center mt-2 text-sm text-blue-600">
+                <FiUsers className="w-4 h-4 mr-1" />
+                <span>{selectedPersonIds.size} person dipilih</span>
+              </div>
+            )}
+          </div>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 hover:text-gray-600 transition-colors"
           >
             <FiX className="w-6 h-6" />
           </button>
         </div>
 
         {/* Content */}
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1">
-          <div className="flex-1 p-6 overflow-y-auto">
-            {/* Position Selection */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Posisi
-              </label>
-              <div className="grid grid-cols-3 gap-3">
-                {(['MEMBER', 'CO_LEADER', 'LEADER'] as const).map((position) => (
-                  <label
-                    key={position}
-                    className={`flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-all ${
-                      selectedPosition === position
-                        ? 'border-primary-500 bg-primary-50 text-primary-700'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="position"
-                      value={position}
-                      checked={selectedPosition === position}
-                      onChange={(e) => setSelectedPosition(e.target.value as typeof position)}
-                      className="sr-only"
-                    />
-                    <div className="flex items-center">
-                      {getPositionIcon(position)}
-                      <span className="ml-2 text-sm font-medium">
-                        {position === 'LEADER' ? 'Pemimpin' : 
-                         position === 'CO_LEADER' ? 'Wakil Pemimpin' : 'Anggota'}
-                      </span>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            </div>
-
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="flex-1 p-6 overflow-hidden flex flex-col">
             {/* Person Search */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -184,80 +163,97 @@ export default function AddPersonMemberModal({
                   placeholder="Cari berdasarkan nama atau email..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
             </div>
 
             {/* Person List */}
-            <div className="space-y-2 max-h-64 overflow-y-auto">
-              {loading ? (
-                <div className="flex justify-center py-8">
-                  <div className="w-6 h-6 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
-                </div>
-              ) : filteredPersons.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  {persons.length === 0 ? 
-                    'Tidak ada person yang tersedia untuk ditambahkan' :
-                    'Tidak ada person yang cocok dengan pencarian'
-                  }
-                </div>
-              ) : (
-                filteredPersons.map((person) => (
-                  <label
-                    key={person.id}
-                    className={`flex items-center p-3 border rounded-lg cursor-pointer transition-all ${
-                      selectedPersonId === person.id
-                        ? 'border-primary-500 bg-primary-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="person"
-                      value={person.id}
-                      checked={selectedPersonId === person.id}
-                      onChange={(e) => setSelectedPersonId(e.target.value)}
-                      className="mr-3"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white text-xs font-medium mr-3">
-                          {person.nama.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900">{person.nama}</div>
-                          <div className="text-sm text-gray-500">{person.email || 'Tidak ada email'}</div>
+            <div className="flex-1 min-h-0">
+              <div className="h-full overflow-y-auto space-y-2 pr-2 max-h-64">
+                {loading ? (
+                  <div className="flex justify-center py-8">
+                    <div className="w-6 h-6 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                ) : filteredPersons.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    {persons.length === 0 ? 
+                      'Tidak ada person yang tersedia untuk ditambahkan' :
+                      'Tidak ada person yang cocok dengan pencarian'
+                    }
+                  </div>
+                ) : (
+                  filteredPersons.map((person) => {
+                    const isSelected = isPersonSelected(person.id);
+                    return (
+                      <div
+                        key={person.id}
+                        className={`border rounded-lg transition-all cursor-pointer ${
+                          isSelected
+                            ? 'border-primary-500 bg-primary-50'
+                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        }`}
+                        onClick={() => handlePersonToggle(person.id)}
+                      >
+                        <div className="p-4">
+                          <div className="flex items-center">
+                            <div className="relative mr-3">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => handlePersonToggle(person.id)}
+                                className="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 focus:ring-2"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                              {isSelected && (
+                                <FiCheck className="absolute top-0 left-0 w-4 h-4 text-white pointer-events-none" />
+                              )}
+                            </div>
+                            <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium mr-3">
+                              {person.nama.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">{person.nama}</div>
+                              <div className="text-sm text-gray-500">{person.email || 'Tidak ada email'}</div>
+                              {person.nomor_telepon && (
+                                <div className="text-xs text-gray-500 mt-1">
+                                  {person.nomor_telepon}
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      {person.nomor_telepon && (
-                        <div className="text-xs text-gray-500 ml-11 mt-1">
-                          {person.nomor_telepon}
-                        </div>
-                      )}
-                    </div>
-                  </label>
-                ))
-              )}
+                    );
+                  })
+                )}
+              </div>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end space-x-3 p-6 border-t border-gray-200">
+          <div className="flex justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50">
             <button
               type="button"
               onClick={handleClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
               disabled={submitting}
             >
               Batal
             </button>
             <button
               type="submit"
-              disabled={!selectedPersonId || submitting}
-              className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={selectedPersonIds.size === 0 || submitting}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
             >
-              {submitting ? 'Menambahkan...' : 'Tambah Anggota'}
+              {submitting ? (
+                <span className="flex items-center">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  Menambahkan {selectedPersonIds.size} anggota...
+                </span>
+              ) : (
+                `Tambah ${selectedPersonIds.size} Anggota sebagai Member`
+              )}
             </button>
           </div>
         </form>

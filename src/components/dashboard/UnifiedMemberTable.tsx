@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { FiEdit2, FiTrash2, FiStar, FiUser, FiInstagram, FiPhone, FiMapPin } from 'react-icons/fi';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { FiTrash2, FiStar, FiUser, FiInstagram, FiPhone, FiMapPin, FiLogOut } from 'react-icons/fi';
 import { Crown } from 'lucide-react';
-import { LifeGroupPersonMember, LifeGroupVisitorMember } from '@/lib/lifegroup';
+import { LifeGroupPersonMember, LifeGroupVisitorMember, LifeGroup } from '@/lib/lifegroup';
+import { getCurrentUserId } from '@/lib/helper';
 
 type UnifiedMember = {
   type: 'person' | 'visitor';
@@ -16,7 +18,12 @@ type UnifiedMemberTableProps = {
   onUpdatePersonPosition: (member: LifeGroupPersonMember, newPosition: 'LEADER' | 'CO_LEADER' | 'MEMBER') => void;
   onRemovePersonMember: (member: LifeGroupPersonMember) => void;
   onRemoveVisitorMember: (member: LifeGroupVisitorMember) => void;
-  canManageMembers: boolean;
+  canManageMembers: boolean; // Kept for backward compatibility
+  canAddEditMembers?: boolean;
+  canDeleteMembers?: boolean;
+  canEditPositions?: boolean;
+  userRole?: string | null;
+  lifeGroup?: LifeGroup;
 };
 
 const getPositionIcon = (position: string) => {
@@ -65,12 +72,84 @@ export default function UnifiedMemberTable({
   onRemovePersonMember,
   onRemoveVisitorMember,
   canManageMembers,
+  canAddEditMembers = canManageMembers, // Default to backward compatibility
+  canDeleteMembers = canManageMembers, // Default to backward compatibility
+  canEditPositions = canManageMembers,
+  userRole,
+  lifeGroup,
 }: UnifiedMemberTableProps) {
   const [editingMember, setEditingMember] = useState<string | null>(null);
+  const [showPositionConfirmation, setShowPositionConfirmation] = useState(false);
+  const [showKickConfirmation, setShowKickConfirmation] = useState(false);
+  const [pendingPositionChange, setPendingPositionChange] = useState<{
+    member: LifeGroupPersonMember;
+    newPosition: string;
+  } | null>(null);
+  const [pendingKickMember, setPendingKickMember] = useState<{
+    member: LifeGroupPersonMember | LifeGroupVisitorMember;
+    isVisitor: boolean;
+  } | null>(null);
 
   const handlePositionChange = (member: LifeGroupPersonMember, newPosition: string) => {
-    onUpdatePersonPosition(member, newPosition as 'LEADER' | 'CO_LEADER' | 'MEMBER');
+    setPendingPositionChange({ member, newPosition });
+    setShowPositionConfirmation(true);
     setEditingMember(null);
+  };
+
+  const confirmPositionChange = () => {
+    if (pendingPositionChange) {
+      onUpdatePersonPosition(pendingPositionChange.member, pendingPositionChange.newPosition as 'LEADER' | 'CO_LEADER' | 'MEMBER');
+      setPendingPositionChange(null);
+    }
+    setShowPositionConfirmation(false);
+  };
+
+  const handleKickMember = (member: LifeGroupPersonMember | LifeGroupVisitorMember, isVisitor: boolean) => {
+    setPendingKickMember({ member, isVisitor });
+    setShowKickConfirmation(true);
+  };
+
+  const confirmKickMember = () => {
+    if (pendingKickMember) {
+      if (pendingKickMember.isVisitor) {
+        onRemoveVisitorMember(pendingKickMember.member as LifeGroupVisitorMember);
+      } else {
+        onRemovePersonMember(pendingKickMember.member as LifeGroupPersonMember);
+      }
+      setPendingKickMember(null);
+    }
+    setShowKickConfirmation(false);
+  };
+
+  // Check if user can remove a specific member
+  const canRemoveMember = (member: LifeGroupPersonMember): boolean => {
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId || !canDeleteMembers) return false;
+
+    if (userRole === 'pic') return true; // PIC can remove all
+    if (userRole === 'leader') {
+      // Leader can remove all except himself
+      return member.person_id !== currentUserId;
+    }
+    if (userRole === 'co_leader') {
+      // CoLeader can only remove normal members (not leaders, co-leaders, or himself)
+      return member.position === 'MEMBER' && member.person_id !== currentUserId;
+    }
+    return false;
+  };
+
+  // Check if user can edit a specific member's position
+  const canEditMemberPosition = (member: LifeGroupPersonMember): boolean => {
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId || !canEditPositions) return false;
+
+    if (userRole === 'pic') return true; // PIC can edit all positions
+    if (userRole === 'leader') {
+      // Leader can edit all positions except cannot demote himself
+      return member.person_id !== currentUserId;
+    }
+    // CoLeader cannot edit any positions
+    return false;
   };
 
   const formatDate = (dateString: string) => {
@@ -100,7 +179,7 @@ export default function UnifiedMemberTable({
   ];
 
   return (
-    <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'>
+    <div className='bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden overflow-x-auto'>
       <table className='w-full text-sm text-left text-gray-500'>
         <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
           <tr>
@@ -119,11 +198,6 @@ export default function UnifiedMemberTable({
             <th scope='col' className='px-6 py-3 font-medium'>
               Status
             </th>
-            {canManageMembers && (
-              <th scope='col' className='px-6 py-3 font-medium text-right'>
-                Aksi
-              </th>
-            )}
           </tr>
         </thead>
         <tbody>
@@ -137,6 +211,16 @@ export default function UnifiedMemberTable({
               <tr key={member.id} className='bg-white border-b last:border-b-0 hover:bg-gray-50'>
                 <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
                   <div className="flex items-center">
+                    {/* Kick button - positioned at leftmost before name */}
+                    {(isVisitor ? canDeleteMembers : canRemoveMember(personMember)) && (
+                      <button
+                        onClick={() => handleKickMember(member, isVisitor)}
+                        className='text-red-600 hover:text-red-800 mr-3'
+                        title={isVisitor ? "Keluarkan pengunjung" : "Keluarkan anggota"}
+                      >
+                        <FiLogOut className='w-4 h-4' />
+                      </button>
+                    )}
                     {isVisitor ? (
                       <>
                         <FiUser className="w-4 h-4 text-gray-600" />
@@ -187,7 +271,7 @@ export default function UnifiedMemberTable({
                       Visitor
                     </span>
                   ) : (
-                    editingMember === member.id && canManageMembers ? (
+                    editingMember === member.id && canEditMemberPosition(personMember) ? (
                       <select
                         value={personMember.position}
                         onChange={(e) => handlePositionChange(personMember, e.target.value)}
@@ -197,13 +281,15 @@ export default function UnifiedMemberTable({
                       >
                         <option value="MEMBER">Anggota</option>
                         <option value="CO_LEADER">Wakil Pemimpin</option>
-                        <option value="LEADER">Pemimpin</option>
+                        {(userRole === 'pic' || userRole === 'leader') && (
+                          <option value="LEADER">Pemimpin</option>
+                        )}
                       </select>
                     ) : (
                       <button
-                        onClick={() => canManageMembers && setEditingMember(member.id)}
-                        className={`${canManageMembers ? 'hover:bg-gray-50 cursor-pointer' : 'cursor-default'}`}
-                        disabled={!canManageMembers}
+                        onClick={() => canEditMemberPosition(personMember) && setEditingMember(member.id)}
+                        className={`${canEditMemberPosition(personMember) ? 'hover:bg-gray-50 cursor-pointer' : 'cursor-default'}`}
+                        disabled={!canEditMemberPosition(personMember)}
                       >
                         {getPositionBadge(personMember.position)}
                       </button>
@@ -224,26 +310,6 @@ export default function UnifiedMemberTable({
                     {member.is_active ? 'Aktif' : 'Tidak Aktif'}
                   </span>
                 </td>
-                {canManageMembers && (
-                  <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3'>
-                    {!isVisitor && (
-                      <button
-                        onClick={() => setEditingMember(member.id)}
-                        className='text-primary-600 hover:text-primary-900'
-                        title="Edit posisi"
-                      >
-                        <FiEdit2 className='w-4 h-4' />
-                      </button>
-                    )}
-                    <button
-                      onClick={() => isVisitor ? onRemoveVisitorMember(visitorMember) : onRemovePersonMember(personMember)}
-                      className='text-red-600 hover:text-red-900'
-                      title={isVisitor ? "Hapus pengunjung" : "Hapus anggota"}
-                    >
-                      <FiTrash2 className='w-4 h-4' />
-                    </button>
-                  </td>
-                )}
               </tr>
             );
           })}
@@ -254,6 +320,63 @@ export default function UnifiedMemberTable({
           Belum ada anggota di life group ini.
         </div>
       )}
+      
+      {/* Position Change Confirmation Dialog */}
+      <AlertDialog open={showPositionConfirmation} onOpenChange={setShowPositionConfirmation}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Konfirmasi Perubahan Posisi</AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin mengubah posisi{' '}
+              <strong>{pendingPositionChange?.member?.person?.nama}</strong>{' '}
+              menjadi{' '}
+              <strong>
+                {pendingPositionChange?.newPosition === 'LEADER' 
+                  ? 'Pemimpin'
+                  : pendingPositionChange?.newPosition === 'CO_LEADER'
+                  ? 'Wakil Pemimpin'
+                  : 'Anggota'
+                }
+              </strong>?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowPositionConfirmation(false)}>
+              Batal
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmPositionChange}>
+              Ya, Ubah Posisi
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Kick Member Confirmation Dialog */}
+      <AlertDialog open={showKickConfirmation} onOpenChange={setShowKickConfirmation}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Konfirmasi Keluarkan {pendingKickMember?.isVisitor ? 'Pengunjung' : 'Anggota'}</AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin mengeluarkan{' '}
+              <strong>
+                {pendingKickMember?.isVisitor 
+                  ? (pendingKickMember?.member as LifeGroupVisitorMember)?.visitor?.name
+                  : (pendingKickMember?.member as LifeGroupPersonMember)?.person?.nama
+                }
+              </strong>{' '}
+              dari life group ini?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowKickConfirmation(false)}>
+              Batal
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmKickMember} className="bg-red-600 hover:bg-red-700">
+              Ya, Keluarkan
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

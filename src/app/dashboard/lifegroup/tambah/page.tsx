@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import Select from 'react-select';
 import {
   FiUsers,
   FiMapPin,
@@ -13,20 +14,12 @@ import {
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import { lifeGroupApi, type CreateLifeGroupData } from '@/lib/lifegroup';
-import { getCurrentUserId, getCurrentUserLifegroupPermissions } from '@/lib/helper';
+import { getCurrentUserId, getCurrentUserLifegroupPermissions, getToken } from '@/lib/helper';
 import { useToast } from '@/context/ToastContext';
+import { personService, type SimplePerson } from '@/lib/person-service';
 import apiClient from '@/lib/api';
 import LifegroupPICGuard from '@/components/auth/LifegroupPICGuard';
 
-interface User {
-  id: string;
-  email: string;
-  person: {
-    id: string;
-    nama: string;
-    email: string;
-  };
-}
 
 export default function TambahLifeGroupPage() {
   const router = useRouter();
@@ -36,18 +29,26 @@ export default function TambahLifeGroupPage() {
     location: '',
     whatsapp_link: '',
     church_id: '',
-    leader_id: '',
-    co_leader_id: '',
   });
-  const [users, setUsers] = useState<User[]>([]);
   const [availableChurches, setAvailableChurches] = useState<Array<{ id: string; name: string }>>([]);
+  const [availablePersons, setAvailablePersons] = useState<SimplePerson[]>([]);
+  const [selectedLeaderId, setSelectedLeaderId] = useState<string>('');
   const [loading, setLoading] = useState(false);
-  const [loadingUsers, setLoadingUsers] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const initializeForm = async () => {
       try {
+        // Check if user has valid token first
+        const token = getToken();
+        console.log('Token check in tambah lifegroup:', token ? 'Token found' : 'No token found'); // Debug log
+        
+        if (!token) {
+          setError('Sesi Anda telah berakhir. Silakan login kembali.');
+          console.error('No authentication token found');
+          return;
+        }
+
         // Get user's lifegroup permissions
         const permissions = getCurrentUserLifegroupPermissions();
         console.log('User lifegroup permissions for form:', permissions); // Debug log
@@ -65,24 +66,23 @@ export default function TambahLifeGroupPage() {
         if (permissions.churches.length === 1) {
           setFormData(prev => ({ ...prev, church_id: permissions.churches[0].id }));
         }
-
-        // Fetch users for leader selection
-        console.log('Fetching users for leader selection...'); // Debug log
-        const response = await apiClient.get('/api/user');
-        console.log('Users loaded:', response.data); // Debug log
-        setUsers(response.data);
+        
+        // Load available persons for leader selection
+        const persons = await personService.getPersonsByPICLifegroupChurches();
+        setAvailablePersons(persons);
       } catch (error: any) {
         console.error('Error initializing form:', error);
+        console.error('Error response:', error.response); // Additional debug log
         
         if (error.response?.status === 401) {
           setError('Sesi Anda telah berakhir. Silakan login kembali.');
+        } else if (error.response?.status === 500 && error.response?.data?.message?.includes('token')) {
+          setError('Token tidak valid. Silakan login kembali.');
         } else {
-          const errorMessage = error.response?.data?.message || 'Gagal memuat data pengguna';
+          const errorMessage = error.response?.data?.message || 'Gagal memuat data';
           showToast(errorMessage, 'error');
           setError(errorMessage);
         }
-      } finally {
-        setLoadingUsers(false);
       }
     };
 
@@ -95,6 +95,16 @@ export default function TambahLifeGroupPage() {
     setError(null);
 
     try {
+      // Check if user has valid token first
+      const token = getToken();
+      console.log('Token check in submit:', token ? 'Token found' : 'No token found'); // Debug log
+      
+      if (!token) {
+        setError('Sesi Anda telah berakhir. Silakan login kembali.');
+        console.error('No authentication token found during submit');
+        return;
+      }
+
       // Validate required fields
       if (!formData.name.trim()) {
         setError('Nama life group wajib diisi.');
@@ -104,12 +114,12 @@ export default function TambahLifeGroupPage() {
         setError('Lokasi wajib diisi.');
         return;
       }
-      if (!formData.leader_id) {
-        setError('Pemimpin wajib dipilih.');
-        return;
-      }
       if (!formData.church_id) {
         setError('Gereja wajib dipilih.');
+        return;
+      }
+      if (!selectedLeaderId) {
+        setError('Leader wajib dipilih.');
         return;
       }
 
@@ -119,26 +129,44 @@ export default function TambahLifeGroupPage() {
         location: formData.location.trim(),
         whatsapp_link: formData.whatsapp_link?.trim() || undefined,
         church_id: formData.church_id,
-        leader_id: formData.leader_id,
-        co_leader_id: formData.co_leader_id || undefined,
       };
 
       console.log('Creating lifegroup with data:', lifeGroupData); // Debug log
       const result = await lifeGroupApi.create(lifeGroupData);
       console.log('Lifegroup created successfully:', result); // Debug log
       
+      // Add the selected leader as a member with LEADER position
+      if (selectedLeaderId) {
+        try {
+          await lifeGroupApi.addPersonMember(result.id, {
+            person_id: selectedLeaderId,
+            position: 'LEADER'
+          });
+          console.log('Leader added successfully to lifegroup'); // Debug log
+        } catch (leaderError: any) {
+          console.error('Error adding leader to lifegroup:', leaderError);
+          // Don't fail the whole process if leader addition fails
+          showToast('Life group berhasil dibuat, tetapi gagal menambahkan leader. Silakan tambahkan leader secara manual.', 'warning');
+          router.push('/dashboard/lifegroup/daftar');
+          return;
+        }
+      }
+      
       // Show success message
       showToast('Life group berhasil dibuat!', 'success');
       
-      // Success - redirect to lifegroup list
-      router.push('/dashboard/lifegroup/kelola');
+      // Success - redirect to daftar lifegroup
+      router.push('/dashboard/lifegroup/daftar');
     } catch (error: any) {
       console.error('Error creating lifegroup:', error);
+      console.error('Error response in submit:', error.response); // Additional debug log
       
       if (error.response?.status === 401) {
         setError('Sesi Anda telah berakhir. Silakan login kembali.');
       } else if (error.response?.status === 403) {
         setError('Anda tidak memiliki akses untuk membuat lifegroup.');
+      } else if (error.response?.status === 500 && error.response?.data?.message?.includes('token')) {
+        setError('Token tidak valid. Silakan login kembali.');
       } else if (error.response?.status === 422) {
         const validationErrors = error.response?.data?.errors;
         if (validationErrors && typeof validationErrors === 'object') {
@@ -173,7 +201,7 @@ export default function TambahLifeGroupPage() {
       <div className='space-y-6 pb-16'>
         <FeaturedCard
           title='Buat Life Group Baru'
-          description='Buat life group baru sebagai PIC Lifegroup untuk membangun komunitas'
+          description='Buat life group baru dan kemudian tambahkan anggota serta atur pemimpin'
           actionLabel='Kembali ke Daftar Life Group'
           gradientFrom='from-emerald-500'
           gradientTo='to-emerald-700'
@@ -261,6 +289,45 @@ export default function TambahLifeGroupPage() {
 
           <div>
             <label className='block text-sm font-medium text-gray-700 mb-1'>
+              Leader *
+            </label>
+            <Select
+              options={availablePersons.map(person => ({
+                value: person.id,
+                label: `${person.nama} - ${person.church}`,
+              }))}
+              value={selectedLeaderId ? {
+                value: selectedLeaderId,
+                label: availablePersons.find(p => p.id === selectedLeaderId)?.nama + ' - ' + availablePersons.find(p => p.id === selectedLeaderId)?.church || '',
+              } : null}
+              onChange={(selected) => {
+                setSelectedLeaderId(selected?.value || '');
+              }}
+              placeholder="Pilih leader..."
+              isSearchable
+              isClearable
+              className="react-select-container"
+              classNamePrefix="react-select"
+              styles={{
+                control: (provided, state) => ({
+                  ...provided,
+                  borderColor: state.isFocused ? '#10b981' : '#d1d5db',
+                  boxShadow: state.isFocused ? '0 0 0 2px rgba(16, 185, 129, 0.2)' : 'none',
+                  '&:hover': {
+                    borderColor: '#10b981',
+                  },
+                }),
+                option: (provided, state) => ({
+                  ...provided,
+                  backgroundColor: state.isFocused ? '#ecfdf5' : 'white',
+                  color: state.isFocused ? '#065f46' : '#1f2937',
+                }),
+              }}
+            />
+          </div>
+
+          <div>
+            <label className='block text-sm font-medium text-gray-700 mb-1'>
               WhatsApp Link
             </label>
             <div className='relative'>
@@ -278,58 +345,6 @@ export default function TambahLifeGroupPage() {
             </div>
           </div>
 
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-1'>
-              Pemimpin *
-            </label>
-            {loadingUsers ? (
-              <div className='flex items-center justify-center py-2'>
-                <div className='w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin'></div>
-                <span className='ml-2 text-gray-600'>Memuat pengguna...</span>
-              </div>
-            ) : (
-              <select
-                name='leader_id'
-                value={formData.leader_id}
-                onChange={handleChange}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500'
-                required
-              >
-                <option value=''>Pilih pemimpin</option>
-                {users.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.person?.nama || user.email}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-
-          <div>
-            <label className='block text-sm font-medium text-gray-700 mb-1'>
-              Wakil Pemimpin
-            </label>
-            {loadingUsers ? (
-              <div className='flex items-center justify-center py-2'>
-                <div className='w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin'></div>
-                <span className='ml-2 text-gray-600'>Memuat pengguna...</span>
-              </div>
-            ) : (
-              <select
-                name='co_leader_id'
-                value={formData.co_leader_id}
-                onChange={handleChange}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500'
-              >
-                <option value=''>Pilih wakil pemimpin (opsional)</option>
-                {users.filter(user => user.id !== formData.leader_id).map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.person?.nama || user.email}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
         </div>
 
         <div className='mt-8 flex justify-end space-x-4'>
@@ -349,7 +364,7 @@ export default function TambahLifeGroupPage() {
             className='px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 flex items-center disabled:opacity-50 disabled:cursor-not-allowed'
             whileHover={{ scale: loading ? 1 : 1.02 }}
             whileTap={{ scale: loading ? 1 : 0.98 }}
-            disabled={loading || loadingUsers}
+            disabled={loading}
           >
             {loading ? (
               <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2'></div>

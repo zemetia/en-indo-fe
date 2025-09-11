@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FiUsers, FiUserPlus } from 'react-icons/fi';
+import { FiUsers, FiUserPlus, FiLogOut } from 'react-icons/fi';
 import { Crown } from 'lucide-react';
 import UnifiedMemberTable from './UnifiedMemberTable';
 import AddPersonMemberModal from './AddPersonMemberModal';
@@ -10,17 +10,25 @@ import {
   lifeGroupApi, 
   LifeGroupPersonMember, 
   LifeGroupVisitorMember,
-  AddPersonMemberRequest,
-  AddVisitorMemberRequest,
+  AddPersonMembersBatchRequest,
+  AddVisitorMembersBatchRequest,
+  BatchOperationResult,
   UpdatePersonMemberPositionRequest,
   RemovePersonMemberRequest,
-  RemoveVisitorMemberRequest
+  RemoveVisitorMemberRequest,
+  LifeGroup
 } from '@/lib/lifegroup';
+import { getCurrentUserId } from '@/lib/helper';
 
 type MemberTabViewProps = {
   lifeGroupId: string;
   lifeGroupChurchId: string;
-  canManageMembers: boolean;
+  canManageMembers: boolean; // Kept for backward compatibility
+  canAddEditMembers?: boolean;
+  canDeleteMembers?: boolean;
+  canEditPositions?: boolean;
+  userRole?: string | null;
+  lifeGroup?: LifeGroup;
   onMemberCountChange?: (personCount: number, visitorCount: number) => void;
 };
 
@@ -28,6 +36,11 @@ export default function MemberTabView({
   lifeGroupId,
   lifeGroupChurchId,
   canManageMembers,
+  canAddEditMembers = canManageMembers, // Default to backward compatibility
+  canDeleteMembers = canManageMembers, // Default to backward compatibility
+  canEditPositions = canManageMembers,
+  userRole,
+  lifeGroup,
   onMemberCountChange,
 }: MemberTabViewProps) {
   const [personMembers, setPersonMembers] = useState<LifeGroupPersonMember[]>([]);
@@ -65,12 +78,13 @@ export default function MemberTabView({
   };
 
   // Person member handlers
-  const handleAddPersonMember = async (data: AddPersonMemberRequest) => {
+  const handleAddPersonMember = async (data: AddPersonMembersBatchRequest): Promise<BatchOperationResult> => {
     try {
-      await lifeGroupApi.addPersonMember(lifeGroupId, data);
+      const result = await lifeGroupApi.addPersonMembersBatch(lifeGroupId, data);
       await fetchMembers(); // Refresh the list
+      return result;
     } catch (error) {
-      console.error('Error adding person member:', error);
+      console.error('Error adding person members:', error);
       throw error;
     }
   };
@@ -93,10 +107,6 @@ export default function MemberTabView({
   };
 
   const handleRemovePersonMember = async (member: LifeGroupPersonMember) => {
-    if (!confirm(`Apakah Anda yakin ingin menghapus ${member.person.nama} dari life group ini?`)) {
-      return;
-    }
-
     try {
       const data: RemovePersonMemberRequest = {
         person_id: member.person_id,
@@ -110,21 +120,18 @@ export default function MemberTabView({
   };
 
   // Visitor member handlers
-  const handleAddVisitorMember = async (data: AddVisitorMemberRequest) => {
+  const handleAddVisitorMember = async (data: AddVisitorMembersBatchRequest): Promise<BatchOperationResult> => {
     try {
-      await lifeGroupApi.addVisitorMember(lifeGroupId, data);
+      const result = await lifeGroupApi.addVisitorMembersBatch(lifeGroupId, data);
       await fetchMembers(); // Refresh the list
+      return result;
     } catch (error) {
-      console.error('Error adding visitor member:', error);
+      console.error('Error adding visitor members:', error);
       throw error;
     }
   };
 
   const handleRemoveVisitorMember = async (member: LifeGroupVisitorMember) => {
-    if (!confirm(`Apakah Anda yakin ingin menghapus ${member.visitor.name} dari life group ini?`)) {
-      return;
-    }
-
     try {
       const data: RemoveVisitorMemberRequest = {
         visitor_id: member.visitor_id,
@@ -134,6 +141,29 @@ export default function MemberTabView({
     } catch (error) {
       console.error('Error removing visitor member:', error);
       alert('Gagal menghapus pengunjung. Silakan coba lagi.');
+    }
+  };
+
+  // Exit lifegroup functionality
+  const handleExitLifeGroup = async () => {
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId) return;
+
+    if (!confirm('Apakah Anda yakin ingin keluar dari life group ini?')) {
+      return;
+    }
+
+    try {
+      const data: RemovePersonMemberRequest = {
+        person_id: currentUserId,
+      };
+      await lifeGroupApi.removePersonMember(lifeGroupId, data);
+      alert('Anda berhasil keluar dari life group ini.');
+      // Redirect to lifegroup list or dashboard
+      window.location.href = '/dashboard/lifegroup';
+    } catch (error) {
+      console.error('Error exiting life group:', error);
+      alert('Gagal keluar dari life group. Silakan coba lagi.');
     }
   };
 
@@ -165,27 +195,41 @@ export default function MemberTabView({
         </div>
       </div>
 
-      {/* Add Member Buttons */}
-      {canManageMembers && (
-        <div className="flex flex-wrap gap-3">
+      {/* Action Buttons */}
+      <div className="flex flex-wrap gap-3 justify-between items-center">
+        {/* Add Member Buttons */}
+        {canAddEditMembers && (
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => setShowAddPersonModal(true)}
+              className="flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+            >
+              <FiUserPlus className="w-4 h-4 mr-2" />
+              Tambah Anggota Person
+            </button>
+            <button
+              onClick={() => setShowAddVisitorModal(true)}
+              className="flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors"
+            >
+              <div className="w-4 h-4 mr-2 bg-gradient-to-br from-purple-300 to-purple-400 rounded-full flex items-center justify-center">
+                <span className="text-purple-800 text-xs">+</span>
+              </div>
+              Tambah Visitor
+            </button>
+          </div>
+        )}
+
+        {/* Exit Lifegroup Button - Only show if user is a member */}
+        {userRole && userRole !== 'pic' && (
           <button
-            onClick={() => setShowAddPersonModal(true)}
-            className="flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors"
+            onClick={handleExitLifeGroup}
+            className="flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
           >
-            <FiUserPlus className="w-4 h-4 mr-2" />
-            Tambah Anggota Person
+            <FiLogOut className="w-4 h-4 mr-2" />
+            Keluar
           </button>
-          <button
-            onClick={() => setShowAddVisitorModal(true)}
-            className="flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors"
-          >
-            <div className="w-4 h-4 mr-2 bg-gradient-to-br from-purple-300 to-purple-400 rounded-full flex items-center justify-center">
-              <span className="text-purple-800 text-xs">+</span>
-            </div>
-            Tambah Visitor
-          </button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Loading State */}
       {loading ? (
@@ -201,6 +245,11 @@ export default function MemberTabView({
           onRemovePersonMember={handleRemovePersonMember}
           onRemoveVisitorMember={handleRemoveVisitorMember}
           canManageMembers={canManageMembers}
+          canAddEditMembers={canAddEditMembers}
+          canDeleteMembers={canDeleteMembers}
+          canEditPositions={canEditPositions}
+          userRole={userRole}
+          lifeGroup={lifeGroup}
         />
       )}
 

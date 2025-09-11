@@ -121,8 +121,6 @@ export interface CreateLifeGroupData {
   location: string;
   whatsapp_link?: string;
   church_id: string;
-  leader_id: string;
-  co_leader_id?: string;
 }
 
 // Request interfaces for member management
@@ -146,6 +144,27 @@ export interface AddVisitorMemberRequest {
 
 export interface RemoveVisitorMemberRequest {
   visitor_id: string;
+}
+
+// Batch operation interfaces
+export interface AddPersonMembersBatchRequest {
+  person_ids: string[];
+}
+
+export interface AddVisitorMembersBatchRequest {
+  visitor_ids: string[];
+}
+
+export interface BatchOperationResult {
+  total_requested: number;
+  successful: number;
+  failed: number;
+  errors?: BatchOperationError[];
+}
+
+export interface BatchOperationError {
+  id: string;
+  error: string;
 }
 
 // Legacy interfaces (keeping for backward compatibility)
@@ -249,6 +268,11 @@ export const lifeGroupApi = {
     return response.data.data;
   },
 
+  addPersonMembersBatch: async (lifeGroupId: string, data: AddPersonMembersBatchRequest): Promise<BatchOperationResult> => {
+    const response = await apiClient.post(`/api/lifegroup/${lifeGroupId}/person-members/batch`, data);
+    return response.data.data;
+  },
+
   updatePersonMemberPosition: async (lifeGroupId: string, data: UpdatePersonMemberPositionRequest): Promise<LifeGroupPersonMember> => {
     const response = await apiClient.put(`/api/lifegroup/${lifeGroupId}/person-members/position`, data);
     return response.data.data;
@@ -271,6 +295,11 @@ export const lifeGroupApi = {
 
   addVisitorMember: async (lifeGroupId: string, data: AddVisitorMemberRequest): Promise<LifeGroupVisitorMember> => {
     const response = await apiClient.post(`/api/lifegroup/${lifeGroupId}/visitor-members`, data);
+    return response.data.data;
+  },
+
+  addVisitorMembersBatch: async (lifeGroupId: string, data: AddVisitorMembersBatchRequest): Promise<BatchOperationResult> => {
+    const response = await apiClient.post(`/api/lifegroup/${lifeGroupId}/visitor-members/batch`, data);
     return response.data.data;
   },
 

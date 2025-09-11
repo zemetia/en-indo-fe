@@ -42,8 +42,6 @@ export default function EditLifeGroupPage({
     location: '',
     whatsapp_link: '',
     church_id: '',
-    leader_id: '',
-    co_leader_id: '',
   });
   const [users, setUsers] = useState<User[]>([]);
   const [availableChurches, setAvailableChurches] = useState<Array<{ id: string; name: string }>>([]);
@@ -83,8 +81,6 @@ export default function EditLifeGroupPage({
           location: lifeGroupResponse.location,
           whatsapp_link: lifeGroupResponse.whatsapp_link || '',
           church_id: lifeGroupResponse.church_id,
-          leader_id: lifeGroupResponse.leader_id,
-          co_leader_id: lifeGroupResponse.co_leader_id || '',
         });
 
       } catch (error: any) {
@@ -123,10 +119,6 @@ export default function EditLifeGroupPage({
         setError('Lokasi wajib diisi.');
         return;
       }
-      if (!formData.leader_id) {
-        setError('Pemimpin wajib dipilih.');
-        return;
-      }
       if (!formData.church_id) {
         setError('Gereja wajib dipilih.');
         return;
@@ -138,8 +130,6 @@ export default function EditLifeGroupPage({
         location: formData.location.trim(),
         whatsapp_link: formData.whatsapp_link?.trim() || undefined,
         church_id: formData.church_id,
-        leader_id: formData.leader_id,
-        co_leader_id: formData.co_leader_id || undefined,
       };
 
       console.log('Updating lifegroup with data:', updateData);
@@ -347,43 +337,20 @@ export default function EditLifeGroupPage({
               </div>
             </div>
 
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
-                Pemimpin *
-              </label>
-              <select
-                name='leader_id'
-                value={formData.leader_id}
-                onChange={handleChange}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500'
-                required
-              >
-                <option value=''>Pilih pemimpin</option>
-                {users.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.person?.nama || user.email}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
-                Wakil Pemimpin
-              </label>
-              <select
-                name='co_leader_id'
-                value={formData.co_leader_id}
-                onChange={handleChange}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500'
-              >
-                <option value=''>Pilih wakil pemimpin (opsional)</option>
-                {users.filter(user => user.id !== formData.leader_id).map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.person?.nama || user.email}
-                  </option>
-                ))}
-              </select>
+            {/* Leadership Management Note */}
+            <div className='bg-blue-50 border border-blue-200 rounded-lg p-4'>
+              <h4 className='font-medium text-blue-900 mb-2 flex items-center'>
+                <FiUsers className='w-4 h-4 mr-2' />
+                Pengelolaan Kepemimpinan
+              </h4>
+              <p className='text-blue-700 text-sm mb-2'>
+                Pemimpin dan Wakil Pemimpin dikelola melalui sistem anggota. Setelah menyimpan perubahan, Anda dapat:
+              </p>
+              <ul className='text-blue-600 text-sm space-y-1 ml-4'>
+                <li>• Menambah anggota baru dengan posisi Leader atau Co-Leader</li>
+                <li>• Mengubah posisi anggota yang sudah ada</li>
+                <li>• Mengelola struktur kepemimpinan di halaman detail Life Group</li>
+              </ul>
             </div>
           </div>
 

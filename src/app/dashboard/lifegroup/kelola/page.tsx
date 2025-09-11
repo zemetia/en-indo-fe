@@ -303,7 +303,7 @@ export default function LifeGroupPage() {
                       </motion.button>
                     </Link>
                     {canManage && (
-                      <Link href={`/dashboard/lifegroup/${group.id}/anggota`}>
+                      <Link href={`/dashboard/lifegroup/${group.id}`}>
                         <motion.button
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
