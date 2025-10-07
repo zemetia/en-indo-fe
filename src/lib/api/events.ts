@@ -68,6 +68,25 @@ export interface Event {
     title: string;
   }>;
   
+  // Event organizers (penyelenggara)
+  churches?: Array<{
+    id: string;
+    name: string;
+    address: string;
+    church_code: string;
+    phone: string;
+    email: string;
+    website: string;
+    latitude: number;
+    longitude: number;
+    kabupaten_id: number;
+    kabupaten: string;
+    provinsi_id: number;
+    provinsi: string;
+    created_at: string;
+    updated_at: string;
+  }>;
+  
   // Expected participant counts for planning
   expectedParticipants: number;
   expectedAdults: number;
@@ -164,6 +183,8 @@ export interface CreateEventRequest {
     until?: string;
   };
   laguIds?: string[];
+  // Event organizers (penyelenggara)
+  churchIds?: string[];
   eventPics?: EventPICRequest[];
   // Expected participant counts for planning
   expectedParticipants?: number;
@@ -187,6 +208,8 @@ export interface UpdateEventRequest {
   isPublic?: boolean;
   discipleshipJourneyId?: string;
   laguIds?: string[];
+  // Event organizers (penyelenggara)
+  churchIds?: string[];
   // Expected participant counts for planning
   expectedParticipants?: number;
   expectedAdults?: number;

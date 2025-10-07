@@ -10,6 +10,7 @@ import {
   FiCheckSquare,
   FiUserPlus,
   FiEdit3,
+  FiTag,
 } from 'react-icons/fi';
 import { HiOutlineUserGroup } from 'react-icons/hi2';
 import { IoMusicalNotesOutline } from 'react-icons/io5';
@@ -235,6 +236,14 @@ export const dashboardMenu: MenuItem[] = [
         href: '/dashboard/event/calendar',
         color: 'bg-amber-900',
         permissions: ['admin', 'event'],
+      },
+      {
+        title: 'Manajemen Event Type',
+        description: 'Kelola kategori dan tipe event',
+        icon: FiTag,
+        href: '/dashboard/event/type',
+        color: 'bg-cyan-600',
+        permissions: ['admin'],
       },
     ],
   },

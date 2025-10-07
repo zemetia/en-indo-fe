@@ -22,6 +22,7 @@ import { createEvent, CreateEventRequest, EventPICRequest, getAvailablePICRoles,
 import { RecurrencePicker } from '@/components/ui/recurrence-picker';
 import { ParticipantPlanner, ParticipantData } from '@/components/ui/participant-planner';
 import { personService, SimplePerson } from '@/lib/person-service';
+import ChurchMultiSelect from '@/components/events/ChurchMultiSelect';
 
 // --- Interfaces ---
 interface RecurrenceRule {
@@ -79,6 +80,7 @@ export default function CreateEventPage() {
     bannerImage: null as File | null,
     pics: [] as EventPICFormData[],
     recurrenceRule: null as RecurrenceRule | null,
+    churchIds: [] as string[],
     expectedParticipants: {
       expectedParticipants: 0,
       expectedAdults: 0,
@@ -340,6 +342,7 @@ export default function CreateEventPage() {
         expectedAdults: formData.expectedParticipants.expectedAdults || undefined,
         expectedYouth: formData.expectedParticipants.expectedYouth || undefined,
         expectedKids: formData.expectedParticipants.expectedKids || undefined,
+        churchIds: formData.churchIds.length > 0 ? formData.churchIds : undefined,
         eventPics: eventPics,
         // Add recurrence rule if it exists
         ...(formData.recurrenceRule && {
@@ -449,6 +452,21 @@ export default function CreateEventPage() {
                         <textarea name='description' rows={3} value={formData.description} onChange={handleInputChange} className='w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2' />
                     </Field>
                 </div>
+            </Section>
+
+            {/* --- Event Organizers --- */}
+            <Section title="Penyelenggara Event">
+                <Field label="Gereja Penyelenggara">
+                    <ChurchMultiSelect
+                        value={formData.churchIds}
+                        onChange={(churchIds) => setFormData(prev => ({ ...prev, churchIds }))}
+                        placeholder="Pilih gereja yang menjadi penyelenggara event..."
+                        className="w-full"
+                    />
+                </Field>
+                <p className="text-sm text-gray-500 mt-1">
+                    Pilih satu atau lebih gereja yang akan menjadi penyelenggara event ini.
+                </p>
             </Section>
 
             {/* --- Banner Upload --- */}
