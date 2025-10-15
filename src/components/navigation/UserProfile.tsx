@@ -1,5 +1,6 @@
 'use client';
 import { Pelayanan } from '@/lib/helper';
+import { consolidatePelayanan, formatChurchList, ConsolidatedPelayanan } from '@/lib/utils/pelayanan-utils';
 
 import { useState, useEffect, useRef } from 'react';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
@@ -23,20 +24,27 @@ export default function UserProfile({
   const [currentPelayananIndex, setCurrentPelayananIndex] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [consolidatedPelayanan, setConsolidatedPelayanan] = useState<ConsolidatedPelayanan[]>([]);
+
+  // Consolidate pelayanan on mount or when pelayanan changes
+  useEffect(() => {
+    const consolidated = consolidatePelayanan(pelayanan);
+    setConsolidatedPelayanan(consolidated);
+  }, [pelayanan]);
 
   useEffect(() => {
-    if (pelayanan.length <= 1) return;
+    if (consolidatedPelayanan.length <= 1) return;
 
     const interval = setInterval(() => {
       if (!showDropdown) {
         setCurrentPelayananIndex((prev) =>
-          prev === pelayanan.length - 1 ? 0 : prev + 1
+          prev === consolidatedPelayanan.length - 1 ? 0 : prev + 1
         );
       }
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [pelayanan.length, showDropdown]);
+  }, [consolidatedPelayanan.length, showDropdown]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -53,7 +61,7 @@ export default function UserProfile({
   }, []);
 
   const toggleDropdown = () => {
-    if (pelayanan.length > 1) {
+    if (consolidatedPelayanan.length > 1) {
         setShowDropdown(!showDropdown);
     }
   };
@@ -74,11 +82,11 @@ export default function UserProfile({
       {!isCollapsed && (
         <div className='min-w-0 flex-1 relative'>
           <p className='text-sm font-medium text-gray-900 truncate'>{name}</p>
-          {pelayanan.length > 0 && (
+          {consolidatedPelayanan.length > 0 && (
             <div ref={dropdownRef} className='mt-1'>
               <div
                 onClick={toggleDropdown}
-                className={`flex items-center space-x-1 ${pelayanan.length > 1 ? 'cursor-pointer' : ''}`}
+                className={`flex items-center space-x-1 ${consolidatedPelayanan.length > 1 ? 'cursor-pointer' : ''}`}
               >
                 <AnimatePresence mode='wait'>
                   <motion.div
@@ -90,8 +98,8 @@ export default function UserProfile({
                     className='flex items-center'
                   >
                     <span className='text-xs font-medium text-primary-600'>
-                      {pelayanan[currentPelayananIndex]?.pelayanan || 'Jemaat'}
-                      {pelayanan[currentPelayananIndex]?.is_pic && (
+                      {consolidatedPelayanan[currentPelayananIndex]?.ministry || 'Jemaat'}
+                      {consolidatedPelayanan[currentPelayananIndex]?.isPIC && (
                         <span className='ml-1 text-xs text-amber-600'>
                           (PIC)
                         </span>
@@ -99,7 +107,7 @@ export default function UserProfile({
                     </span>
                   </motion.div>
                 </AnimatePresence>
-                {pelayanan.length > 1 && (showDropdown ? (
+                {consolidatedPelayanan.length > 1 && (showDropdown ? (
                   <FiChevronUp className='w-3 h-3 text-gray-500' />
                 ) : (
                   <FiChevronDown className='w-3 h-3 text-gray-500' />
@@ -107,30 +115,37 @@ export default function UserProfile({
               </div>
 
               <AnimatePresence>
-                {showDropdown && pelayanan.length > 1 &&(
+                {showDropdown && consolidatedPelayanan.length > 1 &&(
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className='absolute z-40 mt-1 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-200'
+                    className='absolute z-40 mt-1 w-64 bg-white rounded-md shadow-lg py-1 border border-gray-200'
                   >
-                    {pelayanan.map((item: Pelayanan, index: number) => (
+                    {consolidatedPelayanan.map((item: ConsolidatedPelayanan, index: number) => (
                       <div
-                        key={item.pelayanan_id}
+                        key={item.ministry}
                         onClick={() => {
                             setCurrentPelayananIndex(index);
                             setShowDropdown(false);
                         }}
-                        className='px-3 py-2 text-xs hover:bg-gray-50 cursor-pointer flex justify-between items-center'
+                        className='px-3 py-2 text-xs hover:bg-gray-50 cursor-pointer'
                       >
-                        <span className='font-medium text-gray-800'>
-                          {item.pelayanan}
-                        </span>
-                        {item.is_pic && (
-                          <span className='text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full'>
-                            PIC
-                          </span>
-                        )}
+                        <div className='flex justify-between items-start'>
+                          <div className='flex-1 min-w-0'>
+                            <span className='font-medium text-gray-800 block'>
+                              {item.ministry}
+                            </span>
+                            <span className='text-gray-500 block mt-0.5 text-[10px]'>
+                              {formatChurchList(item.churches)}
+                            </span>
+                          </div>
+                          {item.isPIC && (
+                            <span className='text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full ml-2 shrink-0'>
+                              PIC
+                            </span>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </motion.div>

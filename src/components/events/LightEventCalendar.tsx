@@ -3,15 +3,15 @@
 import { useState, useCallback, useMemo } from 'react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, parseISO } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Calendar as CalendarIcon, 
-  MapPin, 
-  Clock, 
-  Users, 
-  Repeat, 
-  Edit, 
+import {
+  ChevronLeft,
+  ChevronRight,
+  Calendar as CalendarIcon,
+  MapPin,
+  Clock,
+  Users,
+  Repeat,
+  Edit,
   Trash2,
   Plus,
   ExternalLink
@@ -49,20 +49,26 @@ interface EventOccurrence {
   };
 }
 
+type AvailabilityStatus = 'available' | 'unavailable' | 'tentative' | 'unselected';
+
 interface LightEventCalendarProps {
   events: EventOccurrence[];
   onEventClick?: (event: EventOccurrence) => void;
   onEventEdit?: (eventId: string, occurrenceDate: string, updateType: RecurrenceUpdateType) => void;
   onEventDelete?: (eventId: string, occurrenceDate: string, updateType: RecurrenceUpdateType) => void;
   onDateRangeChange?: (start: Date, end: Date) => void;
+  availability?: Record<string, AvailabilityStatus>;
+  onToggleAvailability?: (event: EventOccurrence) => void;
 }
 
-export default function LightEventCalendar({ 
-  events, 
-  onEventClick, 
-  onEventEdit, 
+export default function LightEventCalendar({
+  events,
+  onEventClick,
+  onEventEdit,
   onEventDelete,
-  onDateRangeChange 
+  onDateRangeChange,
+  availability = {},
+  onToggleAvailability
 }: LightEventCalendarProps) {
   const router = useRouter();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -107,7 +113,12 @@ export default function LightEventCalendar({
     const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
     setCurrentDate(newDate);
     if (onDateRangeChange) {
-      onDateRangeChange(startOfMonth(newDate), endOfMonth(newDate));
+      // Fetch from start of week to end of week to match calendar display
+      const monthStart = startOfMonth(newDate);
+      const monthEnd = endOfMonth(newDate);
+      const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+      const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+      onDateRangeChange(calendarStart, calendarEnd);
     }
   };
 
@@ -115,7 +126,12 @@ export default function LightEventCalendar({
     const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
     setCurrentDate(newDate);
     if (onDateRangeChange) {
-      onDateRangeChange(startOfMonth(newDate), endOfMonth(newDate));
+      // Fetch from start of week to end of week to match calendar display
+      const monthStart = startOfMonth(newDate);
+      const monthEnd = endOfMonth(newDate);
+      const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+      const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+      onDateRangeChange(calendarStart, calendarEnd);
     }
   };
 
@@ -123,7 +139,12 @@ export default function LightEventCalendar({
     const today = new Date();
     setCurrentDate(today);
     if (onDateRangeChange) {
-      onDateRangeChange(startOfMonth(today), endOfMonth(today));
+      // Fetch from start of week to end of week to match calendar display
+      const monthStart = startOfMonth(today);
+      const monthEnd = endOfMonth(today);
+      const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+      const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+      onDateRangeChange(calendarStart, calendarEnd);
     }
   };
 
@@ -153,15 +174,15 @@ export default function LightEventCalendar({
 
   const handleRecurrenceConfirm = (updateType: RecurrenceUpdateType) => {
     if (!recurrenceModal.event) return;
-    
+
     const { event } = recurrenceModal;
-    
+
     if (recurrenceModal.action === 'edit') {
       onEventEdit?.(event.eventId, event.occurrenceDate, updateType);
     } else {
       onEventDelete?.(event.eventId, event.occurrenceDate, updateType);
     }
-    
+
     setRecurrenceModal({ isOpen: false, action: 'edit', event: null });
   };
 
@@ -243,30 +264,51 @@ export default function LightEventCalendar({
                   
                   {/* Events for this day */}
                   <div className="space-y-1">
-                    {dayEvents.slice(0, 3).map((event, idx) => (
-                      <div
-                        key={`${event.eventId}-${idx}`}
-                        className={`
-                          text-xs px-2 py-1 rounded cursor-pointer
-                          ${getTypeColor(event.originalEvent.type)}
-                          hover:opacity-80 transition-opacity
-                        `}
-                        onClick={() => {
-                          setSelectedEvent(event);
-                          onEventClick?.(event);
-                        }}
-                      >
-                        <div className="flex items-center gap-1 truncate">
-                          {event.originalEvent.recurrenceRule && (
-                            <Repeat className="h-2 w-2 flex-shrink-0" />
-                          )}
-                          {event.isException && (
-                            <span className="text-yellow-200">*</span>
-                          )}
-                          <span className="truncate">{event.originalEvent.title}</span>
+                    {dayEvents.slice(0, 3).map((event, idx) => {
+                      const occurrenceDate = event.occurrenceDate.split('T')[0];
+                      const key = `${event.eventId}_${occurrenceDate}`;
+                      const status = availability[key] || 'unselected';
+
+                      const statusColors = {
+                        available: 'bg-green-500',
+                        tentative: 'bg-yellow-500',
+                        unavailable: 'bg-red-500',
+                        unselected: ''
+                      };
+
+                      return (
+                        <div
+                          key={`${event.eventId}-${idx}`}
+                          className={`
+                            text-xs px-2 py-1 rounded cursor-pointer
+                            ${getTypeColor(event.originalEvent.type)}
+                            hover:opacity-80 transition-opacity
+                          `}
+                          onClick={(e) => {
+                            // Check if Ctrl/Cmd key is pressed for availability toggle
+                            if (e.ctrlKey || e.metaKey) {
+                              onToggleAvailability?.(event);
+                            } else {
+                              setSelectedEvent(event);
+                              onEventClick?.(event);
+                            }
+                          }}
+                        >
+                          <div className="flex items-center gap-1 truncate">
+                            {status !== 'unselected' && (
+                              <div className={`w-2 h-2 rounded-full ${statusColors[status]} flex-shrink-0`}></div>
+                            )}
+                            {event.originalEvent.recurrenceRule && (
+                              <Repeat className="h-2 w-2 flex-shrink-0" />
+                            )}
+                            {event.isException && (
+                              <span className="text-yellow-200">*</span>
+                            )}
+                            <span className="truncate">{event.originalEvent.title}</span>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                     
                     {dayEvents.length > 3 && (
                       <div className="text-xs text-gray-500 text-center">
@@ -318,9 +360,9 @@ export default function LightEventCalendar({
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button 
-                  variant="default" 
-                  size="sm" 
+                <Button
+                  variant="default"
+                  size="sm"
                   onClick={() => router.push(`/dashboard/event/${selectedEvent.eventId}`)}
                 >
                   <ExternalLink className="h-4 w-4 mr-1" />
@@ -334,6 +376,17 @@ export default function LightEventCalendar({
                   <Trash2 className="h-4 w-4 mr-1" />
                   Hapus
                 </Button>
+                {onToggleAvailability && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onToggleAvailability(selectedEvent)}
+                    className="ml-2"
+                  >
+                    <Users className="h-4 w-4 mr-1" />
+                    Toggle Ketersediaan
+                  </Button>
+                )}
               </div>
             </div>
           </CardHeader>
@@ -343,8 +396,8 @@ export default function LightEventCalendar({
                 <h4 className="font-medium mb-1">Deskripsi</h4>
                 <p className="text-sm text-gray-600">{selectedEvent.originalEvent.description || 'Tidak ada deskripsi'}</p>
               </div>
-              
-              <div className="flex items-center gap-4 text-sm">
+
+              <div className="flex items-center gap-4 text-sm flex-wrap">
                 <span className={`px-2 py-1 rounded text-xs font-medium ${
                   selectedEvent.originalEvent.type === 'ibadah' ? 'bg-blue-100 text-blue-700' :
                   selectedEvent.originalEvent.type === 'spiritual_journey' ? 'bg-purple-100 text-purple-700' :
@@ -354,12 +407,34 @@ export default function LightEventCalendar({
                    selectedEvent.originalEvent.type === 'spiritual_journey' ? 'Spiritual Journey' :
                    'Event'}
                 </span>
-                
+
                 <span className={`px-2 py-1 rounded text-xs font-medium ${
                   selectedEvent.originalEvent.isPublic ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
                 }`}>
                   {selectedEvent.originalEvent.isPublic ? 'Publik' : 'Privat'}
                 </span>
+
+                {/* Availability Status Badge */}
+                {(() => {
+                  const occurrenceDate = selectedEvent.occurrenceDate.split('T')[0];
+                  const key = `${selectedEvent.eventId}_${occurrenceDate}`;
+                  const status = availability[key] || 'unselected';
+
+                  const statusBadges = {
+                    available: { bg: 'bg-green-100', text: 'text-green-700', label: 'Bisa Hadir' },
+                    tentative: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Mungkin' },
+                    unavailable: { bg: 'bg-red-100', text: 'text-red-700', label: 'Tidak Bisa' },
+                    unselected: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'Belum Diisi' }
+                  };
+
+                  const badge = statusBadges[status];
+
+                  return (
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${badge.bg} ${badge.text}`}>
+                      Ketersediaan: {badge.label}
+                    </span>
+                  );
+                })()}
               </div>
 
               {selectedEvent.exceptionNotes && (

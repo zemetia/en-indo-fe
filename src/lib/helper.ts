@@ -16,6 +16,7 @@ export interface Pelayanan {
 
 export interface UserData {
   token: string;
+  person_id?: string;
   pelayanan: Pelayanan[];
   nama: string;
   image_url: string;
@@ -88,13 +89,20 @@ export function getToken(): string | null {
 }
 
 /**
- * Retrieves the current user's person ID from the JWT token.
+ * Retrieves the current user's person ID from stored user data or JWT token.
  * @returns The person ID string or null if not found.
  */
 export function getCurrentUserPersonId(): string | null {
+  // First try to get from stored user data (faster and doesn't require JWT decode)
+  const userData = getUserData();
+  if (userData?.person_id) {
+    return userData.person_id;
+  }
+
+  // Fallback to JWT token if not in user data (for backwards compatibility)
   const token = getToken();
   if (!token) return null;
-  
+
   try {
     const decoded: any = jwtDecode(token);
     return decoded.person_id || null;

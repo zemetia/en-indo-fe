@@ -107,7 +107,7 @@ export default function Sidebar() {
       <aside className="w-64 h-screen bg-white border-r border-gray-200 flex flex-col">
         <div className='flex items-center p-4 border-b border-gray-200 flex-shrink-0'>
           <Image
-            src='/images/logo.png'
+            src='/images/Logo/EN Logo for Dark Background 2.png'
             alt='Every Nation Logo'
             width={100}
             height={40}
@@ -147,7 +147,7 @@ export default function Sidebar() {
       >
         <div className='flex items-center p-4 border-b border-gray-200 flex-shrink-0'>
           <Image
-            src='/images/logo.png'
+            src='/images/Logo/EN Logo for Dark Background 2.png'
             alt='Every Nation Logo'
             width={isCollapsed ? 40 : 100}
             height={40}

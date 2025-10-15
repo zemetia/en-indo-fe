@@ -1,18 +1,16 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Filter, Download, RefreshCw, Calendar, Grid3x3, Wifi, WifiOff, AlertCircle } from 'lucide-react';
-import { useDebounce } from '@/lib/hooks/useDebounce';
-import { useAbortController, useRequestLock } from '@/lib/hooks/useAbortController';
-import { useCachedApi, createCacheKey } from '@/lib/hooks/useCache';
+import { Plus, Filter, Download, RefreshCw, Calendar, Grid3x3, Wifi, WifiOff, AlertCircle, Save } from 'lucide-react';
+import { FiSave } from 'react-icons/fi';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import DynamicEventCalendar from '@/components/events/DynamicEventCalendar';
 import LightEventCalendar from '@/components/events/LightEventCalendar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -20,173 +18,117 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/context/ToastContext';
-import { 
-  getOccurrencesInRange, 
-  updateRecurringEvent, 
-  deleteOccurrence,
-  EventOccurrence,
-  healthCheck,
-  APIError
+import { useEventOccurrences } from '@/lib/hooks/useEventOccurrences';
+import type { EventOccurrence } from '@/lib/api/events';
+import {
+  deleteOccurrence
 } from '@/lib/api/events';
+import {
+  getPersonAvailability,
+  upsertKetersediaan
+} from '@/lib/api/availability';
 import RecurrenceModal, { RecurrenceUpdateType } from '@/components/events/RecurrenceModal';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 function EventCalendarPageContent() {
   const router = useRouter();
   const { showToast } = useToast();
-  
+
   useEffect(() => {
     document.title = 'Kalender Acara - Dashboard Every Nation';
   }, []);
-  
-  const [allEvents, setAllEvents] = useState<EventOccurrence[]>([]);  // Raw events from API
-  const [events, setEvents] = useState<EventOccurrence[]>([]);       // Filtered events
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<{ message: string; isNetworkError: boolean } | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<'unknown' | 'connected' | 'disconnected'>('unknown');
+
   const [filters, setFilters] = useState({
     type: 'all',
     visibility: 'all'
   });
-  
+
   const [calendarView, setCalendarView] = useState<'light' | 'full'>('light');
-  
+
   // State for current date range being viewed
-  const [dateRange, setDateRange] = useState({
-    start: new Date(),
-    end: new Date()
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+
+  // Calculate date range for current month
+  const dateRange = useMemo(() => {
+    const start = new Date(currentYear, currentMonth, 1);
+    const end = new Date(currentYear, currentMonth + 1, 0);
+    return { start, end };
+  }, [currentMonth, currentYear]);
+
+  // Fetch events using the hook (same as ketersediaan page)
+  const { events: allEvents, loading, error, refetch } = useEventOccurrences({
+    startDate: dateRange.start,
+    endDate: dateRange.end,
   });
 
-  // Add request management hooks
-  const { getSignal, abort } = useAbortController([]);
-  const { lock, unlock, isLocked } = useRequestLock();
-  
-  // Add caching for events data (5 minute TTL)
-  const { cachedFetch } = useCachedApi<EventOccurrence[]>({ 
-    ttl: 5 * 60 * 1000, // 5 minutes
-    onError: (error) => console.error('Cached API error:', error)
-  });
+  // Availability state
+  type AvailabilityStatus = 'available' | 'unavailable' | 'tentative' | 'unselected';
+  const [availability, setAvailability] = useState<Record<string, AvailabilityStatus>>({});
+  const [savingAvailability, setSavingAvailability] = useState(false);
+  const [loadingAvailability, setLoadingAvailability] = useState(false);
 
-  // Check backend connection status
-  const checkConnection = useCallback(async () => {
-    try {
-      const result = await healthCheck();
-      setConnectionStatus(result.status === 'ok' ? 'connected' : 'disconnected');
-    } catch (err) {
-      setConnectionStatus('disconnected');
-    }
-  }, []);
-
-  // Load events for the current date range (no filtering here)
-  const loadEvents = useCallback(async (startDate: Date, endDate: Date, isRetry = false) => {
-    // Prevent multiple simultaneous requests
-    if (!lock()) {
-      console.log('Request blocked - another request in progress');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const startDateStr = startDate.toISOString().split('T')[0];
-      const endDateStr = endDate.toISOString().split('T')[0];
-      
-      console.log('Loading events for range:', startDateStr, 'to', endDateStr);
-      
-      // Create cache key for this date range
-      const cacheKey = createCacheKey('events', startDateStr, endDateStr, 'Asia/Jakarta');
-      
-      // Abort any ongoing request before making new one
-      abort();
-      const signal = getSignal();
-      
-      // Use cached fetch with retry fallback
-      const occurrences = await cachedFetch(
-        cacheKey,
-        () => getOccurrencesInRange(startDateStr, endDateStr, 'Asia/Jakarta', signal),
-        isRetry // Force refresh on retry
-      );
-      
-      // Check if request was cancelled
-      if (signal?.aborted) {
-        console.log('Request was cancelled');
-        return;
-      }
-      
-      setAllEvents(occurrences);
-      setDateRange({ start: startDate, end: endDate });
-      setConnectionStatus('connected');
-      
-    } catch (err: any) {
-      // Don't handle errors for cancelled requests
-      if (err.name === 'AbortError' || err.name === 'CanceledError') {
-        console.log('Request cancelled:', err.message);
-        return;
-      }
-
-      console.error('Error loading events:', err);
-      const apiError = err as APIError;
-      const isNetworkError = apiError?.isNetworkError || err instanceof TypeError;
-      
-      setError({
-        message: apiError?.message || 'Gagal memuat event dari server',
-        isNetworkError
-      });
-      setConnectionStatus('disconnected');
-      
-      if (!isRetry) { // Only show toast for initial failures, not retries
-        showToast(
-          isNetworkError ? 'Backend server tidak dapat diakses' : 'Gagal memuat event', 
-          'error'
-        );
-      }
-    } finally {
-      setLoading(false);
-      unlock(); // Always unlock the request
-    }
-  }, [showToast, lock, unlock, abort, getSignal]);
-
-  // Separate effect to apply filters to already loaded events
+  // Load user's availability when events change
   useEffect(() => {
+    const loadAvailability = async () => {
+      if (!allEvents || allEvents.length === 0) return;
+
+      setLoadingAvailability(true);
+      try {
+        // TODO: Replace with actual user ID from auth context
+        const userId = localStorage.getItem('userId') || 'temp-user-id';
+
+        const result = await getPersonAvailability({
+          personId: userId,
+          startDate: dateRange.start.toISOString().split('T')[0],
+          endDate: dateRange.end.toISOString().split('T')[0],
+        });
+
+        const availabilityMap: Record<string, AvailabilityStatus> = {};
+        result.availabilities.forEach((a) => {
+          const key = `${a.eventId}_${a.occurrenceDate}`;
+          availabilityMap[key] = a.status as AvailabilityStatus;
+        });
+        setAvailability(availabilityMap);
+      } catch (err) {
+        console.error('Error loading availability:', err);
+        // Don't show error toast for empty data
+      } finally {
+        setLoadingAvailability(false);
+      }
+    };
+
+    loadAvailability();
+  }, [dateRange, allEvents]);
+
+  // Apply filters to loaded events
+  const events = useMemo(() => {
+    if (!allEvents) return [];
+
     let filteredOccurrences = allEvents;
-    
+
     if (filters.type !== 'all') {
       filteredOccurrences = filteredOccurrences.filter(
         occ => occ.originalEvent.type === filters.type
       );
     }
-    
+
     if (filters.visibility !== 'all') {
       const isPublic = filters.visibility === 'public';
       filteredOccurrences = filteredOccurrences.filter(
         occ => occ.originalEvent.isPublic === isPublic
       );
     }
-    
-    setEvents(filteredOccurrences);
+
+    return filteredOccurrences;
   }, [allEvents, filters]);
-
-  // Check connection and initial load with current month
-  useEffect(() => {
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    
-    // Check connection first, then load events
-    checkConnection();
-    loadEvents(startOfMonth, endOfMonth);
-  }, [loadEvents, checkConnection]);
-
-  // Debounced date range change handler to prevent excessive API calls
-  const debouncedLoadEvents = useDebounce((start: Date, end: Date) => {
-    loadEvents(start, end);
-  }, 300); // 300ms debounce
 
   // Handle calendar date range changes
   const handleDateRangeChange = useCallback((start: Date, end: Date) => {
-    debouncedLoadEvents(start, end);
-  }, [debouncedLoadEvents]);
+    // Update month/year when calendar navigation occurs
+    setCurrentMonth(start.getMonth());
+    setCurrentYear(start.getFullYear());
+  }, []);
 
   // Handle event editing
   const handleEventEdit = useCallback(async (
@@ -206,33 +148,33 @@ function EventCalendarPageContent() {
 
   // Handle event deletion
   const handleEventDelete = useCallback(async (
-    eventId: string, 
-    occurrenceDate: string, 
+    eventId: string,
+    occurrenceDate: string,
     updateType: RecurrenceUpdateType
   ) => {
     try {
       const deleteType = updateType === 'future' ? 'future' : 'single';
-      
+
       await deleteOccurrence(eventId, {
         occurrenceDate,
         deleteType
       });
-      
+
       showToast(
-        updateType === 'single' 
-          ? 'Event berhasil dihapus' 
+        updateType === 'single'
+          ? 'Event berhasil dihapus'
           : 'Event dan yang berikutnya berhasil dihapus',
         'success'
       );
-      
+
       // Reload events
-      loadEvents(dateRange.start, dateRange.end);
-      
+      refetch();
+
     } catch (err) {
       console.error('Error deleting event:', err);
       showToast('Gagal menghapus event', 'error');
     }
-  }, [loadEvents, dateRange, showToast]);
+  }, [refetch, showToast]);
 
   // Handle filter changes
   const handleFilterChange = useCallback((filterType: string, value: string) => {
@@ -244,8 +186,54 @@ function EventCalendarPageContent() {
 
   // Handle manual refresh
   const handleRefresh = useCallback(() => {
-    loadEvents(dateRange.start, dateRange.end, true); // true indicates it's a retry
-  }, [loadEvents, dateRange]);
+    refetch();
+  }, [refetch]);
+
+  // Toggle availability for an event
+  const handleToggleAvailability = useCallback((event: EventOccurrence) => {
+    const occurrenceDate = event.occurrenceDate.split('T')[0];
+    const key = `${event.eventId}_${occurrenceDate}`;
+    const currentStatus = availability[key];
+
+    let newStatus: AvailabilityStatus;
+    if (currentStatus === 'available') newStatus = 'tentative';
+    else if (currentStatus === 'tentative') newStatus = 'unavailable';
+    else if (currentStatus === 'unavailable') newStatus = 'unselected';
+    else newStatus = 'available';
+
+    setAvailability((prev) => ({ ...prev, [key]: newStatus }));
+  }, [availability]);
+
+  // Save availability
+  const handleSaveAvailability = useCallback(async () => {
+    setSavingAvailability(true);
+    try {
+      // TODO: Replace with actual user ID from auth context
+      const userId = localStorage.getItem('userId') || 'temp-user-id';
+
+      // Filter out unselected items and save
+      const promises = Object.entries(availability)
+        .filter(([_, status]) => status !== 'unselected')
+        .map(async ([key, status]) => {
+          const [eventId, occurrenceDate] = key.split('_');
+
+          await upsertKetersediaan({
+            personId: userId,
+            eventId,
+            occurrenceDate,
+            status: status as 'available' | 'unavailable' | 'tentative',
+          });
+        });
+
+      await Promise.all(promises);
+      showToast('Ketersediaan berhasil disimpan!', 'success');
+    } catch (err) {
+      console.error('Error saving availability:', err);
+      showToast('Gagal menyimpan ketersediaan', 'error');
+    } finally {
+      setSavingAvailability(false);
+    }
+  }, [availability, showToast]);
 
   // Get filter statistics
   const eventStats = {
@@ -290,15 +278,26 @@ function EventCalendarPageContent() {
               Refresh
             </Button>
 
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleSaveAvailability}
+              disabled={savingAvailability || loadingAvailability}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <FiSave className="h-4 w-4 mr-2" />
+              {savingAvailability ? 'Menyimpan...' : 'Simpan Ketersediaan'}
+            </Button>
+
             {/* Connection Status Indicator */}
             <div className="flex items-center gap-2 text-sm">
-              {connectionStatus === 'connected' && (
+              {!loading && !error && (
                 <div className="flex items-center gap-1 text-green-600">
                   <Wifi className="h-4 w-4" />
                   <span>Terhubung</span>
                 </div>
               )}
-              {connectionStatus === 'disconnected' && (
+              {error && (
                 <div className="flex items-center gap-1 text-red-600">
                   <WifiOff className="h-4 w-4" />
                   <span>Terputus</span>
@@ -386,55 +385,27 @@ function EventCalendarPageContent() {
 
       {/* Error State */}
       {error && (
-        <div className={`rounded-lg border p-6 ${
-          error.isNetworkError 
-            ? 'bg-orange-50 border-orange-200' 
-            : 'bg-red-50 border-red-200'
-        }`}>
+        <div className="rounded-lg border p-6 bg-red-50 border-red-200">
           <div className="flex items-start gap-3">
-            <AlertCircle className={`h-5 w-5 mt-0.5 ${
-              error.isNetworkError ? 'text-orange-600' : 'text-red-600'
-            }`} />
+            <AlertCircle className="h-5 w-5 mt-0.5 text-red-600" />
             <div className="flex-1">
-              <div className={`font-semibold mb-2 ${
-                error.isNetworkError ? 'text-orange-800' : 'text-red-800'
-              }`}>
-                {error.isNetworkError ? 'Backend Server Tidak Terhubung' : 'Gagal Memuat Kalender'}
+              <div className="font-semibold mb-2 text-red-800">
+                Gagal Memuat Kalender
               </div>
-              <div className={`text-sm mb-4 ${
-                error.isNetworkError ? 'text-orange-700' : 'text-red-700'
-              }`}>
-                {error.isNetworkError 
-                  ? 'Server backend tidak dapat diakses. Pastikan server backend berjalan di http://localhost:8888 dan coba lagi.'
-                  : error.message
-                }
+              <div className="text-sm mb-4 text-red-700">
+                {error.message || 'Terjadi kesalahan saat memuat event. Pastikan server backend berjalan.'}
               </div>
               <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={handleRefresh}
                   disabled={loading}
-                  className={
-                    error.isNetworkError 
-                      ? 'border-orange-300 text-orange-700 hover:bg-orange-100'
-                      : 'border-red-300 text-red-700 hover:bg-red-100'
-                  }
+                  className="border-red-300 text-red-700 hover:bg-red-100"
                 >
                   <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                   Coba Lagi
                 </Button>
-                {error.isNetworkError && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={checkConnection}
-                    className="border-orange-300 text-orange-700 hover:bg-orange-100"
-                  >
-                    <Wifi className="h-4 w-4 mr-2" />
-                    Test Koneksi
-                  </Button>
-                )}
               </div>
             </div>
           </div>
@@ -450,6 +421,8 @@ function EventCalendarPageContent() {
               onEventEdit={handleEventEdit}
               onEventDelete={handleEventDelete}
               onDateRangeChange={handleDateRangeChange}
+              availability={availability}
+              onToggleAvailability={handleToggleAvailability}
             />
           ) : (
             <DynamicEventCalendar
@@ -457,6 +430,8 @@ function EventCalendarPageContent() {
               onEventEdit={handleEventEdit}
               onEventDelete={handleEventDelete}
               onDateRangeChange={handleDateRangeChange}
+              availability={availability}
+              onToggleAvailability={handleToggleAvailability}
             />
           )}
         </>

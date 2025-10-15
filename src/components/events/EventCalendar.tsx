@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { Calendar, momentLocalizer, View, Event as CalendarEvent } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -57,20 +57,26 @@ interface CalendarEventExtended extends CalendarEvent {
   occurrenceDate: string;
 }
 
+type AvailabilityStatus = 'available' | 'unavailable' | 'tentative' | 'unselected';
+
 interface EventCalendarProps {
   events: EventOccurrence[];
   onEventClick?: (event: CalendarEventExtended) => void;
   onEventEdit?: (eventId: string, occurrenceDate: string, updateType: RecurrenceUpdateType) => void;
   onEventDelete?: (eventId: string, occurrenceDate: string, updateType: RecurrenceUpdateType) => void;
   onDateRangeChange?: (start: Date, end: Date) => void;
+  availability?: Record<string, AvailabilityStatus>;
+  onToggleAvailability?: (event: EventOccurrence) => void;
 }
 
-export default function EventCalendar({ 
-  events, 
-  onEventClick, 
-  onEventEdit, 
+export default function EventCalendar({
+  events,
+  onEventClick,
+  onEventEdit,
   onEventDelete,
-  onDateRangeChange 
+  onDateRangeChange,
+  availability = {},
+  onToggleAvailability
 }: EventCalendarProps) {
   const [view, setView] = useState<View>('month');
   const [date, setDate] = useState(new Date());
@@ -85,6 +91,9 @@ export default function EventCalendar({
     event: null
   });
   const { showToast } = useToast();
+
+  // Track last date range to prevent duplicate API calls
+  const lastDateRange = useRef<{ start: string; end: string } | null>(null);
 
   // Convert event occurrences to calendar events
   const calendarEvents = useMemo(() => {
@@ -114,10 +123,10 @@ export default function EventCalendar({
   // Handle date range changes for fetching events
   const handleNavigate = useCallback((newDate: Date, view: View) => {
     setDate(newDate);
-    
+
     if (onDateRangeChange) {
       let start: Date, end: Date;
-      
+
       switch (view) {
         case 'month':
           start = moment(newDate).startOf('month').startOf('week').toDate();
@@ -135,8 +144,17 @@ export default function EventCalendar({
           start = moment(newDate).startOf('month').toDate();
           end = moment(newDate).endOf('month').toDate();
       }
-      
-      onDateRangeChange(start, end);
+
+      // Check if date range has changed to prevent duplicate API calls
+      const startStr = start.toISOString().split('T')[0];
+      const endStr = end.toISOString().split('T')[0];
+      const currentRange = `${startStr}_${endStr}`;
+      const lastRange = lastDateRange.current ? `${lastDateRange.current.start}_${lastDateRange.current.end}` : null;
+
+      if (currentRange !== lastRange) {
+        lastDateRange.current = { start: startStr, end: endStr };
+        onDateRangeChange(start, end);
+      }
     }
   }, [onDateRangeChange]);
 
@@ -178,15 +196,15 @@ export default function EventCalendar({
 
   const handleRecurrenceConfirm = (updateType: RecurrenceUpdateType) => {
     if (!recurrenceModal.event) return;
-    
+
     const { event } = recurrenceModal;
-    
+
     if (recurrenceModal.action === 'edit') {
       onEventEdit?.(event.eventId, event.occurrenceDate, updateType);
     } else {
       onEventDelete?.(event.eventId, event.occurrenceDate, updateType);
     }
-    
+
     setRecurrenceModal({ isOpen: false, action: 'edit', event: null });
   };
 
@@ -214,9 +232,24 @@ export default function EventCalendar({
       }
     };
 
+    // Get availability status
+    const occurrenceDate = event.occurrenceDate.split('T')[0];
+    const key = `${event.eventId}_${occurrenceDate}`;
+    const status = availability[key] || 'unselected';
+
+    const statusColors = {
+      available: 'bg-green-300',
+      tentative: 'bg-yellow-300',
+      unavailable: 'bg-red-300',
+      unselected: ''
+    };
+
     return (
       <div className={`text-white p-1 rounded text-xs ${getTypeColor(event.type)} ${event.isException ? 'border-2 border-dashed' : ''}`}>
         <div className="flex items-center gap-1 mb-1">
+          {status !== 'unselected' && (
+            <div className={`w-2 h-2 rounded-full ${statusColors[status]} flex-shrink-0`}></div>
+          )}
           {event.isRecurring && <Repeat className="h-3 w-3" />}
           {event.isException && <span className="text-yellow-200">*</span>}
           <span className="font-medium truncate">{event.title}</span>
@@ -371,6 +404,17 @@ export default function EventCalendar({
                   <Trash2 className="h-4 w-4 mr-1" />
                   Hapus
                 </Button>
+                {onToggleAvailability && selectedEvent.resource && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onToggleAvailability(selectedEvent.resource)}
+                    className="ml-2"
+                  >
+                    <Users className="h-4 w-4 mr-1" />
+                    Toggle Ketersediaan
+                  </Button>
+                )}
               </div>
             </div>
           </CardHeader>
@@ -381,7 +425,7 @@ export default function EventCalendar({
                 <p className="text-sm text-gray-600">{selectedEvent.description || 'Tidak ada deskripsi'}</p>
               </div>
               
-              <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-4 text-sm flex-wrap">
                 <span className={`px-2 py-1 rounded text-xs font-medium ${
                   selectedEvent.type === 'ibadah' ? 'bg-blue-100 text-blue-700' :
                   selectedEvent.type === 'spiritual_journey' ? 'bg-purple-100 text-purple-700' :
@@ -391,12 +435,34 @@ export default function EventCalendar({
                    selectedEvent.type === 'spiritual_journey' ? 'Spiritual Journey' :
                    'Event'}
                 </span>
-                
+
                 <span className={`px-2 py-1 rounded text-xs font-medium ${
                   selectedEvent.isPublic ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
                 }`}>
                   {selectedEvent.isPublic ? 'Publik' : 'Privat'}
                 </span>
+
+                {/* Availability Status Badge */}
+                {(() => {
+                  const occurrenceDate = selectedEvent.occurrenceDate.split('T')[0];
+                  const key = `${selectedEvent.eventId}_${occurrenceDate}`;
+                  const status = availability[key] || 'unselected';
+
+                  const statusBadges = {
+                    available: { bg: 'bg-green-100', text: 'text-green-700', label: 'Bisa Hadir' },
+                    tentative: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Mungkin' },
+                    unavailable: { bg: 'bg-red-100', text: 'text-red-700', label: 'Tidak Bisa' },
+                    unselected: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'Belum Diisi' }
+                  };
+
+                  const badge = statusBadges[status];
+
+                  return (
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${badge.bg} ${badge.text}`}>
+                      Ketersediaan: {badge.label}
+                    </span>
+                  );
+                })()}
               </div>
             </div>
           </CardContent>

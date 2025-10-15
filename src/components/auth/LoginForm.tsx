@@ -63,10 +63,11 @@ function LoginForm() {
       // Check if password setup is required
       if (loginResponse.requires_password_setup) {
         showToast('Selamat datang! Mari atur kata sandi Anda.', 'info');
-        
+
         // Convert to UserData format for context
         const userData: UserData = {
           token: loginResponse.token,
+          person_id: loginResponse.person_id,
           pelayanan: loginResponse.pelayanan,
           nama: loginResponse.nama,
           image_url: loginResponse.image_url,
@@ -75,7 +76,7 @@ function LoginForm() {
           requires_password_setup: loginResponse.requires_password_setup,
           default_password_hint: loginResponse.default_password_hint,
         };
-        
+
         setUserInfo(userData);
         setShowPasswordSetup(true);
       } else {
@@ -137,7 +138,7 @@ function LoginForm() {
           
           <motion.div variants={itemVariants} className='text-center mb-8'>
             <Image
-              src='/images/logo.png'
+              src='/images/Logo/EN Logo for Dark Background 2.png'
               alt='Every Nation Logo'
               width={140}
               height={37}

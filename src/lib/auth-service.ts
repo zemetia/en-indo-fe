@@ -9,6 +9,7 @@ export interface LoginCredentials {
 
 export interface LoginResponse {
   token: string;
+  person_id: string;
   pelayanan: Array<{
     pelayanan_id: string;
     pelayanan: string;
@@ -79,6 +80,7 @@ export const authService = {
       // Store user data (convert snake_case to camelCase for internal use)
       const userData: UserData = {
         token: loginData.token,
+        person_id: loginData.person_id,
         pelayanan: loginData.pelayanan,
         nama: loginData.nama,
         image_url: loginData.image_url,
@@ -87,7 +89,7 @@ export const authService = {
         requires_password_setup: loginData.requires_password_setup,
         default_password_hint: loginData.default_password_hint,
       };
-      
+
       // Always store user data to ensure token is available for password setup API calls
       setUserData(userData);
       

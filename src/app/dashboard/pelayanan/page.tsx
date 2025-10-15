@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { FiAward, FiHome, FiPlus, FiSearch, FiTrash2, FiUser, FiStar, FiTag, FiRefreshCw, FiEye, FiUserPlus, FiUserCheck, FiUserX, FiUsers } from 'react-icons/fi';
 import Image from 'next/image';
 import Select from 'react-select';
+import { formatChurchList } from '@/lib/utils/pelayanan-utils';
 
 import FeaturedCard from '@/components/dashboard/FeaturedCard';
 import {
@@ -50,6 +51,13 @@ interface GroupedAssignment {
         churchName: string;
         departmentName: string;
         isPic: boolean;
+    }[];
+    consolidatedRoles?: {
+        ministry: string;
+        churches: string[];
+        departmentName: string;
+        isPIC: boolean;
+        assignmentIds: string[]; // IDs of the underlying assignments
     }[];
 }
 
@@ -254,12 +262,12 @@ export default function ManagePelayananPage() {
 
   const filteredAndGroupedArray = React.useMemo(() => {
       if (!assignments || assignments.length === 0) return [];
-      
+
       const groupedByPerson = assignments.reduce((acc, assignment) => {
           const personId = assignment.person_id;
           const personName = assignment.person_name;
           const personAvatar = 'https://placehold.co/100x100.png'; // Default avatar
-          
+
           if (!acc[personId]) {
               acc[personId] = {
                   personId,
@@ -268,6 +276,7 @@ export default function ManagePelayananPage() {
                   hasUserAccount: assignment.has_user_account,
                   isUserActive: assignment.is_user_active,
                   roles: [],
+                  consolidatedRoles: [],
               };
           }
           acc[personId].roles.push({
@@ -279,6 +288,43 @@ export default function ManagePelayananPage() {
           });
           return acc;
       }, {} as Record<string, GroupedAssignment>);
+
+      // Consolidate roles for each person
+      Object.values(groupedByPerson).forEach((personGroup) => {
+          const ministryMap = new Map<string, {
+              ministry: string;
+              churches: string[];
+              departmentName: string;
+              isPIC: boolean;
+              assignmentIds: string[];
+          }>();
+
+          personGroup.roles.forEach((role) => {
+              // Use ministry + department as key for consolidation
+              const key = `${role.pelayananName}|${role.departmentName}`;
+
+              if (!ministryMap.has(key)) {
+                  ministryMap.set(key, {
+                      ministry: role.pelayananName,
+                      churches: [],
+                      departmentName: role.departmentName,
+                      isPIC: false,
+                      assignmentIds: [],
+                  });
+              }
+
+              const consolidated = ministryMap.get(key)!;
+              if (!consolidated.churches.includes(role.churchName)) {
+                  consolidated.churches.push(role.churchName);
+              }
+              if (role.isPic) {
+                  consolidated.isPIC = true;
+              }
+              consolidated.assignmentIds.push(role.id);
+          });
+
+          personGroup.consolidatedRoles = Array.from(ministryMap.values());
+      });
 
       if (!searchTerm) {
           return Object.values(groupedByPerson);
@@ -399,7 +445,7 @@ export default function ManagePelayananPage() {
                                     <Image src={personGroup.personAvatar} alt={personGroup.personName} width={48} height={48} className="rounded-full" data-ai-hint="person portrait" />
                                     <div className="flex-grow">
                                         <CardTitle>{personGroup.personName}</CardTitle>
-                                        <CardDescription>{personGroup.roles?.length || 0} peran pelayanan</CardDescription>
+                                        <CardDescription>{personGroup.consolidatedRoles?.length || 0} peran pelayanan</CardDescription>
                                     </div>
                                     <Button
                                         variant="outline"
@@ -414,49 +460,34 @@ export default function ManagePelayananPage() {
                             </CardHeader>
                             <CardContent className="flex-grow">
                                 <div className="space-y-3">
-                                    {/* Show maximum 1 pelayanan initially */}
-                                    {personGroup.roles?.slice(0, 1).map(role => (
-                                        <div key={role.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                    {/* Show maximum 1 consolidated pelayanan initially */}
+                                    {personGroup.consolidatedRoles?.slice(0, 1).map((consolidated, idx) => (
+                                        <div key={`${consolidated.ministry}-${idx}`} className="p-3 bg-gray-50 rounded-lg border border-gray-100">
                                             <div className='min-w-0'>
-                                                <p className="font-semibold text-gray-800 flex items-center gap-2">
-                                                    <FiAward className="text-indigo-500 w-4 h-4"/>
-                                                    <span className='truncate'>{role.pelayananName}</span>
+                                                <p className="font-semibold text-gray-800 flex items-center gap-2 mb-1">
+                                                    <FiAward className="text-indigo-500 w-4 h-4 shrink-0"/>
+                                                    <span>{consolidated.ministry}</span>
+                                                    {consolidated.isPIC && (
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                                            <FiStar className='w-3 h-3 mr-1'/>
+                                                            PIC
+                                                        </span>
+                                                    )}
                                                 </p>
                                                 <p className="text-sm text-gray-500 flex items-center gap-2 mt-1">
-                                                    <FiUsers className="text-gray-400 w-4 h-4"/>
-                                                    <span className='truncate'>{role.departmentName}</span>
+                                                    <FiUsers className="text-gray-400 w-4 h-4 shrink-0"/>
+                                                    <span className='truncate'>{consolidated.departmentName}</span>
                                                 </p>
-                                                <p className="text-sm text-gray-500 flex items-center gap-2 mt-1">
-                                                    <FiHome className="text-gray-400 w-4 h-4"/>
-                                                     <span className='truncate'>{role.churchName}</span>
+                                                <p className="text-xs text-gray-500 flex items-start gap-2 mt-1.5">
+                                                    <FiHome className="text-gray-400 w-4 h-4 shrink-0 mt-0.5"/>
+                                                    <span className='leading-relaxed'>{formatChurchList(consolidated.churches)}</span>
                                                 </p>
-                                                {role.isPic && (
-                                                    <span className="mt-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                                                        <FiStar className='w-3 h-3 mr-1.5'/>
-                                                        PIC
-                                                    </span>
-                                                )}
                                             </div>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className='text-red-500 hover:text-red-700 hover:bg-red-50 ml-2 flex-shrink-0'
-                                                onClick={() => {
-                                                    const assignmentToUnassign = assignments.find(a => a.id === role.id);
-                                                    if(assignmentToUnassign) {
-                                                        setSelectedAssignment(assignmentToUnassign);
-                                                        setShowConfirmation(true);
-                                                    }
-                                                }}
-                                                disabled={isDeleting}
-                                            >
-                                                <FiTrash2 className='h-4 w-4'/>
-                                            </Button>
                                         </div>
                                     ))}
-                                    
-                                    {/* Show More button if person has multiple roles */}
-                                    {personGroup.roles?.length > 1 && (
+
+                                    {/* Show More button if person has multiple consolidated roles */}
+                                    {(personGroup.consolidatedRoles?.length || 0) > 1 && (
                                         <Button
                                             variant="ghost"
                                             size="sm"
@@ -464,7 +495,7 @@ export default function ManagePelayananPage() {
                                             className="w-full mt-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
                                         >
                                             <FiEye className="w-4 h-4 mr-2" />
-                                            Lihat Semua ({personGroup.roles?.length || 0} pelayanan)
+                                            Lihat Semua ({personGroup.consolidatedRoles?.length || 0} pelayanan)
                                         </Button>
                                     )}
                                 </div>
@@ -565,44 +596,56 @@ export default function ManagePelayananPage() {
           </DialogHeader>
           <div className="max-h-96 overflow-y-auto">
             <div className="space-y-3">
-              {selectedPersonRoles?.roles?.map(role => (
-                <div key={role.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+              {selectedPersonRoles?.consolidatedRoles?.map((consolidated, idx) => (
+                <div key={`${consolidated.ministry}-${idx}`} className="p-3 bg-gray-50 rounded-lg border border-gray-100">
                   <div className='min-w-0 flex-grow'>
-                    <p className="font-semibold text-gray-800 flex items-center gap-2">
-                      <FiAward className="text-indigo-500 w-4 h-4"/>
-                      <span className='truncate'>{role.pelayananName}</span>
+                    <p className="font-semibold text-gray-800 flex items-center gap-2 mb-1">
+                      <FiAward className="text-indigo-500 w-4 h-4 shrink-0"/>
+                      <span>{consolidated.ministry}</span>
+                      {consolidated.isPIC && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                          <FiStar className='w-3 h-3 mr-1'/>
+                          PIC
+                        </span>
+                      )}
                     </p>
                     <p className="text-sm text-gray-500 flex items-center gap-2 mt-1">
-                      <FiUsers className="text-gray-400 w-4 h-4"/>
-                      <span className='truncate'>{role.departmentName}</span>
+                      <FiUsers className="text-gray-400 w-4 h-4 shrink-0"/>
+                      <span className='truncate'>{consolidated.departmentName}</span>
                     </p>
-                    <p className="text-sm text-gray-500 flex items-center gap-2 mt-1">
-                      <FiHome className="text-gray-400 w-4 h-4"/>
-                      <span className='truncate'>{role.churchName}</span>
+                    <p className="text-xs text-gray-500 flex items-start gap-2 mt-1.5">
+                      <FiHome className="text-gray-400 w-4 h-4 shrink-0 mt-0.5"/>
+                      <span className='leading-relaxed'>{formatChurchList(consolidated.churches)}</span>
                     </p>
-                    {role.isPic && (
-                      <span className="mt-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                        <FiStar className='w-3 h-3 mr-1.5'/>
-                        PIC
-                      </span>
-                    )}
+
+                    {/* Show individual delete buttons for each church assignment */}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {consolidated.assignmentIds.map((assignmentId, assignIdx) => {
+                        const role = selectedPersonRoles?.roles.find(r => r.id === assignmentId);
+                        if (!role) return null;
+                        return (
+                          <Button
+                            key={assignmentId}
+                            variant="outline"
+                            size="sm"
+                            className='text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200'
+                            onClick={() => {
+                              const assignmentToUnassign = assignments.find(a => a.id === assignmentId);
+                              if(assignmentToUnassign) {
+                                setSelectedAssignment(assignmentToUnassign);
+                                setShowConfirmation(true);
+                                setShowAllRolesModal(false);
+                              }
+                            }}
+                            disabled={isDeleting}
+                          >
+                            <FiTrash2 className='h-3 w-3 mr-1'/>
+                            {role.churchName}
+                          </Button>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className='text-red-500 hover:text-red-700 hover:bg-red-50 ml-2 flex-shrink-0'
-                    onClick={() => {
-                      const assignmentToUnassign = assignments.find(a => a.id === role.id);
-                      if(assignmentToUnassign) {
-                        setSelectedAssignment(assignmentToUnassign);
-                        setShowConfirmation(true);
-                        setShowAllRolesModal(false);
-                      }
-                    }}
-                    disabled={isDeleting}
-                  >
-                    <FiTrash2 className='h-4 w-4'/>
-                  </Button>
                 </div>
               ))}
             </div>

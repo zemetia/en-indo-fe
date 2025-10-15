@@ -52,7 +52,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href='/' className='flex items-center'>
             <Image
-              src='/images/logo.png'
+              src='/images/Logo/EN Logo for Dark Background 2.png'
               alt='Every Nation Indonesia'
               width={140}
               height={37}

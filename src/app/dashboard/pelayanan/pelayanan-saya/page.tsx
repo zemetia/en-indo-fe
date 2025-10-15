@@ -13,12 +13,14 @@ import { useToast } from '@/context/ToastContext';
 import { useAuth } from '@/context/AuthContext';
 import { pelayananService } from '@/lib/pelayanan-service';
 import { Pelayanan } from '@/lib/helper';
+import { consolidatePelayanan, formatChurchList, ConsolidatedPelayanan } from '@/lib/utils/pelayanan-utils';
 import Skeleton from '@/components/Skeleton';
 
 export default function PelayananSayaPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { showToast } = useToast();
   const [pelayananData, setPelayananData] = useState<Pelayanan[]>([]);
+  const [consolidatedData, setConsolidatedData] = useState<ConsolidatedPelayanan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,6 +70,12 @@ export default function PelayananSayaPage() {
     }
   }, [authLoading, user?.token]);
 
+  // Consolidate pelayanan data whenever it changes
+  useEffect(() => {
+    const consolidated = consolidatePelayanan(pelayananData);
+    setConsolidatedData(consolidated);
+  }, [pelayananData]);
+
   if (authLoading || isLoading) {
     return (
       <div className='space-y-6'>
@@ -103,8 +111,8 @@ export default function PelayananSayaPage() {
   }
 
 
-  const totalPelayanan = pelayananData.length;
-  const totalPIC = pelayananData.filter(p => p.is_pic).length;
+  const totalPelayanan = consolidatedData.length; // Count unique ministries
+  const totalPIC = consolidatedData.filter(p => p.isPIC).length;
   const totalGereja = new Set(pelayananData.map(p => p.church_id)).size;
 
   return (
@@ -206,11 +214,11 @@ export default function PelayananSayaPage() {
           )}
         </div>
 
-        {pelayananData.length > 0 ? (
+        {consolidatedData.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {pelayananData.map((pelayanan, index) => (
-              <motion.div 
-                key={`${pelayanan.pelayanan_id}-${pelayanan.church_id}`}
+            {consolidatedData.map((consolidated, index) => (
+              <motion.div
+                key={consolidated.ministry}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
@@ -218,20 +226,22 @@ export default function PelayananSayaPage() {
                 <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-200">
                   <CardHeader>
                     <div className="flex items-start justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-yellow-100 rounded-lg">
+                      <div className="flex items-center space-x-3 flex-1 min-w-0">
+                        <div className="p-2 bg-yellow-100 rounded-lg shrink-0">
                           <FiAward className="text-yellow-600 w-5 h-5"/>
                         </div>
-                        <div>
-                          <CardTitle className="text-lg">{pelayanan.pelayanan}</CardTitle>
-                          <CardDescription className="flex items-center gap-1 mt-1">
-                            <FiHome className="text-gray-400 w-4 h-4"/>
-                            {pelayanan.church_name}
+                        <div className="min-w-0 flex-1">
+                          <CardTitle className="text-lg">{consolidated.ministry}</CardTitle>
+                          <CardDescription className="flex items-start gap-1 mt-1">
+                            <FiHome className="text-gray-400 w-4 h-4 shrink-0 mt-0.5"/>
+                            <span className="text-xs leading-relaxed">
+                              {formatChurchList(consolidated.churches)}
+                            </span>
                           </CardDescription>
                         </div>
                       </div>
-                      {pelayanan.is_pic && (
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">
+                      {consolidated.isPIC && (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200 shrink-0 ml-2">
                           <FiStar className='w-3 h-3 mr-1'/>
                           PIC
                         </span>
@@ -244,8 +254,22 @@ export default function PelayananSayaPage() {
                         <FiCheckCircle className="w-4 h-4 mr-2 text-green-500" />
                         Status: Aktif
                       </div>
-                      
-                      {pelayanan.is_pic && (
+
+                      <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <p className="text-sm font-medium text-blue-800 mb-1">
+                          Melayani di {consolidated.churches.length} gereja
+                        </p>
+                        {consolidated.isPIC && (
+                          <p className="text-xs text-blue-700">
+                            {consolidated.picChurches.length === consolidated.churches.length
+                              ? 'PIC di semua gereja'
+                              : `PIC di ${consolidated.picChurches.length} gereja`
+                            }
+                          </p>
+                        )}
+                      </div>
+
+                      {consolidated.isPIC && (
                         <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
                           <p className="text-sm font-medium text-amber-800 mb-1">Tanggung Jawab PIC:</p>
                           <ul className="text-xs text-amber-700 space-y-1">
@@ -257,14 +281,14 @@ export default function PelayananSayaPage() {
                       )}
 
                       <div className="flex space-x-2 pt-2">
-                        <button 
+                        <button
                           onClick={() => window.location.href = '/dashboard/jadwal-saya'}
                           className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
                         >
                           <FiCalendar className="w-4 h-4 mr-2" />
                           Jadwal
                         </button>
-                        <button 
+                        <button
                           onClick={() => window.location.href = '/dashboard/ketersediaan'}
                           className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-yellow-600 hover:bg-yellow-700 transition-colors"
                         >
